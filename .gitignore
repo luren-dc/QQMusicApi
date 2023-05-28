@@ -24,7 +24,7 @@ __pycache__
 
 .workon
 
-# in case you work with IntelliJ/PyCharm 
+# in case you work with IntelliJ/PyCharm
 .idea
 *.iml
 .python-version

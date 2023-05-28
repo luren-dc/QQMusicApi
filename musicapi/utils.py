@@ -4,7 +4,7 @@ import time
 from random import randint
 
 
-class utils:
+class Utils:
     @staticmethod
     def format_data(data: dict) -> str:
         """
