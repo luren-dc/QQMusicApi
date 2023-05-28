@@ -1,6 +1,0 @@
-__title__ = "MusicApi"
-__description__ = "Api for QQMusic"
-__version__ = "2.31.0"
-__author__ = "Luren"
-__author_email__ = "3308862290@qq.com"
-__license__ = "MIT"

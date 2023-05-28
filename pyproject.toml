@@ -9,7 +9,9 @@ readme = "README.md"
 python = "^3.7"
 requests = "^2.31.0"
 
-
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+profile = "black"

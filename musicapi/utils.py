@@ -16,13 +16,12 @@ class utils:
         return f_data
 
     @staticmethod
-    def get_token(p_skey):
+    def get_token(p_skey: str) -> int:
         """
         计算 g_tk
         :param p_skey: 签名
         :return: g_tk
         """
-
         h = 5381
         if p_skey:
             for c in p_skey:
@@ -56,7 +55,24 @@ class utils:
             "E": 14,
             "F": 15,
         }
-        l1 = [212, 45, 80, 68, 195, 163, 163, 203, 157, 220, 254, 91, 204, 79, 104, 6]
+        l1 = [
+            212,
+            45,
+            80,
+            68,
+            195,
+            163,
+            163,
+            203,
+            157,
+            220,
+            254,
+            91,
+            204,
+            79,
+            104,
+            6,
+        ]
         t = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
         md5 = hashlib.md5(data.encode()).hexdigest().upper()
         t1 = "".join([md5[i] for i in [21, 4, 9, 26, 16, 20, 27, 30]])
@@ -67,7 +83,6 @@ class utils:
             x2 = k1[md5[i * 2 + 1]]
             x3 = ((x1 * 16) ^ x2) ^ l1[i]
             ls2.append(x3)
-
         ls3 = []
         for i in range(6):
             if i == 5:
@@ -79,7 +94,6 @@ class utils:
                 x6 = (ls2[i * 3 + 2] >> 6) ^ ((ls2[i * 3 + 1] & 15) << 2)
                 x7 = 63 & ls2[i * 3 + 2]
                 ls3.extend(t[x4] + t[x5] + t[x6] + t[x7])
-
         t2 = "".join(ls3)
         for s in "[\\/+=]":
             if s in t2:
@@ -95,7 +109,6 @@ class utils:
         :param search_type:  搜索类型
         :return:
         """
-
         all_type = {
             "song": 3,
             "album": 4,
