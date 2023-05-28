@@ -20,6 +20,7 @@ env/
 .pytest_cache/
 .vscode/
 .eggs/
+__pycache__
 
 .workon
 
