@@ -1,5 +1,9 @@
 from typing import Any
 
+import requests
+
+from ..config import QQMUSIC_API
+from ..exceptions import NumberException, TypeException
 from ..utils import Utils
 
 
@@ -28,8 +32,6 @@ class Search:
         """
         s_type = cls.SEARCH_TYPE.get(search_type, -1)
         if s_type == -1:
-            return {"code": 500, "msg": "Wrong search type"}
-        if page < 0:
-            return {"code": 500, "msg": "Wrong page"}
-        if num < 0:
-            return {"code": 500, "msg": "Wrong page number"}
+            raise TypeException("Wrong search type")
+        if num < 0 or page < 0:
+            raise NumberException("Wrong page or number")
