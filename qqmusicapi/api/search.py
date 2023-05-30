@@ -35,3 +35,4 @@ class Search:
             raise TypeException("Wrong search type")
         if num < 0 or page < 0:
             raise NumberException("Wrong page or number")
+        return {"code": "200", "data": ""}

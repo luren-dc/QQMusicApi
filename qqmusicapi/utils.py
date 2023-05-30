@@ -98,7 +98,7 @@ class Utils:
         for s in "[\\/+=]":
             if s in t2:
                 t2 = t2.replace(s, "")
-        sign = "zzb" + (t1 + t2 + t3).lower()
+        sign = f"zzb{(t1 + t2 + t3).lower()}"
         return sign
 
     @staticmethod

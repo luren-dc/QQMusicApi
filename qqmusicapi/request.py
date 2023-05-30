@@ -1,6 +1,10 @@
+import time
+from typing import Any
+
 import requests
 
 from .exceptions import RequestException
+from .utils import Utils
 
 
 class Request:
@@ -12,7 +16,7 @@ class Request:
     }
 
     @classmethod
-    def get(cls, headers: dict = {}, **kwargs):
+    def get(cls, url: str, headers: dict = {}, params: dict = {}) -> dict[str, Any]:
         """
         发送 GET 请求
 
@@ -21,12 +25,20 @@ class Request:
         """
         headers = headers if headers else cls.HEADER
         try:
-            requests.get(headers=headers, **kwargs)
+            response = requests.get(url, headers=headers, params=params)
+            return response.json()
         except Exception as e:
             raise RequestException(e.__str__())
 
     @classmethod
-    def post(cls, headers: dict = {}, **kwargs):
+    def post(
+        cls,
+        url: str,
+        headers: dict = {},
+        params: dict = {},
+        data: dict = {},
+        needsign: bool = True,
+    ) -> dict[str, Any]:
         """
         发送 POST 请求
 
@@ -34,7 +46,14 @@ class Request:
         :return:
         """
         headers = headers if headers else cls.HEADER
+        str_data = Utils.format_data(data)
+        if needsign:
+            params["_"] = str(int(time.time() * 1000))
+            params["sign"] = Utils.get_sign(str_data)
         try:
-            requests.postj(headers=headers, **kwargs)
+            response = requests.post(
+                url, headers=headers, params=params, data=str_data.encode("utf-8")
+            )
+            return response.json()
         except Exception as e:
             raise RequestException(e.__str__())

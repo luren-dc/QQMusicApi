@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "musicapi"
+name = "qqmusicapi"
 version = "0.1.0"
 description = ""
 authors = ["luren <3308862290@qq.com>"]
@@ -10,6 +10,10 @@ python = "^3.8.1"
 requests = "^2.31.0"
 click = "^8.1.3"
 flask = "^2.3.2"
+watchdog = "^3.0.0"
+
+[tool.poetry.scripts]
+app = 'qqmusicapi.app:main'
 
 [build-system]
 requires = ["poetry-core"]
