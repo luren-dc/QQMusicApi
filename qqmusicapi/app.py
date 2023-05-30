@@ -9,9 +9,10 @@ def index():
     return "<p>Hello, World!</p>"
 
 
-@app.route("/search")
-def search():
-    return Search.search("陈奕迅", search_type="song", page=1, num=10)
+@app.route("/search/<search_type>")
+def search(search_type: str = "song"):
+    return Search.search("xiaochou", search_type=search_type, page=1, num=10)
+
 
 def main():
     app.run(debug=True)
