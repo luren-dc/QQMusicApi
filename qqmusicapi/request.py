@@ -20,8 +20,10 @@ class Request:
         """
         发送 GET 请求
 
-        :param kwargs: 请求参数
-        :return:
+        :param url: 请求链接
+        :param headers: 请求头
+        :param params：请求参数
+        :return: 请求结果
         """
         headers = headers if headers else cls.HEADER
         try:
@@ -41,9 +43,12 @@ class Request:
     ) -> dict[str, Any]:
         """
         发送 POST 请求
-
-        :param kwargs: 请求参数
-        :return:
+        :param url: 请求链接
+        :param headers: 请求头
+        :param data: 请求体
+        :param params：请求参数
+        :param needsign: 是否需要sign
+        :return: 请求结果
         """
         headers = headers if headers else cls.HEADER
         str_data = Utils.format_data(data)
