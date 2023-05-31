@@ -1,12 +1,11 @@
-import this
 from typing import Any
 
 import requests
 
-from .config import QQMUSIC_API
-from ..exceptions import NumberException, TypeException, RequestException
-from ..utils import Utils
+from ..exceptions import NumberException, RequestException, TypeException
 from ..request import Request
+from ..utils import Utils
+from .config import QQMUSIC_API
 
 
 class Search:
@@ -15,14 +14,14 @@ class Search:
         "singer": 1,
         "album": 2,
         "mv": 4,
-        "playlist": 3,
+        "songlist": 3,
         "user": 8,
         "lyric": 7,
     }
 
     @classmethod
     def search(
-        cls, query: str, search_type: str, page: int = 1, num: int = 10
+        cls, query: str, search_type: str, page: int = 1, num: int = 2
     ) -> dict[str, Any]:
         """
         搜索
@@ -61,11 +60,15 @@ class Search:
             },
         }
         data = Request.post(QQMUSIC_API[0], data=data)
+        return data
         if data["code"] != 0:
             return RequestException("Wrong request")
         data = data["req_1"]["data"]["body"][search_type]["list"]
-        format_data = getattr(cls, "format_" + search_type)
-        return format_data(data)
+        try:
+            format_data = getattr(cls, "format_" + search_type)
+            return format_data(data)
+        except Exception:
+            return data
 
     @classmethod
     def format_song(cls, data: dict) -> dict[str, Any]:
@@ -81,6 +84,7 @@ class Search:
                     "songId": data["id"],
                     "songMid": data["mid"],
                     "songName": data["name"],
+                    "docid": data["docid"],
                     "tag": data["tag"],
                     "singer": data["singer"],
                     "album": data["album"],
@@ -93,6 +97,7 @@ class Search:
                         "size_320mp3": data["file"]["size_320mp3"],
                         "size_flac": data["file"]["size_flac"],
                     },
+                    "time_public": data["time_public"],
                     "vs": data["vs"],
                 }
             )
@@ -108,6 +113,28 @@ class Search:
         return {"code": 200, "data": data}
 
     @classmethod
+    def format_mv(cls, data: dict) -> dict[str, Any]:
+        """
+        格式化 mv 搜索结果
+        :param data: 格式化数据
+        :return:
+        """
+        for d in data:
+            d["mvName"] = d.pop("mv_name")
+            d["mvId"] = d.pop("mv_id")
+            d["singer"] = d.pop("singer_list")
+            d["mvPic"] = d.pop("mv_pic_url")
+            del d["singerName_hilight"]
+            del d["singerMID"]
+            del d["mvName_hilight"]
+            del d["singerid"]
+            del d["singer_name"]
+            del d["notplay"]
+            del d["singertype"]
+            del d["msg"]
+        return {"code": 200, "data": data}
+
+    @classmethod
     def format_user(cls, data: dict) -> dict[str, Any]:
         """
         格式化 singer 搜索结果
@@ -120,11 +147,11 @@ class Search:
                 {
                     "docid": data["docid"],
                     "encrypt_uin": data["encrypt_uin"],
-                    "name": data["title"],
+                    "userName": data["title"],
+                    "userPic": data["pic"],
                     "uin": data["uin"],
                     "fans_num": data["fans_num"],
                     "identify": data["identify_title"],
-                    "pic": data["pic"],
                 }
             )
         return {"code": 200, "data": n_data}
@@ -138,8 +165,10 @@ class Search:
         """
         n_data = []
         for d in data:
-            n_data.append(
-                {
-                }
-            )
-        return {"code": 200, "data": data}
+            d["singer"] = d.pop("singer_list")
+            del d["albumName_hilight"]
+            del d["singerTransName_hilight"]
+            del d["catch_song"]
+            del d["singerName_hilight"]
+            n_data.append(d)
+        return {"code": 200, "data": n_data}

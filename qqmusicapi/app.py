@@ -1,4 +1,5 @@
 from flask import Flask
+
 from qqmusicapi.api.search import Search
 
 app = Flask(__name__)
@@ -11,7 +12,7 @@ def index():
 
 @app.route("/search/<search_type>")
 def search(search_type: str = "song"):
-    return Search.search("xiaochou", search_type=search_type, page=1, num=10)
+    return Search.search("xiaochou", search_type=search_type, page=1)
 
 
 def main():
