@@ -1,10 +1,7 @@
 from typing import Any
 
-import requests
-
 from ..exceptions import NumberException, RequestException, TypeException
 from ..request import Request
-from ..utils import Utils
 from .config import QQMUSIC_API
 
 
