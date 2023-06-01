@@ -21,7 +21,7 @@ class Search:
 
     @classmethod
     def search(
-        cls, query: str, search_type: str, page: int = 1, num: int = 2
+        cls, query: str, search_type: str, page: int = 1, num: int = 10
     ) -> dict[str, Any]:
         """
         搜索
@@ -59,16 +59,13 @@ class Search:
                 },
             },
         }
-        data = Request.post(QQMUSIC_API[0], data=data)
-        return data
-        if data["code"] != 0:
-            return RequestException("Wrong request")
-        data = data["req_1"]["data"]["body"][search_type]["list"]
-        try:
-            format_data = getattr(cls, "format_" + search_type)
-            return format_data(data)
-        except Exception:
-            return data
+        response = Request.post(QQMUSIC_API[0], data=data)
+        if response["code"] != 0:
+            raise RequestException("Wrong request")
+        index = search_type if search_type != "lyric" else "song"
+        data = response["req_1"]["data"]["body"][index]["list"]
+        format_data = getattr(cls, "format_" + search_type)
+        return format_data(data)
 
     @classmethod
     def format_song(cls, data: dict) -> dict[str, Any]:
@@ -104,7 +101,50 @@ class Search:
         return {"code": 200, "data": n_data}
 
     @classmethod
+    def format_lyric(cls, data: dict) -> dict[str, Any]:
+        """
+        格式化 song 搜索结果
+        :param data: 格式化数据
+        :return:
+        """
+        n_data = []
+        for data in data:
+            n_data.append(
+                {
+                    "songId": data["id"],
+                    "songMid": data["mid"],
+                    "songName": data["name"],
+                    "docid": data["docid"],
+                    "tag": data["tag"],
+                    "singer": data["singer"],
+                    "album": data["album"],
+                    "mv": data["mv"],
+                    "vip_play": data["pay"]["pay_play"],
+                    "vip_down": data["pay"]["pay_down"],
+                    "file": {
+                        "media_mid": data["file"]["media_mid"],
+                        "size_128mp3": data["file"]["size_128mp3"],
+                        "size_320mp3": data["file"]["size_320mp3"],
+                        "size_flac": data["file"]["size_flac"],
+                    },
+                    "time_public": data["time_public"],
+                    "lyric": data["content"],
+                    "vs": data["vs"],
+                }
+            )
+        return {"code": 200, "data": n_data}
+
+    @classmethod
     def format_singer(cls, data: dict) -> dict[str, Any]:
+        """
+        格式化 singer 搜索结果
+        :param data: 格式化数据
+        :return:
+        """
+        return {"code": 200, "data": data}
+
+    @classmethod
+    def format_songlist(cls, data: dict) -> dict[str, Any]:
         """
         格式化 singer 搜索结果
         :param data: 格式化数据

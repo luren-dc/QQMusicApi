@@ -12,7 +12,7 @@ def index():
 
 @app.route("/search/<search_type>")
 def search(search_type: str = "song"):
-    return Search.search("xiaochou", search_type=search_type, page=1)
+    return Search.search("k", search_type=search_type, page=1)
 
 
 def main():
