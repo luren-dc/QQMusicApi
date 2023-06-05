@@ -66,6 +66,11 @@ class Search:
         return format_data(raw_data)
 
     @classmethod
+    def quick_search(cls,query:str) -> dict[str, Any]:
+        response = Request.get(f"https://c.y.qq.com/splcloud/fcgi-bin/smartbox_new.fcg?key={query}")
+        return {"code":0,"data":response["data"]}
+
+    @classmethod
     def format_song(cls, data: dict) -> dict[str, Any]:
         return {"code": 200, "data": cls._extract_song_data(data)}
 
