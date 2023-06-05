@@ -42,7 +42,7 @@ def songlist(songlist_id: int):
         creator_info = int(request.args.get("creator_info", 1))
     except ValueError:
         creator_info = 1
-    return SongList.get_detail(songlist_id, only_song, creator_info)
+    return SongList.get_detail(int(songlist_id), only_song, creator_info)
 
 
 def main():
