@@ -1,5 +1,6 @@
 import hashlib
 import json
+import random
 import time
 from random import randint
 
@@ -124,3 +125,13 @@ class Utils:
         a = time.time()
         r = round(a * 1000) % (24 * 60 * 60 * 1000)
         return str(t + n + r)
+
+    @staticmethod
+    def get_guid() -> str:
+        """
+        生成 guid
+        :return: guid
+        """
+        a = int(time.time() * 1000 % 1000)
+        guid = str((random.randint(0, 2147483647) * a) % 10000000000)
+        return guid
