@@ -3,6 +3,8 @@ from flask import Flask
 from qqmusicapi.api.search import Search
 from flask import request
 
+from qqmusicapi.api.songlist import SongList
+
 app = Flask(__name__)
 
 
@@ -23,6 +25,11 @@ def search(search_type: str):
     except ValueError:
         page = 1
     return Search.search(query, search_type=search_type, page=page, num=num)
+
+
+@app.route("/songlist/<songlist_id>", methods=["GET"])
+def songlist(songlist_id: int):
+    return SongList.get_detail(songlist_id)
 
 
 def main():
