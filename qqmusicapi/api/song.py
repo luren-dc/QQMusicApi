@@ -1,7 +1,10 @@
+import random
 from typing import Any
-from ..utils import Utils
-from ..exceptions import TypeException
+
+from ..exceptions import ParmasException, TypeException
 from ..request import Request
+from ..utils import Utils
+from .config import QQMUSIC_API
 
 
 class Song:
@@ -23,34 +26,25 @@ class Song:
             "s": "F000",
             "e": ".flac",
         },
-        "test": {
-            "s": "RS02",
-            "e": ".mp3",
-        },
     }
 
     @classmethod
-    def url(
-        cls, song_mid: list[str], vs: list[str], file_type: str = "128"
-    ) -> dict[str, Any]:
+    def url(cls, song_mid: list[str], file_type: str = "128") -> dict[str, Any]:
         """
         获取歌曲链接
         :param song_mid: 歌曲mid
-        :param vs: 获取试听歌曲所需
-        :param file_type: 128/320/flac/test
+        :param file_type: 128/320/flac/m4a
         :return:
         """
+        if not song_mid:
+            raise ParmasException("No mid")
         try:
             file_info = cls.file_type[file_type]
         except KeyError:
             raise TypeException("Wrong file type")
-        if file_type == "test":
-            file_name = [f"{file_info['s']}{_}{file_info['e']}" for _ in vs]
-            mid = [vs[i : i + 100] for i in range(0, len(vs), 100)]
-        else:
-            file_name = [f"{file_info['s']}{_}{_}{file_info['e']}" for _ in song_mid]
-            mid = [song_mid[i : i + 100] for i in range(0, len(song_mid), 100)]
-        for mid in mid:
+        mid = [song_mid[i : i + 100] for i in range(0, len(song_mid), 100)]
+        urls = {}
+        for m in mid:
             data = {
                 "comm": {
                     "cv": 4747474,
@@ -62,19 +56,24 @@ class Song:
                     "platform": "yqq.json",
                     "needNewCode": 0,
                 },
-                "req_0": {
+                "req_1": {
                     "module": "vkey.GetVkeyServer",
                     "method": "CgiGetVkey",
                     "param": {
                         "filename": [
-                            f"{file_info['s']}{_}{_}{file_info['e']}" for _ in song_mid
+                            f"{file_info['s']}{_}{_}{file_info['e']}" for _ in mid
                         ],
                         "guid": Utils.get_guid(),
-                        "songmid": ["001FrXCA2zxByt"],
-                        "songtype": [0],
+                        "songmid": m,
+                        "songtype": [0 for _ in mid],
                         "uin": "0",
                         "loginflag": 1,
                         "platform": "20",
                     },
                 },
             }
+            response = Request.post(QQMUSIC_API[0], data=data)
+            sip = random.choice(response["req_1"]["data"]["sip"])
+            for data in response["req_1"]["data"]["midurlinfo"]:
+                urls[data["songmid"]] = sip + data["purl"] if data["purl"] else -1
+        return {"code": 200, "data": urls}

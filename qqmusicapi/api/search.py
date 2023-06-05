@@ -1,5 +1,11 @@
 from typing import Any
-from ..exceptions import NumberException, RequestException, TypeException
+
+from ..exceptions import (
+    NumberException,
+    ParmasException,
+    RequestException,
+    TypeException,
+)
 from ..request import Request
 from .config import QQMUSIC_API
 
@@ -16,7 +22,9 @@ class Search:
     }
 
     @classmethod
-    def search(cls, query: str, search_type: str, page: int = 1, num: int = 10) -> dict[str, Any]:
+    def search(
+        cls, query: str, search_type: str, page: int = 1, num: int = 10
+    ) -> dict[str, Any]:
         """
         搜索
         :param query: 搜索的关键词
@@ -26,11 +34,12 @@ class Search:
         :return: 搜索的结果
         """
         s_type = cls.SEARCH_TYPE.get(search_type, -1)
+        if not query:
+            raise ParmasException("No query")
         if s_type == -1:
             raise TypeException("Wrong search type")
         if num < 0 or page < 0:
             raise NumberException("Wrong page or number")
-
         data = {
             "comm": {
                 "ct": 11,
@@ -66,9 +75,13 @@ class Search:
         return format_data(raw_data)
 
     @classmethod
-    def quick_search(cls,query:str) -> dict[str, Any]:
-        response = Request.get(f"https://c.y.qq.com/splcloud/fcgi-bin/smartbox_new.fcg?key={query}")
-        return {"code":0,"data":response["data"]}
+    def quick_search(cls, query: str) -> dict[str, Any]:
+        if not query:
+            raise ParmasException("No query")
+        response = Request.get(
+            f"https://c.y.qq.com/splcloud/fcgi-bin/smartbox_new.fcg?key={query}"
+        )
+        return {"code": 0, "data": response["data"]}
 
     @classmethod
     def format_song(cls, data: dict) -> dict[str, Any]:
@@ -147,7 +160,7 @@ class Search:
                 "userPic": d["pic"],
                 "uin": d["uin"],
                 "fans_num": d["fans_num"],
-                "identify": d["identify_title"]
+                "identify": d["identify_title"],
             }
             for d in data
         ]

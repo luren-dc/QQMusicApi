@@ -1,7 +1,7 @@
-from typing import Any
+from typing import Any, Dict
 
-from .config import QQMUSIC_API
 from ..request import Request
+from .config import QQMUSIC_API
 
 
 class SongList:
@@ -16,7 +16,7 @@ class SongList:
         :param creator_info: 是否需要歌单创建者信息
         :return:
         """
-        data = {
+        data: Dict[str, Any] = {
             "comm": {
                 "cv": 4747474,
                 "ct": 24,
@@ -43,7 +43,7 @@ class SongList:
         }
         response = Request.post(QQMUSIC_API[0], data=data)
         data = response["req_1"]["data"]
-        dirinfo = data["dirinfo"]
+        dirinfo: Dict[str, Any] = data["dirinfo"]
         n_data = {
             "title": dirinfo["title"],
             "pic": dirinfo["picurl"],

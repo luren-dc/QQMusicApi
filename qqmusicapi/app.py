@@ -1,8 +1,7 @@
-from flask import Flask
+from flask import Flask, request
 
 from qqmusicapi.api.search import Search
-from flask import request
-
+from qqmusicapi.api.song import Song
 from qqmusicapi.api.songlist import SongList
 
 app = Flask(__name__)
@@ -15,9 +14,9 @@ def index():
 
 @app.route("/search/<search_type>", methods=["GET"])
 def search(search_type: str):
-    query = request.args.get("query", "")
+    query = request.args.get("query", None)
     try:
-        num = int(request.args.get("num", 1))
+        num = int(request.args.get("num", 10))
     except ValueError:
         num = 10
     try:
@@ -43,6 +42,14 @@ def songlist(songlist_id: int):
     except ValueError:
         creator_info = 1
     return SongList.get_detail(int(songlist_id), only_song, creator_info)
+
+
+@app.route("/song/urls")
+def get_urls():
+    mid = request.args.get("mid", [])
+    mid = mid.split(",")
+    file_type = request.args.get("filetype", "128")
+    return Song.url(mid, file_type)
 
 
 def main():
