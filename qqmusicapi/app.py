@@ -29,7 +29,15 @@ def search(search_type: str):
 
 @app.route("/songlist/<songlist_id>", methods=["GET"])
 def songlist(songlist_id: int):
-    return SongList.get_detail(songlist_id)
+    try:
+        only_song = int(request.args.get("only_song", 0))
+    except ValueError:
+        only_song = 0
+    try:
+        creator_info = int(request.args.get("creator_info", 1))
+    except ValueError:
+        creator_info = 1
+    return SongList.get_detail(songlist_id, only_song, creator_info)
 
 
 def main():
