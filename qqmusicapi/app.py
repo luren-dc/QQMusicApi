@@ -27,6 +27,11 @@ def search(search_type: str):
     return Search.search(query, search_type=search_type, page=page, num=num)
 
 
+@app.route("/quicksearch/<query>")
+def quicksearch(query: str):
+    return Search.quick_search(query)
+
+
 @app.route("/songlist/<songlist_id>", methods=["GET"])
 def songlist(songlist_id: int):
     try:
