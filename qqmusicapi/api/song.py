@@ -61,7 +61,7 @@ class Song:
                     "method": "CgiGetVkey",
                     "param": {
                         "filename": [
-                            f"{file_info['s']}{_}{_}{file_info['e']}" for _ in mid
+                            f"{file_info['s']}{_}{_}{file_info['e']}" for _ in m
                         ],
                         "guid": Utils.get_guid(),
                         "songmid": m,
