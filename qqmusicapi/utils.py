@@ -135,3 +135,33 @@ class Utils:
         a = int(time.time() * 1000 % 1000)
         guid = str((random.randint(0, 2147483647) * a) % 10000000000)
         return guid
+
+    @staticmethod
+    def get_uuid() -> str:
+        """
+        生成随机 UUID.
+        :return: UUID
+        """
+        uuid_string = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
+
+        def callback(c):
+            r = random.randint(0, 15)
+            v = r if c == "x" else (r & 0x3 | 0x8)
+            return hex(v)[2:]
+
+        return "".join(
+            [callback(c) if c in ["x", "y"] else c for c in uuid_string]
+        ).upper()
+
+    @staticmethod
+    def get_ptqrtoken(qrsig: str) -> int:
+        """
+        计算 ptqrtoken
+
+        :param qrsig: 签名
+        :return: ptqrtoken
+        """
+        e = 0
+        for c in qrsig:
+            e += (e << 5) + ord(c)
+        return 2147483647 & e
