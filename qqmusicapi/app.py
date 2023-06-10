@@ -1,10 +1,19 @@
 from flask import Flask, request
+from flask_caching import Cache
 
 from qqmusicapi.api.search import Search
 from qqmusicapi.api.song import Song
 from qqmusicapi.api.songlist import SongList
 
 app = Flask(__name__)
+cache = Cache(
+    config={
+        "CACHE_TYPE": "FileSystemCache",
+        "CACHE_DIR": "../.cache",
+        "CACHE_DEFAULT_TIMEOUT": 300,
+    }
+)
+cache.init_app(app)
 
 
 @app.route("/")
@@ -13,6 +22,7 @@ def index():
 
 
 @app.route("/search/<search_type>", methods=["GET"])
+@cache.cached(query_string=True)
 def search(search_type: str):
     query = request.args.get("query", None)
     try:
@@ -27,11 +37,13 @@ def search(search_type: str):
 
 
 @app.route("/quicksearch/<query>")
+@cache.cached(query_string=True)
 def quicksearch(query: str):
     return Search.quick_search(query)
 
 
 @app.route("/songlist/<songlist_id>", methods=["GET"])
+@cache.cached(query_string=True)
 def songlist(songlist_id: int):
     try:
         only_song = int(request.args.get("only_song", 0))
@@ -45,6 +57,7 @@ def songlist(songlist_id: int):
 
 
 @app.route("/song/urls")
+@cache.cached(query_string=True)
 def get_urls():
     mid = request.args.get("mid", [])
     mid = mid.split(",")
