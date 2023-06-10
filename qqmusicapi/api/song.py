@@ -1,7 +1,7 @@
 import random
 from typing import Any
 
-from ..exceptions import ParmasException, TypeException
+from ..exceptions import ParamsException, TypeException
 from ..request import Request
 from ..utils import Utils
 from .config import QQMUSIC_API
@@ -37,11 +37,11 @@ class Song:
         :return:
         """
         if not song_mid:
-            raise ParmasException("No mid")
+            raise ParamsException("No mid")
         try:
             file_info = cls.file_type[file_type]
         except KeyError:
-            raise TypeException("Wrong file type")
+            raise TypeException("错误的文件类型")
         mid = [song_mid[i : i + 100] for i in range(0, len(song_mid), 100)]
         urls = {}
         for m in mid:

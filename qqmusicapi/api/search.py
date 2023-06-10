@@ -2,7 +2,7 @@ from typing import Any
 
 from ..exceptions import (
     NumberException,
-    ParmasException,
+    ParamsException,
     RequestException,
     TypeException,
 )
@@ -35,11 +35,11 @@ class Search:
         """
         s_type = cls.SEARCH_TYPE.get(search_type, -1)
         if not query:
-            raise ParmasException("No query")
+            raise ParamsException("无搜索关键词")
         if s_type == -1:
-            raise TypeException("Wrong search type")
+            raise TypeException("错误的搜索类型")
         if num < 0 or page < 0:
-            raise NumberException("Wrong page or number")
+            raise NumberException("错误的页数或每页数量")
         data = {
             "comm": {
                 "ct": 11,
@@ -77,7 +77,7 @@ class Search:
     @classmethod
     def quick_search(cls, query: str) -> dict[str, Any]:
         if not query:
-            raise ParmasException("No query")
+            raise ParamsException("No query")
         response = Request.get(
             f"https://c.y.qq.com/splcloud/fcgi-bin/smartbox_new.fcg?key={query}"
         )

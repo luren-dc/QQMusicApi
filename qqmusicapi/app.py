@@ -4,6 +4,7 @@ from flask_caching import Cache
 from qqmusicapi.api.search import Search
 from qqmusicapi.api.song import Song
 from qqmusicapi.api.songlist import SongList
+from qqmusicapi.api.user import User
 
 app = Flask(__name__)
 cache = Cache(
@@ -65,8 +66,24 @@ def get_urls():
     return Song.url(mid, file_type)
 
 
+@app.route("/user/login")
+def login():
+    login_type = request.args.get("type", "get_qrcode")
+    pt_login_sig = request.args.get("pt_login_sig", None)
+    qrsig = request.args.get("qrsig", None)
+    refresh_url = request.args.get("refresh_url", None)
+    uin = request.args.get("uin", None)
+    return User.login(
+        login_type,
+        pt_login_sig=pt_login_sig,
+        qrsig=qrsig,
+        refresh_url=refresh_url,
+        uin=uin,
+    )
+
+
 def main():
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0")
 
 
 if __name__ == "__main__":
