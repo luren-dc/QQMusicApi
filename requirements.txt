@@ -1,6 +1,9 @@
 blinker==1.6.2 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:4afd3de66ef3a9f8067559fb7a1cbe555c17dcbe15971b05d1b625c3e7abe213 \
     --hash=sha256:c3d739772abb7bc2860abf5f2ec284223d9ad5c76da018234f6f50d6f31ab1f0
+cachelib==0.9.0 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
+    --hash=sha256:38222cc7c1b79a23606de5c2607f4925779e37cdcea1c2ad21b8bae94b5425a5 \
+    --hash=sha256:811ceeb1209d2fe51cd2b62810bd1eccf70feba5c52641532498be5c675493b3
 certifi==2023.5.7 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:0f0d56dc5a6ad56fd4ba36484d6cc34451e1c6548c61daad8c320169f91eddc7 \
     --hash=sha256:c6c2e98f5c7869efca1f8916fed228dd91539f9f1b444c314c06eef02980c716
@@ -86,6 +89,9 @@ click==8.1.3 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" 
 colorama==0.4.6 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" and platform_system == "Windows" \
     --hash=sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44 \
     --hash=sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6
+flask-caching==2.0.2 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
+    --hash=sha256:19571f2570e9b8dd9dd9d2f49d7cbee69c14ebe8cc001100b1eb98c379dd80ad \
+    --hash=sha256:24b60c552d59a9605cc1b6a42c56cdb39a82a28dab4532bbedb9222ae54ecb4e
 flask==2.3.2 ; python_full_version >= "3.8.1" and python_full_version < "4.0.0" \
     --hash=sha256:77fd4e1249d8c9923de34907236b747ced06e5467ecac1a7bb7115ae0e9670b0 \
     --hash=sha256:8c2f9abd47a9e8df7f0c3f091ce9497d011dc3b31effcf4c85a6e2b50f4114ef
