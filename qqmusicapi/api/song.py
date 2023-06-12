@@ -37,11 +37,11 @@ class Song:
         :return:
         """
         if not song_mid:
-            raise ParamsException("No mid")
+            raise ParamsException("缺少 mid")
         try:
             file_info = cls.file_type[file_type]
         except KeyError:
-            raise TypeException("错误的文件类型")
+            raise TypeException("Wrong file type")
         mid = [song_mid[i : i + 100] for i in range(0, len(song_mid), 100)]
         urls = {}
         for m in mid:

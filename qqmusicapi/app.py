@@ -1,17 +1,18 @@
-from flask import Flask, request
+from flask import Flask, request, send_file
 from flask_caching import Cache
 
+from qqmusicapi.api.login import Login
 from qqmusicapi.api.search import Search
 from qqmusicapi.api.song import Song
 from qqmusicapi.api.songlist import SongList
-from qqmusicapi.api.user import User
+from qqmusicapi.exceptions import ParamsException
 
 app = Flask(__name__)
 cache = Cache(
     config={
         "CACHE_TYPE": "FileSystemCache",
-        "CACHE_DIR": "../.cache",
-        "CACHE_DEFAULT_TIMEOUT": 300,
+        "CACHE_DIR": ".cache",
+        "CACHE_DEFAULT_TIMEOUT": 500,
     }
 )
 cache.init_app(app)
@@ -25,7 +26,7 @@ def index():
 @app.route("/search/<search_type>", methods=["GET"])
 @cache.cached(query_string=True)
 def search(search_type: str):
-    query = request.args.get("query", None)
+    query = request.args.get("query", "")
     try:
         num = int(request.args.get("num", 10))
     except ValueError:
@@ -47,39 +48,48 @@ def quicksearch(query: str):
 @cache.cached(query_string=True)
 def songlist(songlist_id: int):
     try:
-        only_song = int(request.args.get("only_song", 0))
+        only_song = int(request.args.get("onlySong", 0))
     except ValueError:
         only_song = 0
     try:
-        creator_info = int(request.args.get("creator_info", 1))
+        creator_info = int(request.args.get("creatorInfo", 1))
     except ValueError:
         creator_info = 1
     return SongList.get_detail(int(songlist_id), only_song, creator_info)
 
 
-@app.route("/song/urls")
+@app.route("/song/urls", methods=["GET"])
 @cache.cached(query_string=True)
 def get_urls():
-    mid = request.args.get("mid", [])
+    mid = request.args.get("mid", "")
     mid = mid.split(",")
     file_type = request.args.get("filetype", "128")
     return Song.url(mid, file_type)
 
 
-@app.route("/user/login")
-def login():
-    login_type = request.args.get("type", "get_qrcode")
-    pt_login_sig = request.args.get("pt_login_sig", None)
-    qrsig = request.args.get("qrsig", None)
-    refresh_url = request.args.get("refresh_url", None)
-    uin = request.args.get("uin", None)
-    return User.login(
-        login_type,
-        pt_login_sig=pt_login_sig,
-        qrsig=qrsig,
-        refresh_url=refresh_url,
-        uin=uin,
-    )
+@app.route("/login/<login_type>", methods=["GET"])
+def login(login_type: str):
+    if login_type == "get_qrcode":
+        lg = Login()
+        login_id = lg.generate_login_id()
+        while cache.get(login_id):
+            login_id = lg.generate_login_id()
+        data = lg.get_qrcode()
+        cache.set(login_id, lg)
+        return data
+    else:
+        login_id = request.args.get("loginID", "")
+        if not login_id:
+            raise ParamsException("缺少 loginID")
+        lg = cache.get(login_id)
+        if not lg:
+            raise ParamsException("loginID 无效")
+        if login_type == "qrcode":
+            return send_file(lg.img, mimetype="image/png")
+        else:
+            data = lg.login(login_type)
+            cache.set(login_id, lg)
+            return data
 
 
 def main():
