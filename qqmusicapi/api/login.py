@@ -12,9 +12,17 @@ from qqmusicapi.utils import Utils
 
 
 class Login:
-    def __init__(self):
+    LOGIN_TYPE = ["QQ", "WX"]
+
+    def __init__(self, login_type: str = "QQ"):
+        if login_type not in self.LOGIN_TYPE:
+            raise TypeException("登录类型错误")
+        self.login_id = ""
+        self.pt_login_sig = ""
+        self.login_type = login_type
         self.refresh_url = ""
         self.qrsig = ""
+        self.uuid = ""
         self.key = ""
         self.uin = 0
         self.keyst = ""
@@ -28,46 +36,81 @@ class Login:
             }
         )
 
-    def login(self, login_type: str) -> dict[str, Any]:
+    def login(self, login: str) -> dict[str, Any]:
+        """
+        登录
+        :param login: 登录方法
+        :param login_type: 登录类型
+        :return:
+        """
         try:
-            login_method = getattr(self, login_type)
+            login_method = getattr(self, login)
             return login_method()
         except AttributeError:
             raise TypeException("登录方法错误")
 
-    def get_qrcode(self) -> BytesIO:
-        params = {
-            "appid": "716027609",
-            "daid": "383",
-            "style": "33",
-            "login_text": "登录",
-            "hide_title_bar": "1",
-            "hide_border": "1",
-            "target": "self",
-            "s_url": "https://graph.qq.com/oauth2.0/login_jump",
-            "pt_3rd_aid": "100497308",
-            "pt_feedback_link": "https://support.qq.com/products/77942?customInfo=.appid100497308",
-            "theme": "2",
-            "verify_theme": "",
-        }
-        self.session.get("https://xui.ptlogin2.qq.com/cgi-bin/xlogin", params=params)
-        params = {
-            "appid": "716027609",
-            "e": "2",
-            "l": "M",
-            "s": "3",
-            "d": "72",
-            "v": "4",
-            "t": str(random.random()),
-            "daid": "383",
-            "pt_3rd_aid": "100497308",
-        }
-        response = self.session.get(
-            "https://ssl.ptlogin2.qq.com/ptqrshow", params=params
-        )
+    def get_qrcode(self) -> BytesIO | str:
+        if self.login_type == "QQ":
+            params = {
+                "appid": "716027609",
+                "daid": "383",
+                "style": "33",
+                "login_text": "登录",
+                "hide_title_bar": "1",
+                "hide_border": "1",
+                "target": "self",
+                "s_url": "https://graph.qq.com/oauth2.0/login_jump",
+                "pt_3rd_aid": "100497308",
+                "pt_feedback_link": "https://support.qq.com/products/77942?customInfo=.appid100497308",
+                "theme": "2",
+                "verify_theme": "",
+            }
+            self.session.get(
+                "https://xui.ptlogin2.qq.com/cgi-bin/xlogin", params=params
+            )
+            params = {
+                "appid": "716027609",
+                "e": "2",
+                "l": "M",
+                "s": "3",
+                "d": "72",
+                "v": "4",
+                "t": str(random.random()),
+                "daid": "383",
+                "pt_3rd_aid": "100497308",
+            }
+            response = self.session.get(
+                "https://ssl.ptlogin2.qq.com/ptqrshow", params=params
+            )
+            self.pt_login_sig = self.session.cookies.get("pt_login_sig")
+            self.qrsig = self.session.cookies.get("qrsig")
+        elif self.login_type == "WX":
+            params = {
+                "appid": "wx48db31d50e334801",
+                "redirect_uri": "https://y.qq.com/portal/wx_redirect.html?login_type=2&surl=https://y.qq.com/",
+                "response_type": "code",
+                "scope": "snsapi_login",
+                "state": "STATE",
+                "href": "https://y.qq.com/mediastyle/music_v17/src/css/popup_wechat.css#wechat_redirect",
+            }
+            response = self.session.get(
+                "https://open.weixin.qq.com/connect/qrconnect", params=params
+            )
+            self.uuid = re.findall(r"uuid=(.+?)\"", response.text)[0]
+            headers = self.session.headers
+            headers.update(
+                {
+                    "referer": "https://open.weixin.qq.com/connect/qrconnect?appid=wx48db31d50e334801"
+                    "&redirect_uri=https%3A%2F%2Fy.qq.com%2Fportal%2Fwx_redirect.html%3Flogin_type%3D2%26surl%3Dhttps%3A%2F%2Fy.qq.com%2F"
+                    "&response_type=code&scope=snsapi_login&state=STATE"
+                    "&href=https%3A%2F%2Fy.qq.com%2Fmediastyle%2Fmusic_v17%2Fsrc%2Fcss%2Fpopup_wechat.css%23wechat_redirect"
+                }
+            )
+            response = self.session.get(
+                f"https://open.weixin.qq.com/connect/qrcode/{self.uuid}",
+                headers=headers,
+            )
         img = BytesIO(response.content)
-        self.pt_login_sig = self.session.cookies.get("pt_login_sig")
-        self.qrsig = self.session.cookies.get("qrsig")
         return img
 
     def check_state(self) -> dict[str, Any]:
@@ -178,7 +221,7 @@ class Login:
                 "param": {"code": code},
             },
         }
-        response = self.session.post(
+        self.session.post(
             "https://u.y.qq.com/cgi-bin/musicu.fcg",
             data=Utils.format_data(data),
             headers=headers,

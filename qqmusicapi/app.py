@@ -69,16 +69,17 @@ def get_urls():
     return Song.url(mid, file_type)
 
 
-@app.route("/login/<login_type>", methods=["GET"])
-def login(login_type: str):
-    if login_type == "get_login_id":
-        lg = Login()
+@app.route("/login/<login_method>", methods=["GET"])
+def login(login_method: str):
+    if login_method == "get_login_id":
+        login_type = request.args.get("type", "QQ")
+        lg = Login(login_type)
         login_id = lg.get_login_id()
         while cache.get(login_id):
             login_id = lg.get_login_id()
         cache.set(login_id, lg)
         cache.set(login_id + "time", time.time())
-        return {"code": 200, "data": {"loginID": login_id}}
+        return {"code": 200, "data": {"loginID": login_id, "loginType": lg.login_type}}
     else:
         login_id = request.args.get("loginID", "")
         if not login_id:
@@ -89,10 +90,13 @@ def login(login_type: str):
         if (not lg) or (time.time() - id_time) > 400:
             print(time.time() - id_time)
             raise ParamsException("loginID 无效")
-        if login_type == "get_qrcode":
-            data = send_file(lg.get_qrcode(), mimetype="image/png")
+        if login_method == "get_qrcode":
+            data = send_file(
+                lg.get_qrcode(),
+                mimetype="image/png" if lg.login_type == "QQ" else "image/jpeg",
+            )
         else:
-            data = lg.login(login_type)
+            data = lg.login(login_method)
         cache.set(login_id, lg)
         return data
 
