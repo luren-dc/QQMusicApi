@@ -66,8 +66,7 @@ class Search:
 
         response = Request.post(QQMUSIC_API[0], data=data)
         if response["code"] != 0:
-            raise RequestException("Wrong request")
-
+            raise RequestException("服务器处理错误")
         index = search_type if search_type != "lyric" else "song"
         raw_data = response["req_1"]["data"]["body"][index]["list"]
         format_data = getattr(cls, f"format_{search_type}")
@@ -77,7 +76,7 @@ class Search:
     @classmethod
     def quick_search(cls, query: str) -> dict[str, Any]:
         if not query:
-            raise ParamsException("No query")
+            raise ParamsException("无搜索关键词")
         response = Request.get(
             f"https://c.y.qq.com/splcloud/fcgi-bin/smartbox_new.fcg?key={query}"
         )

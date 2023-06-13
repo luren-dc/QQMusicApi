@@ -1,8 +1,8 @@
-import base64
 import random
 import re
 import time
 import uuid
+from io import BytesIO
 from typing import Any
 
 import requests
@@ -13,6 +13,11 @@ from qqmusicapi.utils import Utils
 
 class Login:
     def __init__(self):
+        self.refresh_url = ""
+        self.qrsig = ""
+        self.key = ""
+        self.uin = 0
+        self.keyst = ""
         self.session = requests.session()
         self.session.headers.update(
             {
@@ -30,7 +35,7 @@ class Login:
         except AttributeError:
             raise TypeException("登录方法错误")
 
-    def get_qrcode(self) -> dict[str, Any]:
+    def get_qrcode(self) -> BytesIO:
         params = {
             "appid": "716027609",
             "daid": "383",
@@ -60,19 +65,10 @@ class Login:
         response = self.session.get(
             "https://ssl.ptlogin2.qq.com/ptqrshow", params=params
         )
-        from io import BytesIO
-
-        self.img = BytesIO(response.content)
+        img = BytesIO(response.content)
         self.pt_login_sig = self.session.cookies.get("pt_login_sig")
         self.qrsig = self.session.cookies.get("qrsig")
-        base64_img = base64.b64encode(response.content).decode("utf-8")
-        return {
-            "code": 200,
-            "data": {
-                "img": f"data:image/png;base64,{base64_img}",
-                "loginID": self.login_id,
-            },
-        }
+        return img
 
     def check_state(self) -> dict[str, Any]:
         if not self.qrsig:
@@ -108,23 +104,31 @@ class Login:
             state = 3
         else:
             state = 0
-            self.uin = re.findall(r"&uin=(.+?)&service", response.text)[0]
+            uin = re.findall(r"&uin=(.+?)&service", response.text)[0]
             self.refresh_url = re.findall(r"'(https:.*?)'", response.text)[0]
             return {
                 "code": 200,
                 "data": {
                     "state": state,
-                    "uin": self.uin,
-                    "refresh_url": self.refresh_url,
+                    "uin": uin,
                 },
             }
         return {"code": 200, "data": {"state": state}}
 
     def get_cookie(self) -> dict[str, Any]:
         if not self.refresh_url:
-            raise ParamsException("未确定登录")
-        self.session.get(self.refresh_url, allow_redirects=False, verify=False)
-        self.g_tk = Utils.get_token(self.session.cookies.get("p_skey"))
+            raise ParamsException("未登录")
+        if self.key:
+            return {
+                "code": 200,
+                "data": {
+                    "uin": self.uin,
+                    "qqmusic_key": self.key,
+                    "qm_keyst": self.keyst,
+                },
+            }
+        self.session.get(self.refresh_url, allow_redirects=False)
+        g_tk = Utils.get_token(self.session.cookies.get("p_skey"))
         params = {
             "Referer": "https://graph.qq.com/oauth2.0/show?which=Login&display=pc&response_type=code&client_id"
             "=100497308&redirect_uri=https://y.qq.com/portal/wx_redirect.html?login_type=1&surl=https"
@@ -144,7 +148,7 @@ class Login:
             "src": "1",
             "update_auth": "1",
             "openapi": "80901010",
-            "g_tk": self.g_tk,
+            "g_tk": g_tk,
             "auth_time": str(int(time.time())),
             "ui": Utils.get_uuid(),
         }
@@ -179,14 +183,22 @@ class Login:
             data=Utils.format_data(data),
             headers=headers,
         )
-        self.qm_skey = self.session.cookies.get("qqmusic_key")
-        self.g_tk = Utils.get_token(self.qm_skey)
+        cookies = requests.utils.dict_from_cookiejar(self.session.cookies)
+        self.uin = cookies["uin"]
+        self.key = cookies["qqmusic_key"]
+        self.keyst = cookies["qm_keyst"]
+
         return {
             "code": 200,
-            "data": requests.utils.dict_from_cookiejar(self.session.cookies),
+            "data": {
+                "uin": self.uin,
+                "qqmusic_key": self.key,
+                "qm_keyst": self.keyst,
+                "cooke": cookies,
+            },
         }
 
-    def generate_login_id(self) -> str:
+    def get_login_id(self) -> str:
         self.login_id = str(uuid.uuid4())
         self.login_id = self.login_id.replace("-", "")
         return self.login_id

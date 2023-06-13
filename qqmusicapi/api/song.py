@@ -8,7 +8,6 @@ from .config import QQMUSIC_API
 
 
 class Song:
-
     file_type = {
         "m4a": {
             "s": "C400",

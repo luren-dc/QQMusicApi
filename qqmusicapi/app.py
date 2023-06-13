@@ -1,3 +1,5 @@
+import time
+
 from flask import Flask, request, send_file
 from flask_caching import Cache
 
@@ -12,7 +14,7 @@ cache = Cache(
     config={
         "CACHE_TYPE": "FileSystemCache",
         "CACHE_DIR": ".cache",
-        "CACHE_DEFAULT_TIMEOUT": 500,
+        "CACHE_DEFAULT_TIMEOUT": 300,
     }
 )
 cache.init_app(app)
@@ -69,27 +71,30 @@ def get_urls():
 
 @app.route("/login/<login_type>", methods=["GET"])
 def login(login_type: str):
-    if login_type == "get_qrcode":
+    if login_type == "get_login_id":
         lg = Login()
-        login_id = lg.generate_login_id()
+        login_id = lg.get_login_id()
         while cache.get(login_id):
-            login_id = lg.generate_login_id()
-        data = lg.get_qrcode()
+            login_id = lg.get_login_id()
         cache.set(login_id, lg)
-        return data
+        cache.set(login_id + "time", time.time())
+        return {"code": 200, "data": {"loginID": login_id}}
     else:
         login_id = request.args.get("loginID", "")
         if not login_id:
             raise ParamsException("缺少 loginID")
         lg = cache.get(login_id)
-        if not lg:
+        id_time = cache.get(login_id + "time")
+        id_time = id_time if id_time else 0
+        if (not lg) or (time.time() - id_time) > 400:
+            print(time.time() - id_time)
             raise ParamsException("loginID 无效")
-        if login_type == "qrcode":
-            return send_file(lg.img, mimetype="image/png")
+        if login_type == "get_qrcode":
+            data = send_file(lg.get_qrcode(), mimetype="image/png")
         else:
             data = lg.login(login_type)
-            cache.set(login_id, lg)
-            return data
+        cache.set(login_id, lg)
+        return data
 
 
 def main():
