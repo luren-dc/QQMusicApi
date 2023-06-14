@@ -36,4 +36,4 @@ class RequestException(QQMusicException):
 
 class ParamsException(QQMusicException):
     def __init__(self, message: str) -> None:
-        super().__init__(500, message)
+        super().__init__(400, message)

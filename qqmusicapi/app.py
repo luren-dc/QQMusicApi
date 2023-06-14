@@ -40,7 +40,7 @@ def search(search_type: str):
     return Search.search(query, search_type=search_type, page=page, num=num)
 
 
-@app.route("/quicksearch/<query>")
+@app.route("/quicksearch/<query>", methods=["GET"])
 @cache.cached(query_string=True)
 def quicksearch(query: str):
     return Search.quick_search(query)
@@ -60,11 +60,14 @@ def songlist(songlist_id: int):
     return SongList.get_detail(int(songlist_id), only_song, creator_info)
 
 
-@app.route("/song/urls", methods=["GET"])
+@app.route("/song/urls", methods=["GET", "POST"])
 @cache.cached(query_string=True)
 def get_urls():
-    mid = request.args.get("mid", "")
-    mid = mid.split(",")
+    if request.method == "GET":
+        mid = request.args.get("mid", "")
+        mid = mid.split(",")
+    elif request.method == "POST":
+        mid = request.get_json()["mid"]
     file_type = request.args.get("filetype", "128")
     return Song.url(mid, file_type)
 
@@ -103,8 +106,11 @@ def login(login_method: str):
 @app.after_request
 def after_request(response: Response):
     data = response.get_json()
-    if "code" not in data:
-        jsonify({"code": 200, "data": data})
+    try:
+        code = data["code"]
+    except KeyError:
+        return jsonify({"code": 200, "data": data})
+    response.status_code = code
     return response
 
 
