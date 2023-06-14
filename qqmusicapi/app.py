@@ -1,13 +1,13 @@
 import time
 
-from flask import Flask, request, send_file
+from flask import Flask, Response, jsonify, request, send_file
 from flask_caching import Cache
 
-from qqmusicapi.api.login import Login
+from qqmusicapi.api.login import create_login_request
 from qqmusicapi.api.search import Search
 from qqmusicapi.api.song import Song
 from qqmusicapi.api.songlist import SongList
-from qqmusicapi.exceptions import ParamsException
+from qqmusicapi.exceptions import ParamsException, QQMusicException
 
 app = Flask(__name__)
 cache = Cache(
@@ -69,17 +69,16 @@ def get_urls():
     return Song.url(mid, file_type)
 
 
+# noinspection PyUnresolvedReferences
 @app.route("/login/<login_method>", methods=["GET"])
 def login(login_method: str):
     if login_method == "get_login_id":
         login_type = request.args.get("type", "QQ")
-        lg = Login(login_type)
+        lg = create_login_request(login_type)
         login_id = lg.get_login_id()
-        while cache.get(login_id):
-            login_id = lg.get_login_id()
         cache.set(login_id, lg)
         cache.set(login_id + "time", time.time())
-        return {"code": 200, "data": {"loginID": login_id, "loginType": lg.login_type}}
+        return {"code": 200, "data": {"loginID": login_id, "loginType": login_type}}
     else:
         login_id = request.args.get("loginID", "")
         if not login_id:
@@ -99,6 +98,19 @@ def login(login_method: str):
             data = lg.login(login_method)
         cache.set(login_id, lg)
         return data
+
+
+@app.after_request
+def after_request(response: Response):
+    data = response.get_json()
+    if "code" not in data:
+        jsonify({"code": 200, "data": data})
+    return response
+
+
+@app.errorhandler(QQMusicException)
+def exception_handler(e: QQMusicException):
+    return e.json()
 
 
 def main():

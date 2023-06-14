@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Dict, List
 
 from ..exceptions import (
     NumberException,
@@ -24,7 +24,7 @@ class Search:
     @classmethod
     def search(
         cls, query: str, search_type: str, page: int = 1, num: int = 10
-    ) -> dict[str, Any]:
+    ) -> Dict[str, Any]:
         """
         搜索
         :param query: 搜索的关键词
@@ -74,7 +74,7 @@ class Search:
         return format_data(raw_data)
 
     @classmethod
-    def quick_search(cls, query: str) -> dict[str, Any]:
+    def quick_search(cls, query: str) -> Dict[str, Any]:
         if not query:
             raise ParamsException("无搜索关键词")
         response = Request.get(
@@ -83,18 +83,18 @@ class Search:
         return {"code": 0, "data": response["data"]}
 
     @classmethod
-    def format_song(cls, data: dict) -> dict[str, Any]:
-        return {"code": 200, "data": cls._extract_song_data(data)}
+    def format_song(cls, data: Dict) -> list[Dict]:
+        return cls._extract_song_data(data)
 
     @classmethod
-    def format_lyric(cls, data: dict) -> dict[str, Any]:
+    def format_lyric(cls, data: Dict) -> List[Dict]:
         formatted_data = cls._extract_song_data(data)
         for index, song in enumerate(formatted_data):
             song["lyric"] = data[index]["content"]
-        return {"code": 200, "data": formatted_data}
+        return formatted_data
 
     @staticmethod
-    def _extract_song_data(data: dict) -> list[dict]:
+    def _extract_song_data(data: Dict) -> List[Dict]:
         return [
             {
                 "songId": d["id"],
@@ -120,15 +120,15 @@ class Search:
         ]
 
     @classmethod
-    def format_singer(cls, data: dict) -> dict[str, Any]:
-        return {"code": 200, "data": data}
+    def format_singer(cls, data: Dict) -> Dict[str, Any]:
+        return data
 
     @classmethod
-    def format_songlist(cls, data: dict) -> dict[str, Any]:
-        return {"code": 200, "data": data}
+    def format_songlist(cls, data: Dict) -> Dict[str, Any]:
+        return data
 
     @classmethod
-    def format_mv(cls, data: dict) -> dict[str, Any]:
+    def format_mv(cls, data: Dict) -> List[Dict]:
         formatted_data = []
         for d in data:
             d["mvName"] = d.pop("mv_name")
@@ -147,10 +147,10 @@ class Search:
 
             formatted_data.append(d)
 
-        return {"code": 200, "data": formatted_data}
+        return formatted_data
 
     @classmethod
-    def format_user(cls, data: dict) -> dict[str, Any]:
+    def format_user(cls, data: Dict) -> List[Dict]:
         formatted_data = [
             {
                 "docid": d["docid"],
@@ -163,10 +163,10 @@ class Search:
             }
             for d in data
         ]
-        return {"code": 200, "data": formatted_data}
+        return formatted_data
 
     @classmethod
-    def format_album(cls, data: dict) -> dict[str, Any]:
+    def format_album(cls, data: Dict) -> List[Dict]:
         formatted_data = []
         for d in data:
             d["singer"] = d.pop("singer_list")
@@ -177,4 +177,4 @@ class Search:
 
             formatted_data.append(d)
 
-        return {"code": 200, "data": formatted_data}
+        return formatted_data

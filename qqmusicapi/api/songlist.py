@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from ..request import Request
 from .config import QQMUSIC_API
@@ -8,7 +8,7 @@ class SongList:
     @classmethod
     def get_detail(
         cls, songlist_id: int, only_song: int = 0, creator_info: int = 1
-    ) -> dict[str, Any]:
+    ) -> List[Dict] | Dict[str, Any]:
         """
         获取歌单详情
         :param songlist_id: 歌单id
@@ -16,34 +16,36 @@ class SongList:
         :param creator_info: 是否需要歌单创建者信息
         :return:
         """
-        data: Dict[str, Any] = {
-            "comm": {
-                "cv": 4747474,
-                "ct": 24,
-                "format": "json",
-                "inCharset": "utf-8",
-                "outCharset": "utf-8",
-                "notice": 0,
-                "platform": "yqq.json",
-                "needNewCode": 0,
-            },
-            "req_1": {
-                "module": "music.srfDissInfo.aiDissInfo",
-                "method": "uniform_get_Dissinfo",
-                "param": {
-                    "disstid": songlist_id,
-                    "userinfo": 1,
-                    "tag": 1,
-                    "orderlist": 1,
-                    "song_begin": 0,
-                    "song_num": -1,
-                    "onlysonglist": 0,
+        response = Request.post(
+            QQMUSIC_API[0],
+            data={
+                "comm": {
+                    "cv": 4747474,
+                    "ct": 24,
+                    "format": "json",
+                    "inCharset": "utf-8",
+                    "outCharset": "utf-8",
+                    "notice": 0,
+                    "platform": "yqq.json",
+                    "needNewCode": 0,
+                },
+                "req_1": {
+                    "module": "music.srfDissInfo.aiDissInfo",
+                    "method": "uniform_get_Dissinfo",
+                    "param": {
+                        "disstid": songlist_id,
+                        "userinfo": 1,
+                        "tag": 1,
+                        "orderlist": 1,
+                        "song_begin": 0,
+                        "song_num": -1,
+                        "onlysonglist": 0,
+                    },
                 },
             },
-        }
-        response = Request.post(QQMUSIC_API[0], data=data)
+        )
         data = response["req_1"]["data"]
-        dirinfo: Dict[str, Any] = data["dirinfo"]
+        dirinfo = data["dirinfo"]
         n_data = {
             "title": dirinfo["title"],
             "pic": dirinfo["picurl"],
@@ -77,6 +79,6 @@ class SongList:
         if creator_info:
             n_data["creator_info"] = dirinfo["creator"]
         if only_song:
-            return {"code": 200, "data": songlist}
+            return songlist
         else:
-            return {"code": 200, "data": n_data}
+            return n_data

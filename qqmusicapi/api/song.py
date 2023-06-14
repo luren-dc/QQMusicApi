@@ -1,5 +1,5 @@
 import random
-from typing import Any
+from typing import Any, Dict
 
 from ..exceptions import ParamsException, TypeException
 from ..request import Request
@@ -28,7 +28,7 @@ class Song:
     }
 
     @classmethod
-    def url(cls, song_mid: list[str], file_type: str = "128") -> dict[str, Any]:
+    def url(cls, song_mid: list[str], file_type: str = "128") -> Dict[Any, Any]:
         """
         获取歌曲链接
         :param song_mid: 歌曲mid
@@ -75,4 +75,4 @@ class Song:
             sip = random.choice(response["req_1"]["data"]["sip"])
             for data in response["req_1"]["data"]["midurlinfo"]:
                 urls[data["songmid"]] = sip + data["purl"] if data["purl"] else -1
-        return {"code": 200, "data": urls}
+        return urls
