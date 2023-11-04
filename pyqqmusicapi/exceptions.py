@@ -4,10 +4,6 @@ class QQMusicException(Exception):
         super().__init__(self.message)
 
 
-class GetQimeiFailedException(Exception):
-    pass
-
-
 class NotLoginedException(Exception):
     pass
 

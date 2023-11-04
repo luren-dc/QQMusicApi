@@ -2,7 +2,7 @@ import pytest
 
 
 def pytest_addoption(parser):
-    parser.addoption("--login", action="store_false", help="测试login函数")
+    parser.addoption("--login", action="store_false", help="测试登录Api")
 
 
 @pytest.fixture

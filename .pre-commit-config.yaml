@@ -34,9 +34,9 @@ repos:
     rev: 6.1.0
     hooks:
       - id: flake8
-        args: ["--exclude","__init__.py"]
+        args: ["--exclude", "__init__.py"]
   - repo: https://github.com/PyCQA/autoflake
     rev: v2.2.1
     hooks:
       - id: autoflake
-        args: [--remove-all-unused-imports, --in-place]
+        args: ["--remove-all-unused-imports", "--in-place", "--exclude", "__init__.py"]

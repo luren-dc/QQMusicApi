@@ -1,0 +1,1 @@
+from .qqmusic import QQMusic

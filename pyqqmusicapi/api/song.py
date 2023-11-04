@@ -7,7 +7,6 @@ if TYPE_CHECKING:
     from qqmusic import QQMusic
 
 from ..utils import parse_song_info, random_string, split_list
-from .playlist import PlaylistApi
 
 
 class SongApi:
@@ -16,7 +15,7 @@ class SongApi:
     parent: ClassVar[QQMusic]
 
     """
-    文件类
+    歌曲文件类型
     """
     FILE_TYPE = {
         "AI00": ".flac",  # size_new[0]
@@ -53,35 +52,51 @@ class SongApi:
         return response
 
     @staticmethod
-    async def query(
-        mid: List[str] = [],
-        id: List[int] = [],
-    ) -> List[Dict[str, Any]]:
+    async def query_by_id(id: List[int]) -> List[Dict[str, Any]]:
         """
-        根据mid或id获取歌曲信息
+        根据id获取歌曲信息
 
         Args:
-            mid: 歌曲mid
             id: 歌曲id
 
         Returns:
             歌曲信息
-
-        Raises:
-            ValueError: mid和id都为空或都不为空
         """
-        # 检查参数是否有效
-        if not (bool(mid) ^ bool(id)):
-            raise ValueError(
-                "Either mid or id should be provided, but not both or none."
-            )
-
         # 构造请求参数
         param = {
-            "ids": id or [],
-            "mids": mid or [],
-            "types": [0 for i in range(len(mid or id))],
-            "modify_stamp": [0 for i in range(len(mid or id))],
+            "ids": id,
+            "mids": [],
+            "types": [0 for i in range(len(id))],
+            "modify_stamp": [0 for i in range(len(id))],
+            "ctx": 0,
+            "client": 1,
+        }
+
+        # 发送请求数据
+        response = await SongApi.parent.get_data(
+            module="music.trackInfo.UniformRuleCtrl",
+            method="CgiGetTrackInfo",
+            param=param,
+        )
+        return [parse_song_info(song) for song in response["tracks"]]
+
+    @staticmethod
+    async def query_by_mid(mid: List[str]) -> List[Dict[str, Any]]:
+        """
+        根据mid获取歌曲信息
+
+        Args:
+            mid: 歌曲mid
+
+        Returns:
+            歌曲信息
+        """
+        # 构造请求参数
+        param = {
+            "ids": [],
+            "mids": mid,
+            "types": [0 for i in range(len(mid))],
+            "modify_stamp": [0 for i in range(len(mid))],
             "ctx": 0,
             "client": 1,
         }
@@ -96,7 +111,7 @@ class SongApi:
 
     @staticmethod
     async def url(
-        mid: List[str], filetype: str = "M500", mode: str = "play", **kwargs
+        mid: List[str], filetype: str = "M500", urltype: str = "play", **kwargs
     ) -> Dict[str, Any]:
         """
         获取歌曲链接
@@ -111,15 +126,15 @@ class SongApi:
             歌曲链接
 
         Raises:
-            ValueError: 如果文件类型或模式类型不在预定义范围内
+            ValueError: 如果文件类型或链接类型不在预定义范围内
         """
         # 检查文件类型是否有效
         if filetype not in SongApi.FILE_TYPE:
-            raise ValueError(f"Invalid filetype: {filetype}")
+            raise ValueError(f"非法文件类型: {filetype}")
 
         # 检查模式类型是否有效
-        if mode not in ["play", "download"]:
-            raise ValueError(f"Invalid mode: {mode}")
+        if urltype not in ["play", "download"]:
+            raise ValueError(f"非法链接类型: {urltype}")
 
         # 确保mid列表长度不大于100
         mids_list = split_list(mid, 100)
@@ -128,7 +143,7 @@ class SongApi:
         file_type = SongApi.FILE_TYPE[filetype]
 
         # 根据模式类型选择请求模块和方法
-        if mode == "play":
+        if urltype == "play":
             module = "music.vkey.GetVkey"
             method = "UrlGetVkey"
         else:
@@ -305,21 +320,3 @@ class SongApi:
             param={"SongID": id, "Pos": 1, "GetFollow": 0},
         )
         return response["Lst"]
-
-    @staticmethod
-    async def collect(id: List[int], op: int = 0, **kwargs) -> bool:
-        """
-        收藏歌曲
-
-        Args:
-            id: 歌曲ID
-            op: 0：收藏 1：取消收藏
-
-        Returns:
-            是否成功
-        """
-        if not op:
-            response = await PlaylistApi.add(201, id, **kwargs)
-        else:
-            response = await PlaylistApi.remove(201, id, **kwargs)
-        return response

@@ -4,7 +4,7 @@ import json
 from typing import TYPE_CHECKING, Any, ClassVar, Dict, List
 
 if TYPE_CHECKING:
-    from qqmusic import QQMusic
+    from ..qqmusic import QQMusic
 
 from ..utils import filter_data, parse_song_info, random_searchID
 
@@ -20,7 +20,7 @@ class SearchApi:
         综合搜索
 
         Args:
-            keyword: 查询关键词
+            keyword: 关键词
             highlight: 高亮
 
         Returns:
@@ -58,7 +58,7 @@ class SearchApi:
             "mv": mv,
             "user": user,
             "audio": audio,
-            "audio_song": audio_song,
+            "audioSong": audio_song,
         }
 
     @staticmethod
@@ -67,7 +67,7 @@ class SearchApi:
         快速搜索
 
         Args:
-            keyword: 查询关键词
+            keyword: 关键词
 
         Returns:
             包含专辑，歌手，歌曲的简略信息
@@ -135,10 +135,18 @@ class SearchApi:
         搜索
 
         Args:
-            keyword: 查询关键词
+            keyword: 关键词
             query_type:
                 搜索类型
-                song = 0 singer = 1 album = 2 playlist = 3 mv = 4 lyric = 7 user = 8 audio = 15 audio_song = 18
+                song：0 不支持返回数量
+                singer：1
+                album：2
+                songlist：3
+                mv：4
+                lyric：7
+                user：8
+                audio：15
+                audio_song：18
             num: 返回数量
             page: 返回页数
             selectors: 选择器
@@ -196,8 +204,18 @@ class SearchApi:
         获取搜索选择器
 
         Args:
-            keyword: 查询关键词
-            query_type: 搜索类型 song = 0 singer = 1 album = 2 songlist = 3 mv = 4 lyric = 7 user = 8 audio = 15 audio_song = 18
+            keyword: 关键词
+            query_type:
+                搜索类型
+                song：0
+                singer：1
+                album：2
+                songlist：3
+                mv：4
+                lyric：7
+                user：8
+                audio：15
+                audio_song：18
 
         Returns:
             搜索选择器
@@ -207,7 +225,7 @@ class SearchApi:
         """
         # 确保搜索类型正确
         if query_type not in [0, 1, 2, 3, 4, 7, 8, 15, 18, 22]:
-            raise ValueError("Search type error")
+            raise ValueError("搜索类型错误")
 
         response = await SearchApi.parent.get_data(
             module="music.search.SearchCgiService",

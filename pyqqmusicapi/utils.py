@@ -133,32 +133,7 @@ def parse_song_info(song_info: Dict) -> Dict:
 
 
 def filter_data(data: Dict) -> Dict:
-    keys = [
-        "relainfo",
-        "identity",
-        "iconurl",
-        "page_rank",
-        "settleIn",
-        "is_intervene",
-        "isFollow",
-        "pic_icon",
-        "hotness",
-        "audio_play",
-        "hotness_desc",
-        "smallIcons",
-        "pay",
-        "notplay",
-        "new_video_switch",
-        "msg",
-        "mid_desc",
-        "auto_play",
-        "watchtype",
-        "watchid",
-        "video_switch",
-        "video_pay",
-        "pmid",
-        "track_id",
-    ]
+    keys = [""]
     for key in keys:
         data.pop(key, "")
     return data

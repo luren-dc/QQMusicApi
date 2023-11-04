@@ -1,4 +1,4 @@
-from qqmusicapi.qimei import Qimei
+from pyqqmusicapi.qimei import Qimei
 
 
 def test_get_qimei():

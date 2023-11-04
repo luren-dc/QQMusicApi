@@ -9,24 +9,21 @@ from typing import TYPE_CHECKING, ClassVar, Dict, Optional
 import aiohttp
 
 if TYPE_CHECKING:
-    from qqmusic import QQMusic
+    from ..qqmusic import QQMusic
 
 from ..utils import get_ptqrtoken, get_token, random_uuid
 
 
 class Login(ABC):
     parent: ClassVar[QQMusic]
-    token: Dict
 
     def __init__(self) -> None:
         super().__init__()
-        self.musicid: Optional[str] = None
-        self.url: Optional[str] = None
+        self.musicid = ""
+        self.auth_url = ""
+        self.token: Dict = {}
 
     async def __aenter__(self):
-        """
-        异步上下文管理器
-        """
         self.session = aiohttp.ClientSession(
             headers={
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -38,9 +35,6 @@ class Login(ABC):
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        """
-        异步上下文管理器
-        """
         await self.close()
 
     async def close(self):
@@ -49,10 +43,10 @@ class Login(ABC):
     @abstractmethod
     async def qrcode(self) -> bytes:
         """
-        获取二维码图像
+        获取二维码
 
         Returns:
-            二维码二进制形式
+            二维码图像数据
         """
 
     @abstractmethod
@@ -61,7 +55,9 @@ class Login(ABC):
         发送验证码
 
         Returns:
-            返回信息0:发送成功 1:需要滑块验证 2:未知情况
+            发送成功：0
+            需要滑块验证：1
+            未知情况：2
         """
 
     @abstractmethod
@@ -70,24 +66,23 @@ class Login(ABC):
         获取二维码状态
 
         Returns:
-             二维码状态
-             二维码未失效: 1,
-             二维码认证中: 2,
-             二维码已失效: 3,
-             本次登录已被拒绝: 4,
-             登录成功: 0
+            登录成功: 0
+            二维码未失效: 1,
+            二维码认证中: 2,
+            二维码已失效: 3,
+            登录已被拒绝: 4,
         """
 
     @abstractmethod
     async def authorize(self, code: Optional[int] = None) -> bool:
         """
-        验证
+        登录验证
 
         Args:
-            code: 验证码仅在使用手机号登录时传递
+            code: 验证码
 
         Returns:
-            是否登录成功
+            验证状态
         """
 
 
@@ -95,7 +90,7 @@ class QQLogin(Login):
     """QQ登录"""
 
     async def authcode(self) -> int:
-        raise NotImplementedError("This method is not supported.")
+        raise NotImplementedError("不支持获取验证码")
 
     async def qrcode(self):
         async with self.session.get(
@@ -172,15 +167,11 @@ class QQLogin(Login):
                 break
         if state == 0:
             self.musicid = re.findall(r"&uin=(.+?)&service", data)[0]
-            self.url = re.findall(r"'(https:.*?)'", data)[0]
+            self.auth_url = re.findall(r"'(https:.*?)'", data)[0]
         return state
 
     async def authorize(self, code: Optional[int] = None) -> bool:
-        async with self.session.get(self.url, allow_redirects=False) as response:
-            """
-            因为aiohttp cookies保存机制不同，所以获取p_skey较为复杂
-            使用requests只需要response.cookies.get("p_skey")即可
-            """
+        async with self.session.get(self.auth_url, allow_redirects=False) as response:
             from http import cookies
 
             set_cookie_header = response.headers.getall("Set-Cookie", [])
@@ -191,7 +182,7 @@ class QQLogin(Login):
                     if morsel.value:
                         self.session.cookie_jar.update_cookies(cookie)
 
-        skey = self.session.cookie_jar.filter_cookies(self.url).get("p_skey").value
+        skey = self.session.cookie_jar.filter_cookies(self.auth_url).get("p_skey").value
         async with self.session.post(
             "https://graph.qq.com/oauth2.0/authorize",
             params={
@@ -225,7 +216,7 @@ class QQLogin(Login):
             module="QQConnectLogin.LoginServer",
             method="QQLogin",
             param={"code": code},
-            tmeLoginType="2",
+            login_type="2",
         )
         if res.get("musickey", ""):
             self.token = res
@@ -239,10 +230,10 @@ class WXLogin(Login):
 
     def __init__(self):
         super().__init__()
-        self.uuid: Optional[str] = None
+        self.uuid = ""
 
     async def authcode(self) -> int:
-        raise NotImplementedError("This method is not supported.")
+        raise NotImplementedError("不支持获取验证码")
 
     async def qrcode(self):
         async with self.session.get(
@@ -298,7 +289,7 @@ class WXLogin(Login):
 
             if state == 0:
                 self.musicid = re.findall(r"wx_code='(.+?)';", await response.text())[0]
-                self.url = (
+                self.auth_url = (
                     "https://y.qq.com/portal/wx_redirect.html?login_type=2"
                     f"&surl=https://y.qq.com/&code={self.musicid}&state=STATE"
                 )
@@ -314,12 +305,12 @@ class WXLogin(Login):
         return state
 
     async def authorize(self, code: Optional[int] = None) -> bool:
-        await self.session.get(self.url, allow_redirects=False)
+        await self.session.get(self.auth_url, allow_redirects=False)
         res = await self.parent.get_data(
             module="music.login.LoginServer",
             method="Login",
             param={"strAppid": "wx48db31d50e334801", "code": self.musicid},
-            tmeLoginType="1",
+            login_type="1",
         )
         if res.get("musickey", ""):
             self.token = res
@@ -333,15 +324,15 @@ class PhoneLogin(Login):
         super().__init__()
         pattern = re.compile(r"^1[3-9]\d{9}$")
         if not pattern.match(str(phone)):
-            raise ValueError("The mobile phone number is illegal.")
-        self._phone = phone
-        self.securityURL = None
+            raise ValueError("手机号非法")
+        self.phone = phone
+        self.security_url = None
 
     async def qrcode(self) -> bytes:
-        raise NotImplementedError("This method is not supported.")
+        raise NotImplementedError("不支持获取二维码")
 
     async def state(self) -> int:
-        raise NotImplementedError("This method is not supported.")
+        raise NotImplementedError("不支持获取二维码状态")
 
     async def authcode(self) -> int:
         res = await self.parent.get_data(
@@ -349,7 +340,7 @@ class PhoneLogin(Login):
             method="SendPhoneAuthCode",
             param={
                 "tmeAppid": "qqmusic",
-                "phoneNo": str(self._phone),
+                "phoneNo": str(self.phone),
                 "areaCode": "86",
             },
         )
@@ -357,7 +348,7 @@ class PhoneLogin(Login):
         if msg == "OK":
             return 0
         elif msg == "robot defense":
-            self.securityURL = res["securityURL"]
+            self.security_url = res["securityURL"]
             return 1
         else:
             return 2
@@ -366,8 +357,8 @@ class PhoneLogin(Login):
         res = await self.parent.get_data(
             module="music.login.LoginServer",
             method="Login",
-            param={"code": str(code), "phoneNo": str(self._phone), "loginMode": 1},
-            tmeLoginMethod=3,
+            param={"code": str(code), "phoneNo": str(self.phone), "loginMode": 1},
+            login_method=3,
         )
         if res.get("musickey", ""):
             self.token = res
@@ -390,11 +381,10 @@ class LoginApi:
     @staticmethod
     async def refresh(token: Dict) -> Dict:
         """
-        刷新 QQ 音乐登录状态
+        刷新登录状态
 
         Args:
-            token: 登录信息的参数字典，包括 openid、access_token、refresh_token、expired_in、
-                musicid、musickey、refresh_key 和 tmeLoginType
+            token: 登录信息包括 openid、access_token、refresh_token、expired_in、musicid、musickey、refresh_key 和 login_type
 
         Returns:
             新的登录信息
@@ -412,7 +402,7 @@ class LoginApi:
                 "refresh_key": token.get("refresh_key", ""),
                 "loginMode": 2,
             },
-            tmeLoginType=token.get("loginType", "2"),
+            login_type=token.get("loginType", "2"),
         )
         if response.get("musickey", ""):
             return response
@@ -430,7 +420,7 @@ class LoginApi:
                 QQ登录：0
                 微信登录：1
                 手机号登录：2
-            phone: 手机号
+            phone: 手机号，仅在登录类型为2（手机号登录）时需要提供
 
         Returns:
             登录对象

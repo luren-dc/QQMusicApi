@@ -5,7 +5,8 @@ import pytest
 import qrcode
 from PIL import Image
 from pyzbar.pyzbar import decode
-from qqmusicapi import QQMusic
+
+from pyqqmusicapi import QQMusic
 
 
 def show_qrcode(img_data):
@@ -37,8 +38,7 @@ async def login(type: int):
             elif state == 0:
                 break
             await asyncio.sleep(1)
-        await login.authorize()
-        print(login.token)
+        return await login.authorize()
 
 
 @pytest.mark.asyncio
