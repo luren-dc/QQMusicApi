@@ -120,7 +120,7 @@ class SongApi:
             mid: 歌曲mid
             filetype: 文件标识符
             mode: 获取类型
-            **kwargs: musicid, musickey
+            **kwargs: musicid, musickey(可选)
 
         Returns:
             歌曲链接

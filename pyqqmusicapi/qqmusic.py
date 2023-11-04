@@ -4,7 +4,7 @@ from typing import Dict
 
 import aiohttp
 
-from .api import LoginApi, SearchApi, SongApi, TopApi, set_parent
+from .api import LoginApi, MvApi, PlaylistApi, SearchApi, SongApi, TopApi, set_parent
 from .exceptions import NotLoginedException, RequestException
 from .qimei import Qimei
 from .utils import random_string
@@ -21,7 +21,7 @@ class QQMusic:
 
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
-            cls._instance = object.__new__(cls, *args, **kwargs)
+            cls._instance = object.__new__(cls)
         return cls._instance
 
     def __init__(
@@ -58,6 +58,8 @@ class QQMusic:
         self.login = LoginApi
         self.song = SongApi
         self.top = TopApi
+        self.mv = MvApi
+        self.playlist = PlaylistApi
 
     def update_token(self, musicid: str, musickey: str):
         """

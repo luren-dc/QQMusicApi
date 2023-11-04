@@ -15,6 +15,16 @@ repos:
       - id: poetry-lock
       - id: poetry-export
         args: ["-f", "requirements.txt", "-o", "requirements.txt"]
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.1.0
+    hooks:
+      - id: flake8
+        args: ["--exclude", "__init__.py"]
+  - repo: https://github.com/PyCQA/autoflake
+    rev: v2.2.1
+    hooks:
+      - id: autoflake
+        args: ["--remove-all-unused-imports", "--in-place", "--exclude", "__init__.py"]
   - repo: https://github.com/pycqa/isort
     rev: 5.12.0
     hooks:
@@ -30,13 +40,3 @@ repos:
       - id: mypy
         additional_dependencies: [types-requests, types-cryptography]
         args: ["--check-untyped-defs", "--ignore-missing-imports"]
-  - repo: https://github.com/pycqa/flake8
-    rev: 6.1.0
-    hooks:
-      - id: flake8
-        args: ["--exclude", "__init__.py"]
-  - repo: https://github.com/PyCQA/autoflake
-    rev: v2.2.1
-    hooks:
-      - id: autoflake
-        args: ["--remove-all-unused-imports", "--in-place", "--exclude", "__init__.py"]
