@@ -1,0 +1,15 @@
+[flake8]
+ignore = W504,W605,C901,E501,W503,E203
+exclude =
+    *migrations*,
+    # python related
+    *.pyc,
+    .git,
+    __pycache__,
+    ./apidoc/*
+    ./docs/*
+    ./webpack/node_modules/*
+    ./blueapps/*
+    ./sites/*
+
+max-line-length=120
