@@ -4,7 +4,7 @@
 
 ![Python Version 3.8+](https://img.shields.io/badge/Python-3.8%2B-blue)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![GitHub license](https://img.shields.io/github/license/luren-dc/QQMusicApi?style=flat-square)](https://github.com/luren-dc/QQMusicApi/blob/master/LICENSE)
+[![GitHub license](https://img.shields.io/github/license/luren-dc/QQMusicApi)](https://github.com/luren-dc/QQMusicApi/blob/master/LICENSE)
 
 </div>
 
