@@ -1,3 +1,4 @@
+from .album import AlbumApi
 from .login import Login, LoginApi
 from .mv import MvApi
 from .playlist import PlaylistApi
@@ -7,6 +8,7 @@ from .top import TopApi
 
 
 def set_parent(parent):
+    AlbumApi.parent = parent
     Login.parent = parent
     LoginApi.parent = parent
     SearchApi.parent = parent

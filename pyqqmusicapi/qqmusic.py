@@ -4,7 +4,16 @@ from typing import Dict
 
 import aiohttp
 
-from .api import LoginApi, MvApi, PlaylistApi, SearchApi, SongApi, TopApi, set_parent
+from .api import (
+    AlbumApi,
+    LoginApi,
+    MvApi,
+    PlaylistApi,
+    SearchApi,
+    SongApi,
+    TopApi,
+    set_parent,
+)
 from .exceptions import NotLoginedException, RequestException
 from .qimei import Qimei
 from .utils import random_string
@@ -54,6 +63,7 @@ class QQMusic:
         self.musickey = kwargs.get("musickey", "")
 
         set_parent(self)
+        self.album = AlbumApi
         self.search = SearchApi
         self.login = LoginApi
         self.song = SongApi
@@ -122,7 +132,7 @@ class QQMusic:
             },
         }
 
-        # print(json.dumps(data))
+        print(json.dumps(data))
 
         # 格式化请求数据
         formated_data = json.dumps(data, separators=(",", ":"), ensure_ascii=False)

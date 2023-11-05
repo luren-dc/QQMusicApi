@@ -119,7 +119,7 @@ class SongApi:
         Args:
             mid: 歌曲mid
             filetype: 文件标识符
-            mode: 获取类型
+            urltype: 获取类型
             **kwargs: musicid, musickey(可选)
 
         Returns:
@@ -155,7 +155,7 @@ class SongApi:
         for mids in mids_list:
             # 构造请求参数
             param = {
-                "filename": [f"{filetype}{mid}{file_type}" for mid in mids],
+                "filename": [f"{filetype}{mid}{mid}{file_type}" for mid in mids],
                 "guid": random_string(32, "abcdef1234567890"),
                 "songmid": mids,
                 "songtype": [1 for i in range(len(mids))],
