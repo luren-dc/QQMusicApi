@@ -15,6 +15,8 @@ from ..utils import get_ptqrtoken, get_token, random_uuid
 
 
 class Login(ABC):
+    """登录抽象类"""
+
     parent: ClassVar[QQMusic]
 
     def __init__(self) -> None:
@@ -320,6 +322,8 @@ class WXLogin(Login):
 
 
 class PhoneLogin(Login):
+    """手机号登录"""
+
     def __init__(self, phone: int):
         super().__init__()
         pattern = re.compile(r"^1[3-9]\d{9}$")
@@ -423,7 +427,7 @@ class LoginApi:
             phone: 手机号，仅在登录类型为2（手机号登录）时需要提供
 
         Returns:
-            登录对象
+            执行登录操作的具体对象
         """
         if login_type == 1:
             return WXLogin()

@@ -3,9 +3,7 @@ name = "PyQQMusicApi"
 version = "0.1.0"
 description = "QQ音乐API封装库"
 authors = ["Luren <dluren.c@gmail.com>"]
-
 license = "MIT"
-
 readme = "README.md"
 maintainers = ["Luren <dluren.c@gmail.com>"]
 homepage = "https://github.com/luren-dc/QQMusicApi"

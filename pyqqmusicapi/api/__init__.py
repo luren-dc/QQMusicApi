@@ -16,3 +16,10 @@ def set_parent(parent):
     TopApi.parent = parent
     MvApi.parent = parent
     PlaylistApi.parent = parent
+    parent.album = AlbumApi
+    parent.search = SearchApi
+    parent.login = LoginApi
+    parent.song = SongApi
+    parent.top = TopApi
+    parent.mv = MvApi
+    parent.playlist = PlaylistApi

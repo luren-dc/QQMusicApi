@@ -4,17 +4,8 @@ from typing import Dict
 
 import aiohttp
 
-from .api import (
-    AlbumApi,
-    LoginApi,
-    MvApi,
-    PlaylistApi,
-    SearchApi,
-    SongApi,
-    TopApi,
-    set_parent,
-)
-from .exceptions import NotLoginedException, RequestException
+from .api import set_parent
+from .exceptions import ApiRequestException, MusicTokenException
 from .qimei import Qimei
 from .utils import random_string
 
@@ -57,19 +48,15 @@ class QQMusic:
             self._qimei36 = "cc8d07a748d4be0a8b91eacd100014a1730e"
         else:
             self._qimei36 = qimei.q36
+
+        self._client = aiohttp.ClientSession()
+
         self._uid = random_string(10, "0123456789")
 
         self.musicid = kwargs.get("musicid", "")
         self.musickey = kwargs.get("musickey", "")
 
         set_parent(self)
-        self.album = AlbumApi
-        self.search = SearchApi
-        self.login = LoginApi
-        self.song = SongApi
-        self.top = TopApi
-        self.mv = MvApi
-        self.playlist = PlaylistApi
 
     def update_token(self, musicid: str, musickey: str):
         """
@@ -132,7 +119,7 @@ class QQMusic:
             },
         }
 
-        print(json.dumps(data))
+        # print(json.dumps(data))
 
         # 格式化请求数据
         formated_data = json.dumps(data, separators=(",", ":"), ensure_ascii=False)
@@ -148,8 +135,8 @@ class QQMusic:
         # 返回请求数据
         code = res["request"].get("code", 0)
         if code == 1000:
-            raise NotLoginedException("请检查QQ音乐token")
+            raise ApiRequestException("请检查QQ音乐token")
         res_data = res["request"].get("data", {})
         if not res_data:
-            raise RequestException("获取接口数据失败，请检查提交的数据")
+            raise MusicTokenException("获取接口数据失败，请检查提交的数据")
         return res_data
