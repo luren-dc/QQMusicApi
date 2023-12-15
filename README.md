@@ -43,7 +43,23 @@ pip install git+https://github.com/luren-dc/PyQQMusicApi.git
 
 ## 🔥使用
 
-**请查看[测试用例](https://github.com/luren-dc/PyQQMusicApi/tree/dev/tests)**
+```python
+import asyncio
+from pyqqmusicapi import QQMusic
+
+# 初始化Api，可传入musicid，musickey
+api = QQMusic()
+
+# 后续更新token
+api.update_token(musicid,musickey)
+
+# 可用api：SongApi，TopApi，SearchApi，MvApi，PlaylistApi，AlbumApi，LoginApi
+
+# 搜索示例
+asyncio.run(api.search.query("周杰伦"))
+```
+
+**更多请查看[测试用例](https://github.com/luren-dc/PyQQMusicApi/tree/dev/tests)**
 
 ## 🗒️TODO
 
