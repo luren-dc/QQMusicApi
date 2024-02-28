@@ -39,3 +39,9 @@ async def test_completion():
 async def test_hotkey():
     hotkey = await api.search.hotkey()
     assert hotkey
+
+@pytest.mark.asyncio
+async def test_singer_list():
+    singer_list = await api.search.singer_list(letter = 'a', area = 200,
+                                               sex = 0, genre = 7)
+    assert singer_list

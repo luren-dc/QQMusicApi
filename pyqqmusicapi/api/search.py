@@ -238,3 +238,89 @@ class SearchApi:
         )
         data = response["body"]
         return data["multi_extern_info"]["selectors"]
+
+    @staticmethod
+    async def singer_list(
+            letter: str = 'a',
+            sex: int = -100,
+            area: int = 200,
+            genre: int = -100,
+        ) -> List[Dict]:
+        """
+        搜索歌手列表
+
+        Args:
+            letter: 首字母 (a..z#), 默认为 a, 如果要查询所有歌手请设为 None
+            area: 地区: 内地 200, 港台 2, 韩国 3, 日本 4, 欧美 5
+            sex: 性别: 男 0, 女 1, 组合 2
+            genre: 类型
+                流行: 7
+                说唱: 3
+                国风: 19
+                摇滚: 4
+                电子: 2
+                民谣: 8
+                R&B: 11
+                民族乐: 37
+                轻音乐: 93
+                爵士: 14
+                古典: 33
+                乡村: 13
+                蓝调: 10
+
+        Returns:
+            歌手列表
+
+        Raises:
+            ValueError: letter 输入错误
+        """
+        index = -100
+        if letter is not None:
+            if len(letter) != 1:
+                raise ValueError("letter must be a single character")
+            letter = letter.upper()
+            if letter not in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ#':
+                raise ValueError("letter must be a-z or #")
+            if letter == '#':
+                index = 27
+            else:
+                index = ord(letter) - ord('A') + 1
+
+        response = await SearchApi.parent.get_data(
+            module="music.musichallSinger.SingerList",
+            method="GetSingerListIndex",
+            param={
+                "area": area,
+                "sex": sex,
+                "genre": genre,
+                "index": index,
+                "sin": 0,
+                "cur_page": 1,
+            },
+        )
+
+        singer_list = response["singerlist"]
+        total = response["total"]
+        if total <= 80:
+            return singer_list
+
+        # 每页80个歌手，向下取整
+        pages = total // 80
+        sin = 80
+        for page in range(2, pages + 2):
+            response = await SearchApi.parent.get_data(
+                module="music.musichallSinger.SingerList",
+                method="GetSingerListIndex",
+                param={
+                    "area": area,
+                    "sex": sex,
+                    "genre": genre,
+                    "index": index,
+                    "sin": sin,
+                    "cur_page": page,
+                },
+            )
+            singer_list.extend(response["singerlist"])
+            sin += 80
+
+        return singer_list
