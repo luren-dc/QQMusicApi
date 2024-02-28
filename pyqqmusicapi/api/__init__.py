@@ -3,6 +3,7 @@ from .login import Login, LoginApi
 from .mv import MvApi
 from .playlist import PlaylistApi
 from .search import SearchApi
+from .singer import SingerApi
 from .song import SongApi
 from .top import TopApi
 
@@ -12,6 +13,7 @@ def set_parent(parent):
     Login.parent = parent
     LoginApi.parent = parent
     SearchApi.parent = parent
+    SingerApi.parent = parent
     SongApi.parent = parent
     TopApi.parent = parent
     MvApi.parent = parent
@@ -19,6 +21,7 @@ def set_parent(parent):
     parent.album = AlbumApi
     parent.search = SearchApi
     parent.login = LoginApi
+    parent.singer = SingerApi
     parent.song = SongApi
     parent.top = TopApi
     parent.mv = MvApi
