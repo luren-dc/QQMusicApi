@@ -15,7 +15,7 @@ _aiohttp_session_pool: Dict[asyncio.AbstractEventLoop, aiohttp.ClientSession] = 
 _thread_lock = threading.Lock()
 
 
-async def get_aiohttp_session() -> aiohttp.ClientSession:
+def get_aiohttp_session() -> aiohttp.ClientSession:
     """
     获取 aiohttp.ClientSession
 
@@ -90,11 +90,11 @@ class QQMusic:
             self.musickey = musickey
 
     async def get(self, *args, **kwargs) -> aiohttp.ClientResponse:
-        session = await get_aiohttp_session()
+        session = get_aiohttp_session()
         return await session.get(*args, **kwargs)
 
     async def post(self, *args, **kwargs) -> aiohttp.ClientResponse:
-        session = await get_aiohttp_session()
+        session = get_aiohttp_session()
         return await session.post(*args, **kwargs)
 
     async def get_data(self, module: str, method: str, param: Dict, **kwargs) -> Dict:
@@ -144,12 +144,12 @@ class QQMusic:
         formated_data = json.dumps(data, separators=(",", ":"), ensure_ascii=False)
 
         # 请求API
-        session = await get_aiohttp_session()
-        async with session.post(
+        
+        response = await self.post(
             "https://u.y.qq.com/cgi-bin/musicu.fcg",
             data=formated_data.encode("utf-8"),
-        ) as response:
-            res = json.loads(await response.text(kwargs.get("charset", "utf-8")))
+        )
+        res = json.loads(await response.text(kwargs.get("charset", "utf-8")))
 
         # 返回请求数据
         code = res["request"].get("code", 0)
@@ -160,23 +160,10 @@ class QQMusic:
             raise MusicTokenException("获取接口数据失败，请检查提交的数据")
         return res_data
 
-
 @atexit.register
 def __clean() -> None:
     """
     程序退出清理操作。
     """
-    try:
-        loop = asyncio.get_event_loop()
-    except RuntimeError:
-        return
-
-    async def __clean_task():
-        s0 = _aiohttp_session_pool.get(loop, None)
-        if s0 is not None:
-            await s0.close()
-
-    if loop.is_closed():
-        loop.run_until_complete(__clean_task())
-    else:
-        loop.create_task(__clean_task())
+    for session in _aiohttp_session_pool.values():
+        asyncio.run(session.close())

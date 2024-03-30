@@ -6,9 +6,9 @@ authors = ["Luren <dluren.c@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 maintainers = ["Luren <dluren.c@gmail.com>"]
-homepage = "https://github.com/luren-dc/QQMusicApi"
-repository = "https://github.com/luren-dc/QQMusicApi"
-documentation = "https://github.com/luren-dc/QQMusicApi"
+homepage = "https://github.com/luren-dc/PyQQMusicApi"
+repository = "https://github.com/luren-dc/PyQQMusicApi"
+documentation = "https://github.com/luren-dc/PyQQMusicApi"
 keywords = ["music", "api", "qqmusic", "tencentmusic"]
 classifiers = [
     "Development Status :: 4 - Beta",
