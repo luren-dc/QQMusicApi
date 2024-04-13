@@ -365,13 +365,13 @@ class PhoneLogin(Login):
         self.phone = phone
 
     async def __aenter__(self):
-        raise NotImplementedError("不支持")
+        pass
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        raise NotImplementedError("不支持")
+        pass
 
     async def close(self):
-        raise NotImplementedError("不支持")
+        pass
 
     async def get_qrcode(self):
         raise NotImplementedError("不支持")
