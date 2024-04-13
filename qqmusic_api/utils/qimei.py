@@ -1,6 +1,7 @@
 import base64
 import datetime
 import json
+import os
 import random
 import time
 from dataclasses import dataclass
@@ -11,7 +12,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
-from .utils import calc_md5, random_string
+from .common import calc_md5, get_cache_file, random_string
 
 PUBLIC_KEY = """-----BEGIN PUBLIC KEY-----
 MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDEIxgwoutfwoJxcGQeedgP7FG9qaIuS0qzfR8gWkrkTZKM2iWHn2ajQpBRZjMSoSf6+KJGvar2ORhBfpDXyVtZCKpqLQ+FLkpncClKVIrBwv6PHyUvuCb0rIarmgDnzkfQAqVufEtR64iazGDKatvJ9y6B9NMbHddGSAUmRTCrHQIDAQAB
@@ -24,6 +25,21 @@ class QImeiResult:
 
     q16: str  # Qimei16
     q36: str  # Qimei36
+
+
+device_payload_path = get_cache_file("device.json")
+
+
+def get_device_payload():
+    if os.path.exists(device_payload_path):
+        with open(device_payload_path, encoding="utf8") as f:
+            data = json.load(f)
+            return data
+    else:
+        with open(device_payload_path, mode="w", encoding="utf8") as f:
+            data = Qimei.gen_random_payload()
+            f.write(json.dumps(data))
+            return data
 
 
 def rsa_encrypt(content: bytes) -> bytes:
@@ -131,7 +147,7 @@ class Qimei:
             else:
                 beacon_id += f"k{i}:{random.randint(0, 9999)}"
             beacon_id += ";"
-        brand = random.choice(("VIVO", "Xiaomi", "OPPO", "HUAWEI"))
+        brand = random.choice(("VIVO", "Xiaomi", "OPPO", "HUAWEI", "Redmi", "Realme"))
 
         fixed_rand_seconds = random.randint(0, 14400)
         current_time = datetime.datetime.now()
@@ -155,11 +171,13 @@ class Qimei:
             "host": "se.infra",
             "kernel": "Linux localhost 4.14.253-android+ #754 SMP Wed Nov 9 17:04:03 CST 2022 armv8",
         }
+        from ..settings import QQMUSIC_VERSION
+
         return {
             "androidId": "BRAND.141613.779",
             "platformId": 1,
             "appKey": Qimei.APP_KEY,
-            "appVersion": "12.6.0.12",
+            "appVersion": QQMUSIC_VERSION[0],
             "beaconIdSrc": beacon_id,
             "brand": brand,
             "channelId": "10003505",
@@ -170,11 +188,11 @@ class Qimei:
             "model": "",
             "networkType": "unknown",
             "oaid": "",
-            "osVersion": "Android 11.0,level 30",
+            "osVersion": "Android 13.0,level 33",
             "qimei": "",
             "qimei36": "",
             "sdkVersion": "1.2.13.6",
-            "targetSdkVersion": "29",
+            "targetSdkVersion": "33",
             "audit": "",
             "userId": "{}",
             "packageId": "com.tencent.qqmusic",
@@ -220,12 +238,12 @@ class Qimei:
     @staticmethod
     def get() -> QImeiResult:
         """
-        获取 QImei
+        获取 QImei(同步)
 
         Returns:
-            获取结果
+            随机QImei
         """
-        data, ts = Qimei.gen_query(Qimei.gen_random_payload())
+        data, ts = Qimei.gen_query(get_device_payload())
         sign = calc_md5("qimei_qq_androidpzAuCmaFAaFaHrdakPjLIEqKrGnSOOvH", ts)
         try:
             res = requests.post(

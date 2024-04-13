@@ -6,6 +6,6 @@ def pytest_addoption(parser):
 
 
 @pytest.fixture
-def test_login(request):
+def is_test_login(request):
     if request.config.getoption("--login"):
-        raise pytest.skip("使用'--login'测试登录函数")
+        pytest.skip("使用'--login'参数测试登录Api")

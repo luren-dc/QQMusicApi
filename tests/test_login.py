@@ -1,3 +1,7 @@
+"""
+使用`--login`测试登录Api
+"""
+
 import asyncio
 from io import BytesIO
 
@@ -6,7 +10,14 @@ import qrcode
 from PIL import Image
 from pyzbar.pyzbar import decode
 
-from pyqqmusicapi import QQMusic
+from qqmusic_api.api.login import (
+    Login,
+    PhoneLogin,
+    PhoneLoginEvents,
+    QQLogin,
+    QrCodeLoginEvents,
+    WXLogin,
+)
 
 
 def show_qrcode(img_data):
@@ -23,31 +34,58 @@ def show_qrcode(img_data):
     qr.print_ascii(invert=True)
 
 
-async def login(type: int):
-    api = QQMusic()
-    async with api.login.request(type) as login:
-        if type:
-            print("请使用微信扫码")
-        else:
-            print("请使用QQ扫码")
-        show_qrcode(await login.qrcode())
+async def login(login: Login):
+    async with login:
+        show_qrcode(await login.get_qrcode())
         while 1:
-            state = await login.state()
-            if state in [3, 4]:
-                return 0
-            elif state == 0:
-                break
             await asyncio.sleep(1)
-        return await login.authorize()
+            state = await login.get_qrcode_state()
+            if state in [
+                QrCodeLoginEvents.TIMEOUT,
+                QrCodeLoginEvents.REFUSE,
+                QrCodeLoginEvents.OTHER,
+            ]:
+                print("登录失败")
+                return
+            elif state == QrCodeLoginEvents.DONE:
+                break
+            print("\r", state, end="")
+        c = await login.authorize()
+        print(c.musickey)
+        return c.musickey
 
 
+@pytest.mark.timeout(60)
 @pytest.mark.asyncio
-async def test_qq(test_login, capfd):
+async def test_qq_login(is_test_login, capfd):
     with capfd.disabled():
-        assert await login(0)
+        print("请使用QQ扫码")
+        assert await login(QQLogin())
 
 
+@pytest.mark.timeout(60)
 @pytest.mark.asyncio
-async def test_wx(test_login, capfd):
+async def test_wx_login(is_test_login, capfd):
     with capfd.disabled():
-        assert await login(1)
+        print("请使用WX扫码")
+        assert await login(WXLogin())
+
+
+async def phone_login():
+    phone = int(input("请输入手机号码"))
+    login = PhoneLogin(phone)
+    while 1:
+        state = await login.send_authcode()
+        if state == PhoneLoginEvents.SEND:
+            print("发送成功")
+            break
+        elif state == PhoneLoginEvents.CAPTCHA:
+            print("需要滑块验证", login.auth_url)
+            print("验证后回车")
+            input("")
+        else:
+            print("未知情况")
+            return
+    code = int(input("请输入验证码"))
+    r = await login.authorize(code)
+    assert r.musickey

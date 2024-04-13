@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "PyQQMusicApi"
-version = "0.1.0"
+name = "QQMusic_Api"
+version = "0.2.0"
 description = "QQ音乐API封装库"
 authors = ["Luren <dluren.c@gmail.com>"]
 license = "MIT"
@@ -11,20 +11,20 @@ repository = "https://github.com/luren-dc/PyQQMusicApi"
 documentation = "https://github.com/luren-dc/PyQQMusicApi"
 keywords = ["music", "api", "qqmusic", "tencentmusic"]
 classifiers = [
-    "Development Status :: 4 - Beta",
-    "Natural Language :: Chinese (Simplified)",
-    "License :: OSI Approved :: MIT License",
-    "Framework :: Pytest",
-    "Framework :: aiohttp",
-    "Programming Language :: Python",
-    "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: Implementation :: CPython",
-    "Topic :: Software Development :: Libraries :: Python Modules"
+  "Development Status :: 4 - Beta",
+  "Natural Language :: Chinese (Simplified)",
+  "License :: OSI Approved :: MIT License",
+  "Framework :: Pytest",
+  "Framework :: aiohttp",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 cryptography = "^41.0.2"
 requests = "^2.31.0"
 aiohttp = "^3.8.5"
@@ -32,11 +32,23 @@ aiohttp = "^3.8.5"
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
 pytest-asyncio = "^0.21.1"
-qrcode = {extras = ["pil"], version = "^7.4.2"}
+qrcode = { extras = ["pil"], version = "^7.4.2" }
 pyzbar = "^0.1.9"
+pytest-timeout = "^2.3.1"
+pytest-sugar = "^1.0.0"
+pre-commit = "^3.7.0"
 
 [tool.isort]
 profile = "black"
+
+[tool.mypy]
+disable_error_code = ["index", "arg-type", "union-attr"]
+pretty = true
+show_column_numbers = true
+
+[tool.pytest.ini_options]
+pythonpath = "./"
+testpaths = ["tests"]
 
 [build-system]
 requires = ["poetry-core"]

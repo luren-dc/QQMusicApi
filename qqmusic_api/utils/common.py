@@ -1,7 +1,33 @@
 import hashlib
+import json
+import os
 import random
 import time
-from typing import Any, Dict, List
+
+
+def get_cache_file(*args) -> str:
+    cache_path = os.path.join(os.path.dirname(__file__), "..", "..", "cache")
+    if not os.path.exists(cache_path):
+        os.mkdir(cache_path)
+    return os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "..", "..", "cache", *args)
+    )
+
+
+def get_api(field: str, *args) -> dict:
+    path = os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__), "..", "data", "api", f"{field.lower()}.json"
+        )
+    )
+    if os.path.exists(path):
+        with open(path, encoding="utf8") as f:
+            data = json.load(f)
+            for arg in args:
+                data = data[arg]
+            return data
+    else:
+        return {}
 
 
 def random_string(length: int, chars: str) -> str:
@@ -15,29 +41,17 @@ def calc_md5(*multi_string) -> str:
     return md5.hexdigest()
 
 
-def get_ptqrtoken(qrsig: str) -> int:
-    e = 0
-    for c in qrsig:
-        e += (e << 5) + ord(c)
-    return 2147483647 & e
-
-
-def get_token(p_skey: str) -> int:
-    h = 5381
-    for c in p_skey:
+def hash33(s: str, h: int = 0) -> int:
+    h = h
+    for c in s:
         h += (h << 5) + ord(c)
     return 2147483647 & h
 
 
 def random_uuid() -> str:
-    uuid_string = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
-
-    def callback(c: str) -> str:
-        r = random.randint(0, 15)
-        v = r if c == "x" else (r & 0x3 | 0x8)
-        return hex(v)[2:]
-
-    return "".join([callback(c) if c in ["x", "y"] else c for c in uuid_string]).upper()
+    uuid_chars = "0123456789ABCDEF"
+    uuid_format = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
+    return "".join(random.choice(uuid_chars) if c in "xy" else c for c in uuid_format)
 
 
 def random_searchID() -> str:
@@ -49,14 +63,7 @@ def random_searchID() -> str:
     return str(t + n + r)
 
 
-def ensure_list(value: Any) -> List:
-    if isinstance(value, list):
-        return value
-    else:
-        return [value] if value else []
-
-
-def parse_song_info(song_info: Dict) -> Dict:
+def parse_song_info(song_info: dict) -> dict:
     # 解析歌曲信息
     info = {
         "id": song_info["id"],
@@ -132,20 +139,12 @@ def parse_song_info(song_info: Dict) -> Dict:
     return result
 
 
-def filter_data(data: Dict) -> Dict:
+def filter_data(data: dict) -> dict:
     keys = [""]
     for key in keys:
         data.pop(key, "")
     return data
 
 
-def singer_to_str(data: Dict):
+def singer_to_str(data: dict) -> str:
     return "&".join([singer["name"] for singer in data["singer"]])
-
-
-def split_list(lst: List, chunk_size: int) -> List:
-    return [lst[i : i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-
-def search_song(songs: List[Dict], mid: str) -> Dict:
-    return next(filter(lambda x: x["info"]["mid"] == mid, songs), {})
