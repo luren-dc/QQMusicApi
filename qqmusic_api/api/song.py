@@ -170,7 +170,7 @@ class Song:
     async def get_related_playlist(self):
         param = await self._prepare_param(is_id=True)
         return (await Api(**API["playlist"]).update_params(**param).result)[
-            "versionList"
+            "vecPlaylist"
         ]
 
     async def get_related_mv(self):
