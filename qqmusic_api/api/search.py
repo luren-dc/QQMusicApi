@@ -3,12 +3,13 @@ from enum import Enum
 from ..utils.common import get_api, parse_song_info, random_searchID
 from ..utils.network import Api
 
-API = get_api("search")
+API = get_api("search")["search"]
 
 
 class SearchType(Enum):
     """
     搜索类型
+
     + SONG:       歌曲
     + SINGER:     歌手
     + ALBUM:      专辑
@@ -39,7 +40,7 @@ async def hotkey() -> list[dict]:
         list: 热搜词列表，k为热搜词，n为搜索量
     """
     params = {"search_id": random_searchID()}
-    res = await Api(**API["search"]["hotkey"]).update_params(**params).result
+    res = await Api(**API["hotkey"]).update_params(**params).result
     data = res.get("vec_hotkey", [])
     return [{"k": hotkey["query"], "n": hotkey["score"]} for hotkey in data]
 
@@ -61,7 +62,7 @@ async def completion(keyword: str, highlight: bool = False) -> list[str]:
         "num_per_page": 0,
         "page_idx": 0,
     }
-    res = await Api(**API["search"]["completion"]).update_params(**params).result
+    res = await Api(**API["completion"]).update_params(**params).result
     data = res["items"]
     if highlight:
         return [item["hint_hilight"] for item in data]
@@ -79,7 +80,7 @@ async def quick_search(keyword: str) -> dict:
     Returns:
         dict: 包含专辑，歌手，歌曲的简略信息
     """
-    res = await Api(**API["search"]["quick_search"]).update_params(key=keyword).result
+    res = await Api(**API["quick_search"]).update_params(key=keyword).result
     return res["data"]  # type: ignore
 
 
@@ -103,7 +104,7 @@ async def general_search(keyword: str, page: int = 1, highlight: bool = False) -
         "highlight": highlight,
         "grp": 1,
     }
-    res = await Api(**API["search"]["general_search"]).update_params(**params).result
+    res = await Api(**API["general_search"]).update_params(**params).result
     data = res["body"]
     return {
         "direct": data["direct_result"]["direct_group"],
@@ -135,7 +136,7 @@ async def search_by_type(
         highlight:   是否高亮关键词. Defaluts to False
 
     Returns:
-        dict: 搜索结果.
+        list: 搜索结果.
     """
     params = {
         "search_id": random_searchID(),
@@ -147,11 +148,7 @@ async def search_by_type(
         "page_id": page,
         "selectors": selectors,
     }
-    res = (
-        await Api(**API["search"]["desktop_search_by_type"])
-        .update_params(**params)
-        .result
-    )
+    res = await Api(**API["desktop_search_by_type"]).update_params(**params).result
     types = {
         SearchType.SONG: "song",
         SearchType.SINGER: "singer",

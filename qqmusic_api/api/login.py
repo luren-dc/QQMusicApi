@@ -10,7 +10,7 @@ from ..utils.common import get_api, hash33, random_uuid
 from ..utils.credential import Credential
 from ..utils.network import Api, get_aiohttp_session
 
-API = get_api("login")
+API = get_api("login")["login"]
 
 
 class QrCodeLoginEvents(Enum):
@@ -247,7 +247,7 @@ class QQLogin(Login):
             location = res.headers.get("Location", "")
             code = re.findall(r"(?<=code=)(.+?)(?=&)", location)[0]
         res = (
-            await Api(**API["login"]["QQ_login"])
+            await Api(**API["QQ_login"])
             .update_params(code=code)
             .update_extra_common(tmeLoginType="2")
             .result
@@ -342,7 +342,7 @@ class WXLogin(Login):
             return self.credential
         await self.session.get(self.auth_url, allow_redirects=False)
         res = (
-            await Api(**API["login"]["WX_login"])
+            await Api(**API["WX_login"])
             .update_params(strAppid="wx48db31d50e334801", code=self.musicid)
             .update_extra_common(tmeLoginType="1")
             .result
@@ -386,7 +386,7 @@ class PhoneLogin(Login):
             "areaCode": "86",
         }
         msg = ""
-        res = await Api(**API["login"]["send_authcode"]).update_params(**params).result
+        res = await Api(**API["send_authcode"]).update_params(**params).result
         msg = res["errMsg"]
         if msg == "OK":
             return PhoneLoginEvents.SEND
@@ -402,7 +402,7 @@ class PhoneLogin(Login):
         params = {"code": str(authcode), "phoneNo": str(self.phone), "loginMode": 1}
         try:
             res = (
-                await Api(**API["login"]["phone_login"])
+                await Api(**API["phone_login"])
                 .update_params(**params)
                 .update_extra_common(tmeLoginMethod="3")
                 .result
@@ -429,7 +429,7 @@ async def refresh_cookies(credential: Credential) -> Credential:
         "loginMode": 2,
     }
     res = (
-        await Api(**API["login"]["refresh"])
+        await Api(**API["refresh"])
         .update_params(**params)
         .update_extra_common(tmeLoginType=str(credential.login_type))
         .result

@@ -194,7 +194,6 @@ class Api:
         """
         准备请求配置参数
         """
-
         config = {
             "url": self.url,
             "method": self.method,
@@ -202,15 +201,12 @@ class Api:
             "params": self.params,
             "headers": HEADERS.copy() if len(self.headers) == 0 else self.headers,
         }
-
         if self.json_body:
             config["headers"]["Content-Type"] = "application/json"
             config["data"] = json.dumps(config["data"], ensure_ascii=False).encode()
-
         if self.module:
             config["method"] = "POST"
             config["params"] = ""
-
         return config
 
     async def request(self) -> str | dict | None:
