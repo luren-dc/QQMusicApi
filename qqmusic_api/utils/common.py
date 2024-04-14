@@ -72,7 +72,7 @@ def parse_song_info(song_info: dict) -> dict:
         "title": song_info["title"],
         "subTitle": song_info.get("subtitle", ""),
         "language": song_info["language"],
-        "timePublic": song_info.get("time_public", ""),
+        "time_public": song_info.get("time_public", ""),
         "tag": song_info.get("tag", ""),
         "type": song_info["type"],
     }
@@ -82,7 +82,7 @@ def parse_song_info(song_info: dict) -> dict:
         "id": song_info["album"]["id"],
         "mid": song_info["album"]["mid"],
         "name": song_info["album"]["name"],
-        "timePublic": song_info["album"].get("time_public", ""),
+        "time_public": song_info["album"].get("time_public", ""),
     }
 
     # 解析MV信息
@@ -106,18 +106,18 @@ def parse_song_info(song_info: dict) -> dict:
 
     # 解析文件信息
     file = {
-        "mediaMid": song_info["file"]["media_mid"],
-        "AI00": song_info["file"]["size_new"][0],
-        "Q000": song_info["file"]["size_new"][1],
-        "Q001": song_info["file"]["size_new"][2],
-        "F000": song_info["file"]["size_flac"],
-        "O600": song_info["file"]["size_192ogg"],
-        "O400": song_info["file"]["size_96ogg"],
-        "M800": song_info["file"]["size_320mp3"],
-        "M500": song_info["file"]["size_128mp3"],
-        "C600": song_info["file"]["size_192aac"],
-        "C400": song_info["file"]["size_96aac"],
-        "C200": song_info["file"]["size_48aac"],
+        "media_mid": song_info["file"]["media_mid"],
+        "new_0": song_info["file"]["size_new"][0],
+        "new_1": song_info["file"]["size_new"][1],
+        "new_2": song_info["file"]["size_new"][2],
+        "flac": song_info["file"]["size_flac"],
+        "ogg_192": song_info["file"]["size_192ogg"],
+        "ogg_96": song_info["file"]["size_96ogg"],
+        "mp3_320": song_info["file"]["size_320mp3"],
+        "mp3_128": song_info["file"]["size_128mp3"],
+        "aac_192": song_info["file"]["size_192aac"],
+        "aac_96": song_info["file"]["size_96aac"],
+        "aac_48": song_info["file"]["size_48aac"],
     }
 
     # 组装结果

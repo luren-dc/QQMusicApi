@@ -99,7 +99,7 @@ class Login(ABC):
         登录鉴权
 
         Args:
-            code: 验证码
+            code: 验证码. Defaluts to None
 
         Returns:
             Credential: 用户凭证

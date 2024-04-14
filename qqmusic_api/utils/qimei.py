@@ -5,13 +5,14 @@ import os
 import random
 import time
 from dataclasses import dataclass
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 import requests
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
+from ..settings import QQMUSIC_VERSION
 from .common import calc_md5, get_cache_file, random_string
 
 PUBLIC_KEY = """-----BEGIN PUBLIC KEY-----
@@ -85,7 +86,7 @@ class Qimei:
     SECRET = "ZdJqM15EeO2zWc08"
 
     @staticmethod
-    def gen_query(device: Dict) -> Tuple[Dict[str, Any], str]:
+    def gen_query(device: dict) -> tuple[dict[str, Any], str]:
         """
         生成查询参数和时间戳
 
@@ -125,7 +126,7 @@ class Qimei:
         return data, str(int(ts / 1000))
 
     @staticmethod
-    def gen_random_payload() -> Dict:
+    def gen_random_payload() -> dict:
         """
         生成随机的payload字典
 
@@ -171,7 +172,6 @@ class Qimei:
             "host": "se.infra",
             "kernel": "Linux localhost 4.14.253-android+ #754 SMP Wed Nov 9 17:04:03 CST 2022 armv8",
         }
-        from ..settings import QQMUSIC_VERSION
 
         return {
             "androidId": "BRAND.141613.779",
@@ -226,7 +226,7 @@ class Qimei:
             Luhn校验和
         """
 
-        def digits_of(n: int) -> List[int]:
+        def digits_of(n: int) -> list[int]:
             return [int(digit) for digit in str(n)]
 
         digits = digits_of(int(number_str))

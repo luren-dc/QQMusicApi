@@ -74,8 +74,8 @@ class Credential:
         self.musickey = c.musickey
         self.refresh_key = c.refresh_key
 
-    @staticmethod
-    def from_cookies(cookies: dict = {}) -> "Credential":
+    @classmethod
+    def from_cookies(cls, cookies: dict = {}) -> "Credential":
         """
         从 cookies 新建 Credential
 
@@ -85,7 +85,7 @@ class Credential:
         Returns:
             Credential: 凭据类
         """
-        c = Credential()
+        c = cls()
         c.musicid = cookies["musicid"]
         c.musickey = cookies["musickey"]
         c.refresh_key = cookies["refresh_key"]

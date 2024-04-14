@@ -8,16 +8,16 @@ API = get_api("search")
 
 class SearchType(Enum):
     """
-    搜索类型。
-    + SONG : 歌曲
-    + SINGER : 歌手
-    + ALBUM : 专辑
-    + SONGLIST : 歌单
-    + MV : MV
-    + LYRIC : 歌词
-    + USER : 用户
-    + AUDIO_SONG : 节目专辑
-    + AUDIO : 节目
+    搜索类型
+    + SONG:       歌曲
+    + SINGER:     歌手
+    + ALBUM:      专辑
+    + SONGLIST:   歌单
+    + MV:         MV
+    + LYRIC:      歌词
+    + USER:       用户
+    + AUDIO_SONG: 节目专辑
+    + AUDIO:      节目
     """
 
     SONG = 0
@@ -50,7 +50,7 @@ async def completion(keyword: str, highlight: bool = False) -> list[str]:
 
     Args:
         keyword:   关键词
-        highlight: 是否高亮关键词
+        highlight: 是否高亮关键词. Defaluts to False
 
     Returns:
         list: 补全结果
@@ -89,11 +89,11 @@ async def general_search(keyword: str, page: int = 1, highlight: bool = False) -
 
     Args:
         keyword:   关键词
-        page:      页码
-        highlight: 是否高亮关键词
+        page:      页码. Defaluts to 1
+        highlight: 是否高亮关键词. Defaluts to False
 
     Returns:
-        dict: 包含直接结果，歌曲，歌手，专辑，歌单，mv等
+        dict: 包含直接结果，歌曲，歌手，专辑，歌单，mv等.
     """
     params = {
         "search_id": random_searchID(),
@@ -122,20 +122,20 @@ async def search_by_type(
     page: int = 1,
     selectors: dict = {},
     highlight: bool = False,
-) -> list:
+) -> list[dict]:
     """
     搜索
 
     Args:
         keyword:     关键词
-        search_type: 搜索类型
-        num:         返回数量
-        page:        页码
-        selectors:   选择器
-        highlight:   是否高亮关键词
+        search_type: 搜索类型. Defaluts to SearchType.SONG
+        num:         返回数量. Defaluts to 10
+        page:        页码. Defaluts to 1
+        selectors:   选择器. Defaluts to {}
+        highlight:   是否高亮关键词. Defaluts to False
 
     Returns:
-        dict: 搜索结果
+        dict: 搜索结果.
     """
     params = {
         "search_id": random_searchID(),
@@ -164,6 +164,6 @@ async def search_by_type(
         SearchType.AUDIO: "song",
     }
     data = res["body"][types[search_type]]["list"]
-    if search_type.value in [SearchType.SONG, SearchType.LYRIC, SearchType.AUDIO]:
+    if search_type in [SearchType.SONG, SearchType.LYRIC, SearchType.AUDIO]:
         return [parse_song_info(song) for song in data]
     return data  # type: ignore

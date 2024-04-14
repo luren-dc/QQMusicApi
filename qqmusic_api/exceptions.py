@@ -11,6 +11,16 @@ class ApiException(Exception):
         return self.msg
 
 
+class ArgsException(ApiException):
+    """
+    参数错误。
+    """
+
+    def __init__(self, msg: str):
+        super().__init__(msg)
+        self.msg = msg
+
+
 class ClientException(ApiException):
     """
     服务器连接错误
