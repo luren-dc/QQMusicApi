@@ -40,16 +40,16 @@ class SongFileType(Enum):
     TRY = ("RS02", ".mp3")
 
     def __init__(self, start_code: str, extension: str):
-        self.start_code = start_code
-        self.extension = extension
+        self.__start_code = start_code
+        self.__extension = extension
 
     @property
     def s(self) -> str:
-        return self.start_code
+        return self.__start_code
 
     @property
     def e(self) -> str:
-        return self.extension
+        return self.__extension
 
 
 class UrlType(Enum):
@@ -88,7 +88,7 @@ class Song:
         self.credential = Credential() if credential is None else credential
         self._info: Optional[dict] = None
 
-    async def _get_info(self):
+    async def __get_info(self):
         """
         获取歌曲必要信息
         """
@@ -100,18 +100,30 @@ class Song:
         return self._info
 
     @property
-    async def mid(self):
+    async def mid(self) -> str:
+        """
+        获取歌曲 mid
+
+        Returns:
+            str: mid
+        """
         if not self._mid:
-            self._mid = (await self._get_info())["info"]["mid"]
-        return self._mid
+            self._mid = (await self.__get_info())["info"]["mid"]
+        return str(self._mid)
 
     @property
-    async def id(self):
-        if not self._id:
-            self._id = (await self._get_info())["info"]["id"]
-        return self._id
+    async def id(self) -> int:
+        """
+        获取歌曲 id
 
-    async def _prepare_param(self, is_mid: bool = False, is_id: bool = False) -> dict:
+        Returns:
+            str: id
+        """
+        if not self._id:
+            self._id = (await self.__get_info())["info"]["id"]
+        return int(self._id)
+
+    async def __prepare_param(self, is_mid: bool = False, is_id: bool = False) -> dict:
         """
         准备请求参数
 
@@ -142,7 +154,7 @@ class Song:
         Returns:
             dict: 基本信息
         """
-        return await self._get_info()
+        return await self.__get_info()
 
     async def get_detail(self) -> dict:
         """
@@ -151,7 +163,7 @@ class Song:
         Returns:
             dict: 详细信息
         """
-        param = await self._prepare_param()
+        param = await self.__prepare_param()
         if "songmid" in param:
             param["song_mid"] = param.pop("songmid")
         if "songid" in param:
@@ -159,36 +171,36 @@ class Song:
         return await Api(**API["detail"]).update_params(**param).result  # type: ignore
 
     async def get_similar_song(self):
-        param = await self._prepare_param(is_id=True)
+        param = await self.__prepare_param(is_id=True)
         res = await Api(**API["similar"]).update_params(**param).result
         return [parse_song_info(song["track"]) for song in res["vecSong"]]
 
     async def get_labels(self):
-        param = await self._prepare_param(is_id=True)
+        param = await self.__prepare_param(is_id=True)
         return (await Api(**API["labels"]).update_params(**param).result)["labels"]
 
     async def get_related_playlist(self):
-        param = await self._prepare_param(is_id=True)
+        param = await self.__prepare_param(is_id=True)
         return (await Api(**API["playlist"]).update_params(**param).result)[
             "vecPlaylist"
         ]
 
     async def get_related_mv(self):
-        param = await self._prepare_param()
+        param = await self.__prepare_param()
         return (await Api(**API["mv"]).update_params(**param).result)["list"]
 
     async def get_other_version(self):
-        param = await self._prepare_param()
+        param = await self.__prepare_param()
         res = await Api(**API["other"]).update_params(**param).result
         return [parse_song_info(song) for song in res["versionList"]]
 
     async def get_sheet(self):
-        param = await self._prepare_param(is_mid=True)
+        param = await self.__prepare_param(is_mid=True)
         param["scoreType"] = -1
         return (await Api(**API["sheet"]).update_params(**param).result)["result"]
 
     async def get_producer(self):
-        param = await self._prepare_param()
+        param = await self.__prepare_param()
         return (await Api(**API["producer"]).update_params(**param).result)["Lst"]
 
     async def get_url(
@@ -207,7 +219,7 @@ class Song:
         Returns:
             dict: 链接字典
         """
-        return await get_urls([self.mid], file_type, url_type)
+        return await get_urls([await self.mid], file_type, url_type)
 
     async def get_file_size(self, file_type: Optional[SongFileType] = None) -> dict:
         """
@@ -219,7 +231,7 @@ class Song:
         Return:
             dict: 文件大小
         """
-        size = (await self._get_info())["file"]
+        size = (await self.__get_info())["file"]
         if file_type:
             name = file_type.name.lower()
             size = {name: size[name]}
@@ -280,7 +292,7 @@ async def get_urls(
 ) -> dict[str, str]:
     """
     获取歌曲文件链接
-    注：有播放链接，不一定有下载链接
+    注：有播放链接，不一定有下载链接(需会员)
 
     Args:
         mid:        歌曲 mid

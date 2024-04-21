@@ -10,13 +10,13 @@ UID = ""
 QQMUSIC_VERSION = ("13.2.5.8", "13020508")
 
 
-def set_qimei(qimei: str):
+def __set_qimei(qimei: str):
     global QIMEI36
     if not QIMEI36:
         QIMEI36 = qimei
 
 
-def set_uid(uid: str):
+def __set_uid(uid: str):
     global UID
     if not UID:
         UID = uid

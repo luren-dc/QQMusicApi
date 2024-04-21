@@ -1,39 +1,27 @@
 <div align="center">
-    <h1> QQMusicApi </h1>
-    <p> Python QQMusic Api库 </p>
+    <h1> PyQQMusicApi </h1>
+    <p> Python QQ音乐 API 封装库 </p>
 
-![Python Version 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+![Python Version 3.8+](https://img.shields.io/badge/Python-3.8%2B-blue)
+![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)
 ![GitHub license](https://img.shields.io/github/license/luren-dc/PyQQMusicApi)
 
 </div>
 
 ---
 
-> [!WARNING]
-> **架构重构中...**
+## 介绍
 
-## 🎊介绍
+使用 Python 编写的用于调用 [QQ音乐](https://y.qq.com/) 各种 API 的库.
 
-**Python QQ音乐 Api 库，封装常见 Api**
+## 依赖
 
-### 注意事项
+本项目基于：
 
-> [!WARNING]
-> 本项目仅供学习使用，请尊重版权，请勿利用此项目从事商业行为!
+- [AIOHTTP](https://docs.aiohttp.org/)
+- [Requests](https://requests.readthedocs.io/)
+- [Cryptography](https://cryptography.io/)
 
-### 依赖
+## Licence
 
-本项目基于以下库：
-
-- `AIOHTTP` - 异步HTTP客户端/服务器框架
-- `Requests` - 简单的HTTP库
-- `Cryptography` - 加密库
-
-## 📜 许可证
-
-本项目采用 **MIT License** 发布。
-
-## ⭐️ 支持
-
-如果你喜欢这个项目，请给它一个星星！
+**[MIT License](https://github.com/luren-dc/QQMusicApi/blob/master/LICENSE)**

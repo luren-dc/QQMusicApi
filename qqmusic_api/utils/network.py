@@ -137,7 +137,7 @@ class Api:
         self.__result = None
         return self
 
-    def _prepare_params_data(self) -> None:
+    def __prepare_params_data(self) -> None:
         """
         准备请求参数
         """
@@ -154,7 +154,7 @@ class Api:
                 new_data[key] = value
         self.params, self.data = new_params, new_data
 
-    def _prepare_api_data(self) -> None:
+    def __prepare_api_data(self) -> None:
         """
         准备API请求数据
         """
@@ -190,7 +190,7 @@ class Api:
         }
         self.data = data
 
-    def _prepare_request(self) -> dict:
+    def __prepare_request(self) -> dict:
         """
         准备请求配置参数
         """
@@ -214,9 +214,9 @@ class Api:
         向接口发送请求
         """
         if self.module:
-            self._prepare_api_data()
-        self._prepare_params_data()
-        config = self._prepare_request()
+            self.__prepare_api_data()
+        self.__prepare_params_data()
+        config = self.__prepare_request()
         session = get_aiohttp_session()
         try:
             async with session.request(**config) as resp:
@@ -224,11 +224,11 @@ class Api:
                     resp.raise_for_status()
                 except aiohttp.ClientResponseError as e:
                     raise NetworkException(e.status, e.message)
-                return self._process_response(resp, await resp.text())
+                return self.__process_response(resp, await resp.text())
         except aiohttp.client_exceptions.ClientConnectorError:
             raise ClientException()
 
-    def _process_response(
+    def __process_response(
         self, resp: aiohttp.ClientResponse, resp_text: str
     ) -> str | dict | None:
         content_length = resp.headers.get("content-length")
