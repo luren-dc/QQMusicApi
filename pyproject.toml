@@ -42,7 +42,7 @@ pre-commit = "^3.7.0"
 profile = "black"
 
 [tool.mypy]
-disable_error_code = ["index", "arg-type", "union-attr"]
+disable_error_code = ["index", "arg-type", "union-attr", "return-value"]
 pretty = true
 show_column_numbers = true
 

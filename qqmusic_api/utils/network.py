@@ -7,7 +7,7 @@ from typing import Any
 import aiohttp
 
 from ..exceptions import ClientException, NetworkException, ResponseCodeException
-from ..settings import API_URL, QIMEI36, QQMUSIC_VERSION, UID
+from ..settings import API_URL, QIMEI36, QQMUSIC_VERSION_CODE, UID
 from .credential import Credential
 
 HEADERS = {
@@ -160,8 +160,8 @@ class Api:
         """
         common = {
             "ct": "11",
-            "cv": QQMUSIC_VERSION[1],
-            "v": QQMUSIC_VERSION[1],
+            "cv": QQMUSIC_VERSION_CODE,
+            "v": QQMUSIC_VERSION_CODE,
             "tmeAppID": "qqmusic",
             "QIMEI36": QIMEI36,
             "uid": UID,

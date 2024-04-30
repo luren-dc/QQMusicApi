@@ -1,36 +1,35 @@
 import hashlib
 import json
-import os
 import random
 import time
+from pathlib import Path
+
+# 定义全局变量
+UUID_CHARS = "0123456789ABCDEF"
+CACHE_DIR = Path(__file__).resolve().parent.parent.parent / "cache"
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+API_DIR = DATA_DIR / "api"
+
+# 确保缓存目录存在
+CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def get_cache_file(*args) -> str:
-    cache_path = os.path.join(os.path.dirname(__file__), "..", "..", "cache")
-    if not os.path.exists(cache_path):
-        os.mkdir(cache_path)
-    return os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "..", "..", "cache", *args)
-    )
+    return str(CACHE_DIR.joinpath(*args))
 
 
 def get_api(field: str, *args) -> dict:
-    path = os.path.abspath(
-        os.path.join(
-            os.path.dirname(__file__), "..", "data", "api", f"{field.lower()}.json"
-        )
-    )
-    if os.path.exists(path):
-        with open(path, encoding="utf8") as f:
+    path = API_DIR / f"{field.lower()}.json"
+    if path.exists():
+        with path.open(encoding="utf8") as f:
             data = json.load(f)
             for arg in args:
                 data = data[arg]
             return data
-    else:
-        return {}
+    return {}
 
 
-def random_string(length: int, chars: str) -> str:
+def random_string(length: int, chars: str = UUID_CHARS) -> str:
     return "".join(random.choices(chars, k=length))
 
 
@@ -42,16 +41,14 @@ def calc_md5(*multi_string) -> str:
 
 
 def hash33(s: str, h: int = 0) -> int:
-    h = h
     for c in s:
-        h += (h << 5) + ord(c)
+        h = (h << 5) + h + ord(c)
     return 2147483647 & h
 
 
 def random_uuid() -> str:
-    uuid_chars = "0123456789ABCDEF"
     uuid_format = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
-    return "".join(random.choice(uuid_chars) if c in "xy" else c for c in uuid_format)
+    return "".join(random.choice(UUID_CHARS) if c in "xy" else c for c in uuid_format)
 
 
 def random_searchID() -> str:

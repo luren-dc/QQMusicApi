@@ -12,6 +12,7 @@ API = get_api("song")["song"]
 class SongFileType(Enum):
     """
     歌曲文件类型
+    Unkown 需要超级会员,暂时没有
     + NEW_0:   unkown
     + NEW_1:   unkown
     + NEW_2:   unkown
@@ -76,8 +77,8 @@ class Song:
     ):
         """
         Args:
-            mid:        歌曲 mid. 歌曲 id 和歌曲 mid 必须提供其中之一,优先使用 mid
-            id:         歌曲 id. 歌曲 id 和歌曲 mid 必须提供其中之一,优先使用 mid
+            mid:        歌曲 mid. 歌曲 id 和歌曲 mid 必须提供其中之一
+            id:         歌曲 id. 歌曲 id 和歌曲 mid 必须提供其中之一
             credential: Credential 类. Defaluts to None
         """
         # ID 检查
@@ -170,36 +171,78 @@ class Song:
             param["song_id"] = param.pop("songid")
         return await Api(**API["detail"]).update_params(**param).result  # type: ignore
 
-    async def get_similar_song(self):
+    async def get_similar_song(self) -> list[dict]:
+        """
+        获取歌曲相似歌曲
+
+        Returns:
+            list: 歌曲信息
+        """
         param = await self.__prepare_param(is_id=True)
         res = await Api(**API["similar"]).update_params(**param).result
         return [parse_song_info(song["track"]) for song in res["vecSong"]]
 
-    async def get_labels(self):
+    async def get_labels(self) -> list[dict]:
+        """
+        获取歌曲标签
+
+        Returns:
+            list: 标签信息
+        """
         param = await self.__prepare_param(is_id=True)
         return (await Api(**API["labels"]).update_params(**param).result)["labels"]
 
-    async def get_related_playlist(self):
+    async def get_related_playlist(self) -> list[dict]:
+        """
+        获取歌曲相关歌单
+
+        Returns:
+            list: 歌单信息
+        """
         param = await self.__prepare_param(is_id=True)
         return (await Api(**API["playlist"]).update_params(**param).result)[
             "vecPlaylist"
         ]
 
-    async def get_related_mv(self):
+    async def get_related_mv(self) -> list[dict]:
+        """
+        获取歌曲相关MV
+
+        Returns:
+            list: MV信息
+        """
         param = await self.__prepare_param()
         return (await Api(**API["mv"]).update_params(**param).result)["list"]
 
-    async def get_other_version(self):
+    async def get_other_version(self) -> list[dict]:
+        """
+        获取歌曲其他版本
+
+        Returns:
+            list: 歌曲信息
+        """
         param = await self.__prepare_param()
         res = await Api(**API["other"]).update_params(**param).result
         return [parse_song_info(song) for song in res["versionList"]]
 
-    async def get_sheet(self):
+    async def get_sheet(self) -> list[dict]:
+        """
+        获取歌曲相关曲谱
+
+        Returns:
+            list: 曲谱信息
+        """
         param = await self.__prepare_param(is_mid=True)
         param["scoreType"] = -1
         return (await Api(**API["sheet"]).update_params(**param).result)["result"]
 
-    async def get_producer(self):
+    async def get_producer(self) -> list[dict]:
+        """
+        获取歌曲制作信息
+
+        Returns:
+            list: 人员信息
+        """
         param = await self.__prepare_param()
         return (await Api(**API["producer"]).update_params(**param).result)["Lst"]
 
@@ -210,7 +253,6 @@ class Song:
     ) -> dict[str, str]:
         """
         获取歌曲文件链接
-        注：有播放链接，不一定有下载链接
 
         Args:
             file_type:  歌曲文件类型. Defaults to SongFileType.MP3_128
@@ -292,7 +334,6 @@ async def get_urls(
 ) -> dict[str, str]:
     """
     获取歌曲文件链接
-    注：有播放链接，不一定有下载链接(需会员)
 
     Args:
         mid:        歌曲 mid
@@ -307,7 +348,7 @@ async def get_urls(
         credential = Credential()
     # 分割 id,单次最大请求100
     mid_list = [mid[i : i + 100] for i in range(0, len(mid), 100)]
-    # 随机选择文件域名
+    # 选择文件域名
     domain = (
         "https://isure.stream.qqmusic.qq.com/"
         if url_type == UrlType.PLAY

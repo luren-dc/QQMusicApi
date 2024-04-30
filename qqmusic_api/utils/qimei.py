@@ -12,7 +12,6 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
-from ..settings import QQMUSIC_VERSION
 from .common import calc_md5, get_cache_file, random_string
 
 PUBLIC_KEY = """-----BEGIN PUBLIC KEY-----
@@ -31,16 +30,15 @@ class QImeiResult:
 device_payload_path = get_cache_file("device.json")
 
 
-def get_device_payload():
+def get_device_payload(version):
     if os.path.exists(device_payload_path):
         with open(device_payload_path, encoding="utf8") as f:
             data = json.load(f)
-            return data
     else:
         with open(device_payload_path, mode="w", encoding="utf8") as f:
-            data = Qimei.gen_random_payload()
+            data = Qimei.gen_random_payload(version)
             f.write(json.dumps(data))
-            return data
+    return data
 
 
 def rsa_encrypt(content: bytes) -> bytes:
@@ -126,7 +124,7 @@ class Qimei:
         return data, str(int(ts / 1000))
 
     @staticmethod
-    def gen_random_payload() -> dict:
+    def gen_random_payload(version) -> dict:
         """
         生成随机的payload字典
 
@@ -177,7 +175,7 @@ class Qimei:
             "androidId": "BRAND.141613.779",
             "platformId": 1,
             "appKey": Qimei.APP_KEY,
-            "appVersion": QQMUSIC_VERSION[0],
+            "appVersion": version,
             "beaconIdSrc": beacon_id,
             "brand": brand,
             "channelId": "10003505",
@@ -236,14 +234,14 @@ class Qimei:
         return (10 - total_sum % 10) % 10
 
     @staticmethod
-    def get() -> QImeiResult:
+    def get(version: str) -> QImeiResult:
         """
         获取 QImei(同步)
 
         Returns:
             随机QImei
         """
-        data, ts = Qimei.gen_query(get_device_payload())
+        data, ts = Qimei.gen_query(get_device_payload(version))
         sign = calc_md5("qimei_qq_androidpzAuCmaFAaFaHrdakPjLIEqKrGnSOOvH", ts)
         try:
             res = requests.post(
