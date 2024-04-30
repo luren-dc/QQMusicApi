@@ -1,5 +1,5 @@
 <div align="center">
-    <h1> PyQQMusicApi </h1>
+    <h1> QQMusicApi </h1>
     <p> Python QQ音乐 API 封装库 </p>
 
 ![Python Version 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue)
