@@ -261,7 +261,7 @@ class Song:
         Returns:
             dict: 链接字典
         """
-        return await get_urls([await self.mid], file_type, url_type)
+        return await get_song_urls([await self.mid], file_type, url_type)
 
     async def get_file_size(self, file_type: Optional[SongFileType] = None) -> dict:
         """
@@ -326,7 +326,7 @@ async def query_by_mid(mid: list[str]) -> list[dict]:
     return [parse_song_info(song) for song in tracks]
 
 
-async def get_urls(
+async def get_song_urls(
     mid: list[str],
     file_type: SongFileType = SongFileType.MP3_128,
     url_type: UrlType = UrlType.PLAY,

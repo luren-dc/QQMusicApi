@@ -2,7 +2,7 @@
     <h1> PyQQMusicApi </h1>
     <p> Python QQ音乐 API 封装库 </p>
 
-![Python Version 3.8+](https://img.shields.io/badge/Python-3.8%2B-blue)
+![Python Version 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue)
 ![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)
 ![GitHub license](https://img.shields.io/github/license/luren-dc/PyQQMusicApi)
 
