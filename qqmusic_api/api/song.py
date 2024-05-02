@@ -13,9 +13,9 @@ class SongFileType(Enum):
     """
     歌曲文件类型
     Unkown 需要超级会员,暂时没有
-    + NEW_0:   unkown
-    + NEW_1:   unkown
-    + NEW_2:   unkown
+    + NEW_0:   臻品母带2.0
+    + NEW_1:   臻品全景声
+    + NEW_2:   臻品音质2.0
     + FLAC:    无损音频压缩格式
     + OGG_192: OGG 格式，192kbps
     + OGG_96:  OGG 格式，96kbps
@@ -118,7 +118,7 @@ class Song:
         获取歌曲 id
 
         Returns:
-            str: id
+            int: id
         """
         if not self._id:
             self._id = (await self.__get_info())["info"]["id"]
@@ -169,7 +169,7 @@ class Song:
             param["song_mid"] = param.pop("songmid")
         if "songid" in param:
             param["song_id"] = param.pop("songid")
-        return await Api(**API["detail"]).update_params(**param).result  # type: ignore
+        return await Api(**API["detail"]).update_params(**param).result
 
     async def get_similar_song(self) -> list[dict]:
         """

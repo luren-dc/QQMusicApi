@@ -73,7 +73,6 @@ def parse_song_info(song_info: dict) -> dict:
         "tag": song_info.get("tag", ""),
         "type": song_info["type"],
     }
-
     # 解析专辑信息
     album = {
         "id": song_info["album"]["id"],
@@ -81,14 +80,12 @@ def parse_song_info(song_info: dict) -> dict:
         "name": song_info["album"]["name"],
         "time_public": song_info["album"].get("time_public", ""),
     }
-
     # 解析MV信息
     mv = {
         "id": song_info["mv"]["id"],
         "name": song_info["mv"].get("name", ""),
         "vid": song_info["mv"]["vid"],
     }
-
     # 解析歌手信息
     singer = [
         {
@@ -100,7 +97,6 @@ def parse_song_info(song_info: dict) -> dict:
         }
         for s in song_info["singer"]
     ]
-
     # 解析文件信息
     file = {
         "media_mid": song_info["file"]["media_mid"],
@@ -116,7 +112,6 @@ def parse_song_info(song_info: dict) -> dict:
         "aac_96": song_info["file"]["size_96aac"],
         "aac_48": song_info["file"]["size_48aac"],
     }
-
     # 组装结果
     result = {
         "info": info,
@@ -132,7 +127,6 @@ def parse_song_info(song_info: dict) -> dict:
         "grp": [parse_song_info(song) for song in song_info.get("grp", [])],
         "vs": song_info.get("vs", []),
     }
-
     return result
 
 

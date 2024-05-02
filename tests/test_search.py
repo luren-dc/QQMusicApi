@@ -1,7 +1,7 @@
 import pytest
 
 from qqmusic_api.api.search import (
-    completion,
+    complete,
     general_search,
     hotkey,
     quick_search,
@@ -17,8 +17,8 @@ async def test_hotkey():
 
 @pytest.mark.timeout(60)
 @pytest.mark.asyncio
-async def test_completion():
-    assert await completion("周杰伦")
+async def test_complete():
+    assert await complete("周杰伦")
 
 
 @pytest.mark.timeout(60)

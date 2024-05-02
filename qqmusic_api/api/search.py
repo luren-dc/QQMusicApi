@@ -45,7 +45,7 @@ async def hotkey() -> list[dict]:
     return [{"k": hotkey["query"], "n": hotkey["score"]} for hotkey in data]
 
 
-async def completion(keyword: str, highlight: bool = False) -> list[str]:
+async def complete(keyword: str, highlight: bool = False) -> list[str]:
     """
     搜索词补全
 
@@ -62,7 +62,7 @@ async def completion(keyword: str, highlight: bool = False) -> list[str]:
         "num_per_page": 0,
         "page_idx": 0,
     }
-    res = await Api(**API["completion"]).update_params(**params).result
+    res = await Api(**API["complete"]).update_params(**params).result
     data = res["items"]
     if highlight:
         return [item["hint_hilight"] for item in data]
@@ -81,7 +81,7 @@ async def quick_search(keyword: str) -> dict:
         dict: 包含专辑，歌手，歌曲的简略信息
     """
     res = await Api(**API["quick_search"]).update_params(key=keyword).result
-    return res["data"]  # type: ignore
+    return res["data"]
 
 
 async def general_search(keyword: str, page: int = 1, highlight: bool = False) -> dict:
@@ -139,7 +139,7 @@ async def search_by_type(
         list: 搜索结果.
     """
     params = {
-        "search_id": random_searchID(),
+        "searchid": random_searchID(),
         "query": keyword,
         "search_type": search_type.value,
         "num_per_page": num,
@@ -163,4 +163,4 @@ async def search_by_type(
     data = res["body"][types[search_type]]["list"]
     if search_type in [SearchType.SONG, SearchType.LYRIC, SearchType.AUDIO]:
         return [parse_song_info(song) for song in data]
-    return data  # type: ignore
+    return data

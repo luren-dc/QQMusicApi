@@ -6,8 +6,8 @@ from typing import Any
 
 import aiohttp
 
-from ..exceptions import ClientException, NetworkException, ResponseCodeException
-from ..settings import API_URL, QIMEI36, QQMUSIC_VERSION_CODE, UID
+from .. import settings
+from ..exceptions import ClientException, NetworkException
 from .credential import Credential
 
 HEADERS = {
@@ -61,7 +61,7 @@ class Api:
 
     method: str
     module: str = ""
-    url: str = API_URL
+    url: str = settings.API_URL
     comment: str = ""
     verify: bool = False
     json_body: bool = False
@@ -97,9 +97,9 @@ class Api:
         return "_Api__result" in self.__dict__
 
     @property
-    async def result(self) -> str | dict | None:
+    async def result(self) -> dict | None:
         """
-        异步获取请求结果
+        获取请求结果
         """
         if self.__result is None:
             self.__result = await self.request()
@@ -160,11 +160,11 @@ class Api:
         """
         common = {
             "ct": "11",
-            "cv": QQMUSIC_VERSION_CODE,
-            "v": QQMUSIC_VERSION_CODE,
+            "cv": settings.QQMUSIC_VERSION_CODE,
+            "v": settings.QQMUSIC_VERSION_CODE,
             "tmeAppID": "qqmusic",
-            "QIMEI36": QIMEI36,
-            "uid": UID,
+            "QIMEI36": settings.QIMEI36,
+            "uid": settings.UID,
             "format": "json",
             "inCharset": "utf-8",
             "outCharset": "utf-8",
@@ -209,7 +209,7 @@ class Api:
             config["params"] = ""
         return config
 
-    async def request(self) -> str | dict | None:
+    async def request(self) -> dict | None:
         """
         向接口发送请求
         """
@@ -230,24 +230,18 @@ class Api:
 
     def __process_response(
         self, resp: aiohttp.ClientResponse, resp_text: str
-    ) -> str | dict | None:
+    ) -> dict | None:
         content_length = resp.headers.get("content-length")
         if content_length and int(content_length) == 0:
             return None
         try:
             resp_data = json.loads(resp_text)
+            if self.module:
+                request_data = resp_data["request"]
+                return request_data["data"]
+            return resp_data
         except Exception:
-            return resp_text
-        if self.module:
-            request_data = resp_data["request"]
-            if not request_data["code"] in [0, 20276]:
-                raise ResponseCodeException(
-                    request_data.get("code", -1),
-                    request_data.get("subcode", -1),
-                    [self.module, self.method],
-                )
-            return request_data["data"]
-        return resp_data
+            return None
 
 
 @atexit.register
