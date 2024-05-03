@@ -2,15 +2,28 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
-      - id: trailing-whitespace
-      - id: end-of-file-fixer
-      - id: check-yaml
-      - id: check-toml
-      - id: check-json
-      - id: check-builtin-literals
-      - id: check-docstring-first
       - id: check-added-large-files
+      - id: check-ast
+      - id: check-builtin-literals
+      - id: check-case-conflict
+      - id: check-docstring-first
+      - id: check-shebang-scripts-are-executable
+      - id: check-merge-conflict
+      - id: check-json
+      - id: check-toml
+      - id: check-xml
+      - id: check-yaml
+      - id: debug-statements
+      - id: destroyed-symlinks
+      - id: detect-private-key
+      - id: end-of-file-fixer
+        exclude: ^LICENSE|\.(html|csv|txt|svg)$
       - id: pretty-format-json
+        args: [--autofix, --no-ensure-ascii, --no-sort-keys,--indent,"4"]
+      - id: requirements-txt-fixer
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+        exclude: \.(html|svg)$
 
   - repo: https://github.com/python-poetry/poetry
     rev: 1.8.0
@@ -26,42 +39,28 @@ repos:
           - requirements.txt
         id: poetry-export
 
-  - repo: https://github.com/pycqa/flake8
-    rev: 7.0.0
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.15.2
     hooks:
-      - id: flake8
+      - id: pyupgrade
 
-  - repo: https://github.com/PyCQA/autoflake
-    rev: v2.3.1
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.4.2
     hooks:
-      - args:
-          - --remove-all-unused-imports
-          - --in-place
-        id: autoflake
-
-  - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
-    hooks:
-      - args:
-          - --profile
-          - black
-          - --filter-files
-        id: isort
-
-  - repo: https://github.com/psf/black
-    rev: 24.3.0
-    hooks:
-      - id: black
+      - id: ruff
+        args:
+         - --fix
+      - id: ruff-format
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.9.0
     hooks:
-      - additional_dependencies:
+      - id: mypy
+        additional_dependencies:
           - types-requests
         args:
           - --check-untyped-defs
           - --ignore-missing-imports
-        id: mypy
 
   - repo: https://github.com/commitizen-tools/commitizen
     rev: v3.25.0
