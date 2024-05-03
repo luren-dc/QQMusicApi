@@ -3,7 +3,7 @@
     <p> Python QQ音乐 API 封装库 </p>
 
 ![Python Version 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue)
-![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 ![GitHub license](https://img.shields.io/github/license/luren-dc/PyQQMusicApi)
 
 </div>
