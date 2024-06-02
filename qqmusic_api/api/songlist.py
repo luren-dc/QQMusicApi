@@ -1,6 +1,8 @@
 from typing import Optional
 
-from ..utils.common import get_api, parse_song_info
+from qqmusic_api.api.song import Song
+
+from ..utils.common import get_api
 from ..utils.network import Api
 
 API = get_api("songlist")
@@ -56,7 +58,7 @@ class Songlist:
             list: 歌单歌曲
         """
         result = await self.__get_info()
-        return [parse_song_info(song) for song in result["songlist"]]
+        return [Song.from_dict(song) for song in result["songlist"]]
 
     async def get_song_tag(self) -> list[dict]:
         """
