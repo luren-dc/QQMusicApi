@@ -86,7 +86,7 @@ class Top:
             "period": self.period,
         }
 
-    async def get_song(self) -> list[dict]:
+    async def get_song(self) -> list[Song]:
         """
         获取排行榜歌曲
 

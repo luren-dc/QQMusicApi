@@ -50,7 +50,7 @@ class Songlist:
         result = await self.__get_info()
         return result["dirinfo"]
 
-    async def get_song(self) -> list[dict]:
+    async def get_song(self) -> list[Song]:
         """
         获取歌单歌曲
 
