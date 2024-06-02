@@ -25,6 +25,31 @@
 - [Requests](https://requests.readthedocs.io/)
 - [Cryptography](https://cryptography.io/)
 
+## 快速上手
+
+### 安装
+
+```
+$ pip install qqmusic-api-python
+```
+
+### 使用
+
+```
+import asyncio
+
+from qqmusic_api import search
+
+async def main():
+    # 搜索歌曲
+    result = await search.search_by_type(keyword="周杰伦", num=20)
+    # 打印结果
+    print(result)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
 ## TODO
 
 - [ ] 歌手 API

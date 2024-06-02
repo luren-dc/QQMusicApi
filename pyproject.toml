@@ -1,8 +1,9 @@
 [tool.poetry]
-name = "QQMusic_Api"
-version = "0.2.0"
+name = "qqmusic-api-python"
+version = "0.1.0"
 description = "QQ音乐API封装库"
 authors = ["Luren <dluren.c@gmail.com>"]
+packages = [{ include = "qqmusic_api" }]
 license = "MIT"
 readme = "README.md"
 maintainers = ["Luren <dluren.c@gmail.com>"]

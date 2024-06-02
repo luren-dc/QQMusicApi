@@ -125,7 +125,7 @@ async def search_by_type(
     page: int = 1,
     selectors: dict = {},
     highlight: bool = False,
-) -> list[dict]:
+) -> list[Song]:
     """
     搜索
 
