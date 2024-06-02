@@ -1,5 +1,6 @@
+from qqmusic_api.api.song import Song
 from qqmusic_api.utils.network import Api
-from ..utils.common import get_api, parse_song_info
+from ..utils.common import get_api
 import datetime
 
 API = get_api("top")
@@ -94,4 +95,4 @@ class Top:
         """
         param = {"topId": self.id, "period": self.period, "offset": 0, "num": 100}
         result = await Api(**API["detail"]).update_params(**param).result
-        return [parse_song_info(song) for song in result["songInfoList"]]
+        return [Song.from_dict(song) for song in result["songInfoList"]]

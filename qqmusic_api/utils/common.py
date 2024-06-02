@@ -60,18 +60,6 @@ def random_searchID() -> str:
 
 
 def parse_song_info(song_info: dict) -> dict:
-    # 解析歌曲信息
-    info = {
-        "id": song_info["id"],
-        "mid": song_info["mid"],
-        "name": song_info["name"],
-        "title": song_info["title"],
-        "subTitle": song_info.get("subtitle", ""),
-        "language": song_info["language"],
-        "time_public": song_info.get("time_public", ""),
-        "tag": song_info.get("tag", ""),
-        "type": song_info["type"],
-    }
     # 解析专辑信息
     album = {
         "id": song_info["album"]["id"],
@@ -96,6 +84,21 @@ def parse_song_info(song_info: dict) -> dict:
         }
         for s in song_info["singer"]
     ]
+    # 解析歌曲信息
+    info = {
+        "id": song_info["id"],
+        "mid": song_info["mid"],
+        "name": song_info["name"],
+        "title": song_info["title"],
+        "subTitle": song_info.get("subtitle", ""),
+        "language": song_info["language"],
+        "time_public": song_info.get("time_public", ""),
+        "tag": song_info.get("tag", ""),
+        "type": song_info["type"],
+        "album": album,
+        "mv": mv,
+        "singer": singer,
+    }
     # 解析文件信息
     file = {
         "media_mid": song_info["file"]["media_mid"],
@@ -114,9 +117,6 @@ def parse_song_info(song_info: dict) -> dict:
     # 组装结果
     result = {
         "info": info,
-        "album": album,
-        "mv": mv,
-        "singer": singer,
         "file": file,
         "lyric": {
             "match": song_info.get("lyric", ""),

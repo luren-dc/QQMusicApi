@@ -89,6 +89,22 @@ class Song:
         self.credential = Credential() if credential is None else credential
         self._info: Optional[dict] = None
 
+    @classmethod
+    def from_dict(cls, info: dict):
+        """
+        从字典新建 Song
+
+        Args:
+            info: 歌曲字典
+
+        Returns:
+            Song: 歌曲类
+        """
+        info = parse_song_info(info)
+        s = cls(id=info["info"]["id"], mid=info["info"]["mid"])
+        s._info = info
+        return s
+
     async def __get_info(self):
         """
         获取歌曲必要信息
@@ -155,7 +171,7 @@ class Song:
         Returns:
             dict: 基本信息
         """
-        return await self.__get_info()
+        return (await self.__get_info())["info"]
 
     async def get_detail(self) -> dict:
         """
@@ -293,8 +309,8 @@ async def query_by_id(id: list[int]) -> list[dict]:
     param = {
         "ids": id,
         "mids": [],
-        "types": [0 for i in range(len(id))],
-        "modify_stamp": [0 for i in range(len(id))],
+        "types": [0 for _ in range(len(id))],
+        "modify_stamp": [0 for _ in range(len(id))],
         "ctx": 0,
         "client": 1,
     }
@@ -316,8 +332,8 @@ async def query_by_mid(mid: list[str]) -> list[dict]:
     param = {
         "ids": [],
         "mids": mid,
-        "types": [0 for i in range(len(mid))],
-        "modify_stamp": [0 for i in range(len(mid))],
+        "types": [0 for _ in range(len(mid))],
+        "modify_stamp": [0 for _ in range(len(mid))],
         "ctx": 0,
         "client": 1,
     }

@@ -1,4 +1,6 @@
-from ..utils.common import get_api, parse_song_info
+from qqmusic_api.api.song import Song
+
+from ..utils.common import get_api
 from ..utils.network import Api
 
 API = get_api("album")
@@ -23,7 +25,7 @@ class Album:
         """
         return await Api(**API["detail"]).update_params(albumMid=self.mid).result
 
-    async def get_song(self) -> list[dict]:
+    async def get_song(self) -> list[Song]:
         """
         获取专辑歌曲
 
@@ -35,4 +37,4 @@ class Album:
             .update_params(albumMid=self.mid, begin=0, num=0)
             .result
         )
-        return [parse_song_info(song["songInfo"]) for song in result["songList"]]
+        return [Song.from_dict(song["songInfo"]) for song in result["songList"]]
