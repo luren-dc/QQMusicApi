@@ -1,4 +1,4 @@
-from .api import login, search, song, songlist
+from .api import album, login, search, song, songlist
 from .utils.credential import Credential
 
-__all__ = ["Credential", "login", "search", "song", "songlist"]
+__all__ = ["album", "Credential", "login", "search", "song", "songlist"]

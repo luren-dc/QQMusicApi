@@ -1,0 +1,20 @@
+{
+    "detail": {
+        "module": "music.musichallAlbum.AlbumInfoServer",
+        "method": "GetAlbumDetail",
+        "params": {
+            "albumMid": "str 专辑 mid"
+        },
+        "comment": "获取专辑信息"
+    },
+    "song": {
+        "module": "music.musichallAlbum.AlbumSongList",
+        "method": "GetAlbumSongList",
+        "params": {
+            "albumMid": "str 专辑 mid",
+            "begin": "int 开启位置",
+            "num": "int 返回数量"
+        },
+        "comment": "获取专辑歌曲"
+    }
+}
