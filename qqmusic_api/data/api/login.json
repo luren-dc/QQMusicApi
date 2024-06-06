@@ -1,0 +1,69 @@
+{
+    "QQ_login": {
+        "module": "QQConnectLogin.LoginServer",
+        "method": "QQLogin",
+        "params": {
+            "code": "str 鉴权码"
+        },
+        "extra_common": {
+            "tmeLoginType": "str 2"
+        },
+        "comment": "QQ 鉴权"
+    },
+    "WX_login": {
+        "module": "music.login.LoginServer",
+        "method": "Login",
+        "params": {
+            "strAppid": "wx48db31d50e334801",
+            "code": "str 鉴权码"
+        },
+        "extra_common": {
+            "tmeLoginType": "str 1"
+        },
+        "comment": "微信鉴权"
+    },
+    "send_authcode": {
+        "module": "music.login.LoginServer",
+        "method": "SendPhoneAuthCode",
+        "params": {
+            "tmeAppid": "qqmusic",
+            "phoneNo": "str 手机号",
+            "areaCode": "int 地区码(86)"
+        },
+        "extra_common": {
+            "tmeLoginMethod": "str 3"
+        },
+        "comment": "发送验证码"
+    },
+    "phone_login": {
+        "module": "music.login.LoginServer",
+        "method": "Login",
+        "params": {
+            "code": "str 验证码",
+            "phoneNo": "str 手机号",
+            "loginMode": "int 1"
+        },
+        "extra_common": {
+            "tmeLoginMethod": "str 3"
+        },
+        "comment": "发送验证码"
+    },
+    "refresh": {
+        "module": "music.login.LoginServer",
+        "method": "Login",
+        "params": {
+            "openid": "str",
+            "access_token": "str",
+            "refresh_token": "str",
+            "expired_in": "int",
+            "musicid": "str 必须",
+            "musickey": "str",
+            "refresh_key": "str 必须",
+            "loginMode": "int 2"
+        },
+        "extra_common": {
+            "tmeLoginMethod": "str 可填2"
+        },
+        "comment": "刷新cookies"
+    }
+}
