@@ -1,0 +1,17 @@
+{
+    "detail": {
+        "module": "srf_diss_info.DissInfoServer",
+        "method": "CgiGetDiss",
+        "params": {
+            "disstid": "int 歌单ID",
+            "dirid": "int 0",
+            "tag": "int 是否返回歌曲标签",
+            "onlysonglist": "int 是否只返回歌曲",
+            "song_begin": "int 开始位置",
+            "song_num": "int 返回数量",
+            "userinfo": "int 是否返回以后信息",
+            "orderlist": "int 是否排序歌单",
+            "caller": "str musicid"
+        }
+    }
+}
