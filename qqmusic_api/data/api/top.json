@@ -1,0 +1,20 @@
+{
+    "category": {
+        "module": "music.musicToplist.Toplist",
+        "method": "GetAll",
+        "params": {},
+        "comment": "获取所有榜单"
+    },
+    "detail": {
+        "module": "music.musicToplist.Toplist",
+        "method": "GetDetail",
+        "params": {
+            "topId": "int 榜单ID",
+            "offset": "int 开始位置",
+            "num": "int 返回数量",
+            "withTags": "bool 是否返回歌曲标签",
+            "period": "str 榜单周期"
+        },
+        "comment": "获取榜单详情"
+    }
+}

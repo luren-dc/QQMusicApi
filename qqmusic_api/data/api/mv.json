@@ -1,0 +1,26 @@
+{
+    "detail": {
+        "module": "video.VideoDataServer",
+        "method": "get_video_info_batch",
+        "params": {
+            "vidlist": "list vid 列表",
+            "required": "list 查询字段"
+        },
+        "comment": "获取 MV 信息"
+    },
+    "url": {
+        "module": "music.stream.MvUrlProxy",
+        "method": "GetMvUrls",
+        "params": {
+            "vids": "list vid 列表",
+            "request_type": "int 10003",
+            "guid": "str 随机32位字符串",
+            "videoformat": "int 1",
+            "format": "int 265",
+            "dolby": "int 1",
+            "use_new_domain": "int 1",
+            "use_ipv6": "int 1"
+        },
+        "comment": "获取 MV 播放地址"
+    }
+}

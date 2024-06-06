@@ -1,0 +1,105 @@
+{
+    "query": {
+        "module": "music.trackInfo.UniformRuleCtrl",
+        "method": "CgiGetTrackInfo",
+        "params": {
+            "ids": "list id列表",
+            "mids": "list mid列表",
+            "types": "[0 for i in range(len(id or mid))]",
+            "modify_stamp": "[0 for i in range(len(id or mid))]",
+            "ctx": "int 0",
+            "client": "int 1"
+        },
+        "comment": "使用 ID 或 mid 查询歌曲"
+    },
+    "detail": {
+        "module": "music.pf_song_detail_svr",
+        "method": "get_song_detail_yqq",
+        "params": {
+            "song_id": "int 歌曲 ID",
+            "song_mid": "str 歌曲 mid"
+        },
+        "comment": "获取歌曲详细信息"
+    },
+    "similar": {
+        "module": "music.recommend.TrackRelationServer",
+        "method": "GetSimilarSongs",
+        "params": {
+            "songid": "int 歌曲 ID"
+        },
+        "comment": "获取相似歌曲"
+    },
+    "labels": {
+        "module": "music.recommend.TrackRelationServer",
+        "method": "GetSongLabels",
+        "params": {
+            "songid": "int 歌曲 ID"
+        },
+        "comment": "获取歌曲标签"
+    },
+    "playlist": {
+        "module": "music.recommend.TrackRelationServer",
+        "method": "GetRelatedPlaylist",
+        "params": {
+            "songid": "int 歌曲 ID"
+        },
+        "comment": "获取相关歌单"
+    },
+    "mv": {
+        "module": "MvService.MvInfoProServer",
+        "method": "GetSongRelatedMv",
+        "params": {
+            "songid": "int 歌曲 ID",
+            "songmid": "str 歌曲 mid"
+        },
+        "comment": "获取相关MV"
+    },
+    "other": {
+        "module": "music.musichallSong.OtherVersionServer",
+        "method": "GetOtherVersionSongs",
+        "params": {
+            "songid": "int 歌曲 ID",
+            "songmid": "str 歌曲 mid"
+        },
+        "comment": "获取其他版本"
+    },
+    "sheet": {
+        "module": "music.mir.SheetMusicSvr",
+        "method": "GetMoreSheetMusic",
+        "params": {
+            "songmid": "str 歌曲 mid"
+        },
+        "comment": "获取相关曲谱"
+    },
+    "producer": {
+        "module": "music.sociality.KolWorksTag",
+        "method": "SongProducer",
+        "params": {
+            "songid": "int 歌曲 ID",
+            "songmid": "str 歌曲 mid"
+        },
+        "comment": "获取歌曲制作团队"
+    },
+    "play_url": {
+        "module": "music.vkey.GetVkey",
+        "method": "UrlGetVkey",
+        "params": {
+            "filename": "[f'{file_type.s}{_}{_}{file_type.e}' for _ in mid]",
+            "guid": "str 随机32位字符串",
+            "songmid": "list mid 列表",
+            "songtype": "[1 for _ in range(len(mid))]"
+        },
+        "comment": "获取播放链接"
+    },
+    "download_url": {
+        "module": "music.vkey.GetDownUrl",
+        "method": "CgiGetDownUrl",
+        "params": {
+            "filename": "[f'{file_type.s}{_}{_}{file_type.e}' for _ in mid]",
+            "guid": "str 随机32位字符串",
+            "songmid": "list mid 列表",
+            "songtype": "[1 for _ in range(len(mid))]"
+        },
+        "comment": "获取下载链接"
+    }
+}
