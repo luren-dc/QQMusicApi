@@ -10,6 +10,9 @@
 
 ---
 
+> [!WARNING]
+> 本仓库的所有内容仅供学习和参考之用，禁止用于商业用途。
+
 ## 介绍
 
 使用 Python 编写的用于调用 [QQ音乐](https://y.qq.com/) 各种 API 的库.
@@ -21,6 +24,16 @@
 - [AIOHTTP](https://docs.aiohttp.org/)
 - [Requests](https://requests.readthedocs.io/)
 - [Cryptography](https://cryptography.io/)
+
+## TODO
+
+- [ ] 歌手 API
+
+## 参考项目
+
+- [Rain120/qq-muisc-api](https://github.com/Rain120/qq-muisc-api)
+- [jsososo/QQMusicApi](https://github.com/jsososo/QQMusicApi)
+- [Nemo2011/bilibili-api](https://github.com/Nemo2011/bilibili-api/)
 
 ## Licence
 
