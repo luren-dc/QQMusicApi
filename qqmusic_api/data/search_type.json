@@ -1,0 +1,11 @@
+{
+    "song": 0,
+    "singer": 1,
+    "album": 2,
+    "songlist": 3,
+    "mv": 4,
+    "lyric": 7,
+    "user": 8,
+    "audio_album": 15,
+    "audio": 18
+}
