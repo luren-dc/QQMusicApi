@@ -12,6 +12,13 @@ assignees: ''
 
 #### 您使用的版本？ | Your usage version?
 
+<!--
+Example:
+- OS: Ubuntu 20.04
+- Python: 3.9.0
+- QQMusicApi: 0.1.0
+-->
+
 #### 您使用的场景？ | Your usage scenarios?
 
 #### 您做了什么操作？ | What did you do?
