@@ -1,0 +1,22 @@
+name: Generate changelog
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  generate_changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: orhun/git-cliff-action@v3
+        id: git-cliff
+        with:
+          config: pyproject.toml
+        env:
+          OUTPUT: CHANGELOG.md
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Print the changelog
+        run: cat "${{ steps.git-cliff.outputs.changelog }}"

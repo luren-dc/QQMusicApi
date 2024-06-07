@@ -146,20 +146,13 @@ commit_preprocessors = [
 ]
 # regex for parsing and grouping commits
 commit_parsers = [
-  { message = "^feat", group = "<!-- 0 -->🚀 Features" },
-  { message = "^fix", group = "<!-- 1 -->🐛 Bug Fixes" },
-  { message = "^doc", group = "<!-- 3 -->📚 Documentation" },
-  { message = "^perf", group = "<!-- 4 -->⚡ Performance" },
-  { message = "^refactor", group = "<!-- 2 -->🚜 Refactor" },
-  { message = "^style", group = "<!-- 5 -->🎨 Styling" },
-  { message = "^test", group = "<!-- 6 -->🧪 Testing" },
-  { message = "^chore\\(release\\): prepare for", skip = true },
-  { message = "^chore\\(deps.*\\)", skip = true },
-  { message = "^chore\\(pr\\)", skip = true },
-  { message = "^chore\\(pull\\)", skip = true },
-  { message = "^chore|^ci", group = "<!-- 7 -->⚙️ Miscellaneous Tasks" },
-  { body = ".*security", group = "<!-- 8 -->🛡️ Security" },
-  { message = "^revert", group = "<!-- 9 -->◀️ Revert" },
+  { message = "^feat", group = "<!-- 0 -->🚀 Features --- 特性" },
+  { message = "^fix", group = "<!-- 1 -->🐛 Bug Fixes --- Bug 修复" },
+  { message = "^doc|^docs", group = "<!-- 3 -->📚 Documentation --- 文档" },
+  { message = "^perf", group = "<!-- 4 -->⚡ Performance --- 性能优化" },
+  { message = "^refactor", group = "<!-- 2 -->🚜 Refactor --- 代码重构" },
+  { message = "^style", group = "<!-- 5 -->🎨 Styling --- 样式" },
+  { message = "^test", group = "<!-- 6 -->🧪 Testing --- 测试" },
 ]
 # protect breaking changes from being skipped due to matching a skipping commit_parser
 protect_breaking_commits = false
@@ -175,3 +168,7 @@ ignore_tags = ""
 topo_order = false
 # sort the commits inside sections by oldest/newest order
 sort_commits = "oldest"
+
+[tool.git-cliff.remote.github]
+owner = "luren-dc"
+repo = "QQMusicApi"
