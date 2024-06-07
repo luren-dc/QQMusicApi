@@ -42,21 +42,17 @@ class Api:
     用于请求的 Api 类
 
     Args:
-        url (str, optional): 请求地址. Defaults to API_URL.
-
-        method (str): 请求方法
-
-        comment (str, optional): 注释. Defaults to "".
-
-        verify (bool, optional): 是否验证凭据. Defaults to False.
-
-        json_body (bool, optional): 是否使用 json 作为载荷. Defaults to False.
-
-        data (dict, optional): 请求载荷. Defaults to {}.
-
-        params (dict, optional): 请求参数. Defaults to {}.
-
-        credential (Credential, optional): 凭据. Defaults to Credential().
+        url: 请求地址. Defaults to API_URL
+        method: 请求方法
+        module: 请求模块. Defaults to ""
+        comment: 注释. Defaults to ""
+        verify: 是否验证凭据. Defaults to False
+        json_body: 是否使用 json 作为载荷. Defaults to False
+        data: 请求载荷. Defaults to {}
+        params: 请求参数. Defaults to {}
+        headers: 请求头. Defaults to {}
+        credential: 凭据. Defaults to Credential()
+        extra_common: 额外参数. Defaults to {}
     """
 
     method: str

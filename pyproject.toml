@@ -1,8 +1,9 @@
 [tool.poetry]
-name = "QQMusic_Api"
-version = "0.2.0"
+name = "qqmusic-api-python"
+version = "0.1.0"
 description = "QQ音乐API封装库"
 authors = ["Luren <dluren.c@gmail.com>"]
+packages = [{ include = "qqmusic_api" }]
 license = "MIT"
 readme = "README.md"
 maintainers = ["Luren <dluren.c@gmail.com>"]
@@ -52,14 +53,21 @@ pythonpath = "./"
 timeout = 30
 testpaths = ["tests"]
 
-[tool.commitizen]
-name = "cz_conventional_commits"
-tag_format = "$version"
-version_scheme = "pep440"
-version_provider = "poetry"
-update_changelog_on_bump = true
-major_version_zero = true
+[tool.git-cliff.changelog]
+# changelog header
+header = """
+# Changelog\n
+"""
+body = """
+{%- macro remote_url() -%}
+  https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}
+{%- endmacro -%}
 
+{% if version -%}
+    ## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
+{% else -%}
+    ## [Unreleased]
+{% endif -%}
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).\n

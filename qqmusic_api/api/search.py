@@ -1,5 +1,7 @@
 from enum import Enum
 
+from qqmusic_api.api.song import Song
+
 from ..utils.common import get_api, parse_song_info, random_searchID
 from ..utils.network import Api
 
@@ -123,7 +125,7 @@ async def search_by_type(
     page: int = 1,
     selectors: dict = {},
     highlight: bool = False,
-) -> list[dict]:
+) -> list[Song]:
     """
     搜索
 
@@ -162,5 +164,5 @@ async def search_by_type(
     }
     data = res["body"][types[search_type]]["list"]
     if search_type in [SearchType.SONG, SearchType.LYRIC, SearchType.AUDIO]:
-        return [parse_song_info(song) for song in data]
+        return [Song.from_dict(song) for song in data]
     return data
