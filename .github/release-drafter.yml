@@ -1,30 +1,29 @@
 name-template: "v$RESOLVED_VERSION 🌈"
 tag-template: "v$RESOLVED_VERSION"
 categories:
-  - title: "🚀 Features"
+  - title: "🚀 Features --- 特性"
     labels:
       - "feat"
       - "feature"
-      - "enhancement"
-      - "kind/feature"
-  - title: "🐛 Bug Fixes"
+  - title: "🐛 Bug Fixes --- Bug 修复"
     labels:
       - "fix"
       - "bugfix"
       - "bug"
-      - "regression"
-      - "kind/bug"
-  - title: "📝 Documentation updates"
+  - title: "📝 Documentation --- 文档"
     labels:
+      - "doc"
       - "docs"
-      - "kind/doc"
-  - title: "👻 Maintenance"
+  - title: "⚡ Performance --- 性能优化"
     labels:
-      - "chore"
-      - "dependencies"
-      - "kind/chore"
-      - "kind/dep"
-  - title: "🚦 Tests"
+      - "perf"
+  - title: "🚜 Refactor --- 代码重构"
+    labels:
+      - "refactor"
+  - title: "🎨 Styling --- 样式"
+    labels:
+      - "style"
+  - title: "🧪 Testing --- 测试"
     labels:
       - "test"
       - "tests"

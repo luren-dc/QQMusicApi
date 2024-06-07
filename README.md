@@ -29,13 +29,13 @@
 
 ### 安装
 
-```
+```shell
 $ pip install qqmusic-api-python
 ```
 
 ### 使用
 
-```
+```python
 import asyncio
 
 from qqmusic_api import search
