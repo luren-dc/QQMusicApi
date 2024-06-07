@@ -168,7 +168,3 @@ ignore_tags = ""
 topo_order = false
 # sort the commits inside sections by oldest/newest order
 sort_commits = "oldest"
-
-[tool.git-cliff.remote.github]
-owner = "luren-dc"
-repo = "QQMusicApi"
