@@ -26,18 +26,18 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-cryptography = "41.0.2"
-requests = "2.31.0"
-aiohttp = "3.9.5"
+cryptography = "^41.0.2"
+requests = "^2.31.0"
+aiohttp = "^3.9.5"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "8.2.0"
-pytest-asyncio = "0.23.6"
-qrcode = { extras = ["pil"], version = "7.4.2" }
-pyzbar = "0.1.9"
-pytest-timeout = "2.3.1"
-pytest-sugar = "1.0.0"
-pre-commit = "3.7.0"
+pytest = "^8.2.0"
+pytest-asyncio = "^0.23.6"
+qrcode = { extras = ["pil"], version = "^7.4.2" }
+pyzbar = "^0.1.9"
+pytest-timeout = "^2.3.1"
+pytest-sugar = "^1.0.0"
+pre-commit = "^3.7.0"
 
 [build-system]
 requires = ["poetry-core"]
