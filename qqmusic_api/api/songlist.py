@@ -63,6 +63,7 @@ class Songlist:
     async def get_song_tag(self) -> list[dict]:
         """
         获取歌单歌曲标签
+        注：存在几率返回为空
 
         Returns:
             list: 歌单歌曲标签
