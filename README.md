@@ -53,6 +53,8 @@ if __name__ == "__main__":
 ## TODO
 
 - [ ] 歌手 API
+- [ ] 评论 API
+- [ ] 用户 API
 
 ## 参考项目
 
