@@ -14,7 +14,7 @@ API = get_api("login")
 
 class QrCodeLoginEvents(Enum):
     """
-    二维码登录状态枚举
+    二维码登录状态
 
     + SCAN:    未扫描二维码
     + CONF:    未确认登录
@@ -34,7 +34,7 @@ class QrCodeLoginEvents(Enum):
 
 class PhoneLoginEvents(Enum):
     """
-    手机登录状态枚举
+    手机登录状态
 
     + SEND:    发送成功
     + CAPTCHA: 需要滑块验证

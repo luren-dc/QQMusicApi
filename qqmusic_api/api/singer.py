@@ -153,21 +153,21 @@ class Singer:
             mid: 歌手 mid
         """
         self.mid = mid
-        self.__info: Optional[dict] = None
+        self._info: Optional[dict] = None
 
     async def __get_info(self) -> dict:
         """
         获取歌手必要信息
         """
-        if not self.__info:
+        if not self._info:
             info = (
                 await Api(**API["homepage"]).update_params(SingerMid=self.mid).result
             )["Info"]
-            self.__info = {
+            self._info = {
                 "FansNum": info["FansNum"]["Num"],
             }
-            self.__info.update(info["Singer"])
-        return self.__info
+            self._info.update(info["Singer"])
+        return self._info
 
     async def get_info(self) -> dict:
         """
@@ -176,9 +176,9 @@ class Singer:
         Returns:
             dict: 歌手信息
         """
-        if not self.__info:
-            self.__info = await self.__get_info()
-        return self.__info
+        if not self._info:
+            self._info = await self.__get_info()
+        return self._info
 
     async def get_fans_num(self) -> int:
         """
