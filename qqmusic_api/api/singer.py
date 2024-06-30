@@ -1,7 +1,9 @@
 from enum import Enum
+from typing import Optional
 
 from ..utils.common import get_api
 from ..utils.network import Api
+from .song import Song
 
 API = get_api("singer")
 
@@ -80,6 +82,37 @@ class SexType(Enum):
     GROUP = 2
 
 
+class TabType(Enum):
+    """
+    Tab 类型
+
+    + WIKI:     wiki
+    + ALBUM:    专辑
+    + COMPOSER: 作曲
+    + LYRICIST: 作词
+    + PRODUCER: 制作人
+    + ARRANGER: 编曲
+    + MUSICIAN: 乐手
+    + SONG:     歌曲
+    + VIDEO:    视频
+    """
+
+    WIKI = ("wiki", "IntroductionTab")
+    ALBUM = ("album", "AlbumTab")
+    COMPOSER = ("song_composing", "SongTab")
+    LYRICIST = ("song_lyric", "SongTab")
+    PRODUCER = ("producer", "SongTab")
+    ARRANGER = ("arranger", "SongTab")
+    MUSICIAN = ("musician", "SongTab")
+    SONG = ("song_sing", "SongTab")
+    VIDEO = ("video", "VideoTab")
+
+    def __init__(self, tabID: str, tabName: str) -> None:
+        super().__init__()
+        self.tabID = tabID
+        self.tabName = tabName
+
+
 async def get_singer_list(
     area: AreaType = AreaType.ALL,
     sex: SexType = SexType.ALL,
@@ -120,3 +153,91 @@ class Singer:
             mid: 歌手 mid
         """
         self.mid = mid
+        self.__info: Optional[dict] = None
+
+    async def __get_info(self) -> dict:
+        """
+        获取歌手必要信息
+        """
+        if not self.__info:
+            info = (
+                await Api(**API["homepage"]).update_params(SingerMid=self.mid).result
+            )["Info"]
+            self.__info = {
+                "FansNum": info["FansNum"]["Num"],
+            }
+            self.__info.update(info["Singer"])
+        return self.__info
+
+    async def get_info(self) -> dict:
+        """
+        获取歌手信息
+
+        Returns:
+            dict: 歌手信息
+        """
+        if not self.__info:
+            self.__info = await self.__get_info()
+        return self.__info
+
+    async def get_fans_num(self) -> int:
+        """
+        获取歌手粉丝数
+
+        Returns:
+            int: 粉丝数
+        """
+        return (await self.__get_info())["FansNum"]
+
+    async def get_tab_detail(self, tab_type: TabType, page: int = 0, num: int = 100):
+        """
+        获取歌手 Tab 详细信息
+
+        Args:
+            tab_type: Tab 类型
+            page:     页码
+            num:      返回数量
+
+        Returns:
+            list: Tab 详细信息
+        """
+        return (
+            await Api(**API["homepage_tab_detail"])
+            .update_params(
+                SingerMid=self.mid,
+                IsQueryTabDetail=1,
+                TabID=tab_type.tabID,
+                PageNum=page - 1,
+                PageSize=num,
+                Order=0,
+            )
+            .result
+        )[tab_type.tabName]
+
+    async def get_song(
+        self, t: TabType = TabType.SONG, page: int = 1, num: int = 100
+    ) -> list[Song]:
+        """
+        获取歌手歌曲
+
+        Args:
+            t:    Tab 类型. Defaluts to TabType.SONG
+            page: 页码. Defaluts to 1
+            num:  返回数量. Defaluts to 100
+
+        Returns:
+            list: `Song` 列表
+        """
+        if t not in [
+            TabType.SONG,
+            TabType.COMPOSER,
+            TabType.LYRICIST,
+            TabType.PRODUCER,
+            TabType.MUSICIAN,
+            TabType.ARRANGER,
+        ]:
+            raise ValueError(
+                "t must be in [TabType.SONG, TabType.COMPOSER, TabType.LYRICIST, TabType.PRODUCER, TabType.MUSICIAN, TabType.ARRANGER]"
+            )
+        data = await self.get_tab_detail(t, page, num)
+        return Song.from_list(data["List"])

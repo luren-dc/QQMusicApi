@@ -58,7 +58,7 @@ if __name__ == "__main__":
 
 ## 参考项目
 
-- [Rain120/qq-muisc-api](https://github.com/Rain120/qq-muisc-api)
+- [Rain120/qq-muisc-api](https://github.com/Rain120/qq-music-api)
 - [jsososo/QQMusicApi](https://github.com/jsososo/QQMusicApi)
 - [Nemo2011/bilibili-api](https://github.com/Nemo2011/bilibili-api/)
 

@@ -10,7 +10,7 @@
         },
         "comment": "获取歌手列表"
     },
-    "homeage": {
+    "homepage": {
         "module": "music.UnifiedHomepage.UnifiedHomepageSrv",
         "method": "GetHomepageHeader",
         "params": {
@@ -33,11 +33,14 @@
     },
     "homepage_tab_detail": {
         "module": "music.UnifiedHomepage.UnifiedHomepageSrv",
-        "method": "GetHomepageHeader",
+        "method": "GetHomepageTabDetail",
         "params": {
             "SingerMid": "str 歌手 mid",
             "IsQueryTabDetail": "int  是否返回 Tab 详细信息",
             "TabID": "int TabID",
+            "PageNum": "int 页码",
+            "PageSize": "int 返回数量",
+            "StartIndex": "int 开始位置",
             "Order": "int 排序"
         },
         "comment": "获取歌手首页 Tab 栏信息"

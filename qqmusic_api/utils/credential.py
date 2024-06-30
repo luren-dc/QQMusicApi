@@ -1,28 +1,29 @@
+from dataclasses import dataclass, field, asdict
+from typing import Dict, Any
+
 from ..exceptions import (
     CredentialNoMusicidException,
     CredentialNoMusickeyException,
-    CredientialCanNotRefreshException,
+    CredentialCanNotRefreshException,
 )
 
 
+@dataclass
 class Credential:
-    def __init__(
-        self, musicid: str = "", musickey: str = "", refresh_key: str = "", **kwagrs
-    ):
-        self.musicid = musicid
-        self.musickey = musickey
-        self.refresh_key = refresh_key
-        self.login_type = 1 if "W_X" in musickey else 2
+    musicid: str = ""
+    musickey: str = ""
+    refresh_key: str = ""
+    login_type: int = field(init=False)
+    extra_fields: Dict[str, Any] = field(default_factory=dict)
 
-        for key, value in kwagrs.items():
-            setattr(self, key, value)
+    def __post_init__(self):
+        self.login_type = 1 if "W_X" in self.musickey else 2
 
     def get_dict(self) -> dict:
-        cookies = {}
-        for key, value in self.__dict__.items():
-            if key not in cookies and value is not None:
-                cookies[key] = value
-        return cookies
+        """
+        返回 Credential 的字典表示，包括所有字段。
+        """
+        return {**asdict(self), **self.extra_fields}
 
     def has_musicid(self) -> bool:
         """
@@ -44,10 +45,10 @@ class Credential:
 
     def raise_for_cannot_refresh(self):
         """
-        无法刷新 Credential 时则抛出异常
+        无法刷新 Credential 时抛出异常
         """
         if not self.can_refresh():
-            raise CredientialCanNotRefreshException()
+            raise CredentialCanNotRefreshException()
 
     def raise_for_no_musicid(self):
         """
@@ -75,18 +76,18 @@ class Credential:
         self.refresh_key = c.refresh_key
 
     @classmethod
-    def from_cookies(cls, cookies: dict = {}) -> "Credential":
+    def from_cookies(cls, cookies: dict) -> "Credential":
         """
-        从 cookies 新建 Credential
+        从 cookies 创建 Credential 实例
 
         Args:
-            cookies : Cookies.
+            cookies : Cookies 字典.
 
         Returns:
-            Credential: 凭据类
+            Credential: 凭据类实例
         """
-        c = cls()
-        c.musicid = cookies["musicid"]
-        c.musickey = cookies["musickey"]
-        c.refresh_key = cookies["refresh_key"]
-        return c
+        return cls(
+            musicid=cookies.get("musicid", ""),
+            musickey=cookies.get("musickey", ""),
+            refresh_key=cookies.get("refresh_key", ""),
+        )

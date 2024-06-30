@@ -6,8 +6,9 @@ from typing import Any
 
 import aiohttp
 
+
 from .. import settings
-from ..exceptions import ClientException, NetworkException
+from ..exceptions import ClientException, NetworkException, ResponseException
 from .credential import Credential
 
 HEADERS = {
@@ -78,28 +79,28 @@ class Api:
         self.params = {k: "" for k in self.params.keys()}
         self.headers = {k: "" for k in self.headers.keys()}
         self.extra_common = {k: "" for k in self.extra_common.keys()}
-        self.__result: str | dict | None = None
+        self.__result: dict | None = None
 
     def __setattr__(self, __name: str, __value: Any) -> None:
         """
         每次更新参数都要把 __result 清除
         """
-        if self.initialized and __name != "_Api__result":
+        if self.initialized and __name != "__Api__result":
             self.__result = None
         return super().__setattr__(__name, __value)
 
     @property
     def initialized(self):
-        return "_Api__result" in self.__dict__
+        return "__Api__result" in self.__dict__
 
     @property
-    async def result(self) -> dict | None:
+    async def result(self) -> dict:
         """
         获取请求结果
         """
         if self.__result is None:
             self.__result = await self.request()
-        return self.__result
+        return self.__result  # type: ignore
 
     def update_params(self, **kwargs) -> "Api":
         """
@@ -221,15 +222,13 @@ class Api:
                 except aiohttp.ClientResponseError as e:
                     raise NetworkException(e.status, e.message)
                 return self.__process_response(resp, await resp.text())
-        except aiohttp.client_exceptions.ClientConnectorError:
+        except aiohttp.ClientConnectionError:
             raise ClientException()
 
-    def __process_response(
-        self, resp: aiohttp.ClientResponse, resp_text: str
-    ) -> dict | None:
+    def __process_response(self, resp: aiohttp.ClientResponse, resp_text: str) -> dict:
         content_length = resp.headers.get("content-length")
         if content_length and int(content_length) == 0:
-            return None
+            raise ResponseException([self.module, self.method])
         try:
             resp_data = json.loads(resp_text)
             if self.module:
@@ -237,7 +236,7 @@ class Api:
                 return request_data["data"]
             return resp_data
         except Exception:
-            return None
+            raise ResponseException([self.module, self.method])
 
 
 @atexit.register

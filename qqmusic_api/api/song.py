@@ -105,6 +105,19 @@ class Song:
         s._info = info
         return s
 
+    @classmethod
+    def from_list(cls, data: list[dict]) -> list["Song"]:
+        """
+        从列表新建 Song
+
+        Args:
+            data: 歌曲列表
+
+        Returns:
+            list: 歌曲列表
+        """
+        return [cls.from_dict(info) for info in data]
+
     async def __get_info(self):
         """
         获取歌曲必要信息
