@@ -5,7 +5,6 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Optional
 
-from ..exceptions import AuthcodeExpiredException, ResponseCodeException
 from ..utils.common import get_api, hash33, random_uuid
 from ..utils.credential import Credential
 from ..utils.network import Api, get_aiohttp_session
@@ -15,7 +14,7 @@ API = get_api("login")
 
 class QrCodeLoginEvents(Enum):
     """
-    二维码登录状态枚举
+    二维码登录状态
 
     + SCAN:    未扫描二维码
     + CONF:    未确认登录
@@ -35,7 +34,7 @@ class QrCodeLoginEvents(Enum):
 
 class PhoneLoginEvents(Enum):
     """
-    手机登录状态枚举
+    手机登录状态
 
     + SEND:    发送成功
     + CAPTCHA: 需要滑块验证
@@ -400,17 +399,13 @@ class PhoneLogin(Login):
         if not authcode:
             raise ValueError("authcode 为空")
         params = {"code": str(authcode), "phoneNo": str(self.phone), "loginMode": 1}
-        try:
-            res = (
-                await Api(**API["phone_login"])
-                .update_params(**params)
-                .update_extra_common(tmeLoginMethod="3")
-                .result
-            )
-            return Credential.from_cookies(res)
-        except ResponseCodeException as e:
-            if e.code == 20271:
-                raise AuthcodeExpiredException()
+        res = (
+            await Api(**API["phone_login"])
+            .update_params(**params)
+            .update_extra_common(tmeLoginMethod="3")
+            .result
+        )
+        return Credential.from_cookies(res)
 
 
 async def refresh_cookies(credential: Credential) -> Credential:

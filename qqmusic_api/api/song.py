@@ -1,5 +1,9 @@
 from enum import Enum
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
+
+if TYPE_CHECKING:
+    from .album import Album
+    from .singer import Singer
 
 from ..exceptions import ArgsException
 from ..utils.common import get_api, parse_song_info, random_string
@@ -105,7 +109,20 @@ class Song:
         s._info = info
         return s
 
-    async def __get_info(self):
+    @classmethod
+    def from_list(cls, data: list[dict]) -> list["Song"]:
+        """
+        从列表新建 Song
+
+        Args:
+            data: 歌曲列表
+
+        Returns:
+            list: 歌曲列表
+        """
+        return [cls.from_dict(info) for info in data]
+
+    async def __get_info(self) -> dict:
         """
         获取歌曲必要信息
         """
@@ -114,7 +131,7 @@ class Song:
                 self._info = (await query_by_mid([self._mid]))[0]
             elif self._id:
                 self._info = (await query_by_id([self._id]))[0]
-        return self._info
+        return self._info  # type: ignore
 
     @property
     async def mid(self) -> str:
@@ -172,6 +189,28 @@ class Song:
             dict: 基本信息
         """
         return (await self.__get_info())["info"]
+
+    async def get_singer(self) -> "Singer":
+        """
+        获取歌曲歌手
+
+        Returns:
+            Singer: 歌手
+        """
+        from .singer import Singer
+
+        return Singer((await self.__get_info())["singer"]["mid"])
+
+    async def get_album(self) -> "Album":
+        """
+        获取歌曲专辑
+
+        Returns:
+            Album: 专辑
+        """
+        from .album import Album
+
+        return Album((await self.__get_info())["album"]["mid"])
 
     async def get_detail(self) -> dict:
         """

@@ -1,1 +1,48 @@
-{}
+{
+    "singer_list": {
+        "module": "music.musichallSinger.SingerList",
+        "method": "GetSingerList",
+        "params": {
+            "area": "int 地区码",
+            "sex": "int 性别",
+            "genre": "int 风格",
+            "hastag": "int 返回标签"
+        },
+        "comment": "获取歌手列表"
+    },
+    "homepage": {
+        "module": "music.UnifiedHomepage.UnifiedHomepageSrv",
+        "method": "GetHomepageHeader",
+        "params": {
+            "SingerMid": "str 歌手 mid",
+            "IsQueryTabDetail": "int  是否返回 Tab 详细信息",
+            "TabID": "int TabID",
+            "Order": "int 排序"
+        },
+        "comment": "获取歌手主页信息"
+    },
+    "desc": {
+        "module": "music.musichallSinger.SingerInfoInter",
+        "method": "GetSingerDetail",
+        "params": {
+            "singer_mids": "list 歌手 mid 列表",
+            "group_singer": "int 1",
+            "wiki_singer": "int 1"
+        },
+        "comment": "获取歌手简介"
+    },
+    "homepage_tab_detail": {
+        "module": "music.UnifiedHomepage.UnifiedHomepageSrv",
+        "method": "GetHomepageTabDetail",
+        "params": {
+            "SingerMid": "str 歌手 mid",
+            "IsQueryTabDetail": "int  是否返回 Tab 详细信息",
+            "TabID": "int TabID",
+            "PageNum": "int 页码",
+            "PageSize": "int 返回数量",
+            "StartIndex": "int 开始位置",
+            "Order": "int 排序"
+        },
+        "comment": "获取歌手首页 Tab 栏信息"
+    }
+}
