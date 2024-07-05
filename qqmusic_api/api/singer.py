@@ -189,7 +189,7 @@ class Singer:
         """
         return (await self.__get_info())["FansNum"]
 
-    async def get_tab_detail(self, tab_type: TabType, page: int = 0, num: int = 100):
+    async def get_tab_detail(self, tab_type: TabType, page: int = 1, num: int = 100):
         """
         获取歌手 Tab 详细信息
 
@@ -213,6 +213,15 @@ class Singer:
             )
             .result
         )[tab_type.tabName]
+
+    async def get_wiki(self) -> dict:
+        """
+        获取歌手WiKi
+
+        Returns:
+            dict: 歌手WiKi
+        """
+        return await self.get_tab_detail(TabType.WIKI)
 
     async def get_song(
         self, t: TabType = TabType.SONG, page: int = 1, num: int = 100
