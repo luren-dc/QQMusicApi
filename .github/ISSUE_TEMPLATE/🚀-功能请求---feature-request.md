@@ -1,7 +1,7 @@
 ---
 name: "\U0001F680 功能请求 | Feature Request"
 about: 请详细描述您期望的功能。 | Please describe in detail the features you expect.
-title: "\"\U0001F680 一些功能。。。 | [Feature]Some feature...\""
+title: "\U0001F680 一些功能。。。 | [Feature] Some feature..."
 labels: enhancement
 assignees: ''
 
