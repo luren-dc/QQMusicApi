@@ -1,8 +1,8 @@
 from typing import Optional
-from .song import Song
 
 from ..utils.common import get_api
 from ..utils.network import Api
+from .song import Song
 
 API = get_api("songlist")
 
@@ -19,6 +19,14 @@ class Songlist:
         """
         self.id = id
         self._info: Optional[dict] = None
+
+    def __repr__(self) -> str:
+        return f"Songlist(id={self.id})"
+
+    def __str__(self) -> str:
+        if self._info:
+            return str(self._info)
+        return self.__repr__()
 
     async def __get_info(self):
         if not self._info:

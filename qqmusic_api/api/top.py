@@ -1,7 +1,9 @@
+import datetime
+
 from qqmusic_api.api.song import Song
 from qqmusic_api.utils.network import Api
+
 from ..utils.common import get_api
-import datetime
 
 API = get_api("top")
 
@@ -49,6 +51,12 @@ class Top:
         self.id = id
         self.set_period(period)
 
+    def __repr__(self) -> str:
+        return f"Top(id={self.id}, period={self.period})"
+
+    def __str__(self) -> str:
+        return self.__repr__()
+
     def set_period(self, period: str):
         """
         设置排行榜时间
@@ -64,6 +72,7 @@ class Top:
     async def get_detail(self):
         """
         获取排行榜详细信息
+
         Returns:
             dict: 排行榜信息
         """
@@ -85,6 +94,7 @@ class Top:
     async def get_song(self) -> list[Song]:
         """
         获取排行榜歌曲
+
         Returns:
             list: 排行榜歌曲
         """

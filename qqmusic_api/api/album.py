@@ -18,6 +18,9 @@ class Album:
         """
         self.mid = mid
 
+    def __repr__(self) -> str:
+        return f"Album(mid={self.mid})"
+
     async def get_detail(self) -> dict:
         """
         Returns:

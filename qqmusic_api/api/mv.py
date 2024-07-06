@@ -15,6 +15,9 @@ class MV:
     def __init__(self, vid: str):
         self.vid = vid
 
+    def __repr__(self) -> str:
+        return f"MV(vid={self.vid})"
+
     async def get_detail(self) -> dict:
         """
         获取 MV 详细信息
