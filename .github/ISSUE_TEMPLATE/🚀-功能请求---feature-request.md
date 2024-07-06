@@ -9,6 +9,8 @@ assignees: ''
 
 <!-- 请在您提交期望的功能之前，回答以下这些问题。 | Please answer these questions before you submit the desired feature. -->
 
-#### 您使用的场景？ | 1. Your usage scenarios?
+## 您需求背景是什么？ | What is the background of your needs?
 
-#### 您期望的结果是怎样的？ | 2. What is your expected outcome?
+## 您期望结果是怎样的？ | What is your expected outcome?
+
+## 可能的实现方案？(可选) | Possible implementation options? (optional)
