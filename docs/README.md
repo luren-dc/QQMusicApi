@@ -1,5 +1,5 @@
 <div align="center">
-    <h1> QQMusicApi </h1>
+    <h1> QQMusic Api </h1>
     <p> Python QQ音乐 API 封装库 </p>
 
 ![Python Version 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue)
@@ -12,6 +12,8 @@
 
 > [!WARNING]
 > 本仓库的所有内容仅供学习和参考之用，禁止用于商业用途。
+
+文档: [https://luren-dc.github.io/QQMusicApi/](https://luren-dc.github.io/QQMusicApi/)
 
 ## 介绍
 
