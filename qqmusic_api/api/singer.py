@@ -155,6 +155,14 @@ class Singer:
         self.mid = mid
         self._info: Optional[dict] = None
 
+    def __repr__(self) -> str:
+        return f"Singer(mid={self.mid})"
+
+    def __str__(self) -> str:
+        if self._info:
+            return str(self._info)
+        return f"Singer(mid={self.mid})"
+
     async def __get_info(self) -> dict:
         """
         获取歌手必要信息

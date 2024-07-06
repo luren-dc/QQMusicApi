@@ -158,6 +158,14 @@ class Song:
             self._id = (await self.__get_info())["info"]["id"]
         return int(self._id)
 
+    def __repr__(self) -> str:
+        return f"Song(mid={self._mid}, id={self._id})"
+
+    def __str__(self) -> str:
+        if self._info:
+            return str(self._info)
+        return self.__repr__()
+
     async def __prepare_param(self, is_mid: bool = False, is_id: bool = False) -> dict:
         """
         准备请求参数
