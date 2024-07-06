@@ -78,20 +78,17 @@ class Song:
         self,
         mid: Optional[str] = None,
         id: Optional[int] = None,
-        credential: Optional[Credential] = None,
     ):
         """
         Args:
             mid:        歌曲 mid. 歌曲 id 和歌曲 mid 必须提供其中之一
             id:         歌曲 id. 歌曲 id 和歌曲 mid 必须提供其中之一
-            credential: Credential 类. Defaluts to None
         """
         # ID 检查
         if mid is None and id is None:
             raise ArgsException("请至少提供 mid 和 id 中的其中一个参数。")
         self._mid = mid
         self._id = id
-        self.credential = Credential() if credential is None else credential
         self._info: Optional[dict] = None
 
     @classmethod
