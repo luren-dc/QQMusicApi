@@ -64,4 +64,4 @@ if __name__ == "__main__":
 
 ## Licence
 
-**[MIT License](https://github.com/luren-dc/QQMusicApi/blob/master/LICENSE)**
+**[MIT License](https://github.com/luren-dc/QQMusicApi?tab=MIT-1-ov-file)**

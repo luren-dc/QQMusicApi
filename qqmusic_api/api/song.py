@@ -306,6 +306,7 @@ class Song:
         self,
         file_type: SongFileType = SongFileType.MP3_128,
         url_type: UrlType = UrlType.PLAY,
+        credential: Optional[Credential] = None,
     ) -> dict[str, str]:
         """
         获取歌曲文件链接
@@ -313,11 +314,12 @@ class Song:
         Args:
             file_type:  歌曲文件类型. Defaults to SongFileType.MP3_128
             url_type:   歌曲链接类型. Defaults to UrlType.PLAY
+            credential: 账号凭证. Defaults to None
 
         Returns:
             dict: 链接字典
         """
-        return await get_song_urls([await self.mid], file_type, url_type)
+        return await get_song_urls([await self.mid], file_type, url_type, credential)
 
     async def get_file_size(self, file_type: Optional[SongFileType] = None) -> dict:
         """

@@ -1,10 +1,10 @@
-from dataclasses import dataclass, field, asdict
-from typing import Dict, Any
+from dataclasses import asdict, dataclass, field
+from typing import Any, Dict
 
 from ..exceptions import (
+    CredentialCanNotRefreshException,
     CredentialNoMusicidException,
     CredentialNoMusickeyException,
-    CredentialCanNotRefreshException,
 )
 
 
