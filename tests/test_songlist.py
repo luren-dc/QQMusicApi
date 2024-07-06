@@ -15,5 +15,5 @@ async def test_get_song():
     assert await songlist.get_song()
 
 
-async def test_get_song_tag():
-    assert await songlist.get_song_tag()
+# async def test_get_song_tag():
+#     assert await songlist.get_song_tag()

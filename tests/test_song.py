@@ -39,8 +39,8 @@ async def test_get_sheet():
     assert await song.get_sheet()
 
 
-async def test_get_related_playlist():
-    assert await song.get_related_playlist()
+async def test_get_related_songlist():
+    assert await song.get_related_songlist()
 
 
 async def test_get_similar_songs():

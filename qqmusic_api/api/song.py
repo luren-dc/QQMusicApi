@@ -1,3 +1,4 @@
+import asyncio
 from enum import Enum
 from typing import TYPE_CHECKING, Optional
 
@@ -247,7 +248,7 @@ class Song:
         param = await self.__prepare_param(is_id=True)
         return (await Api(**API["labels"]).update_params(**param).result)["labels"]
 
-    async def get_related_playlist(self) -> list[dict]:
+    async def get_related_songlist(self) -> list[dict]:
         """
         获取歌曲相关歌单
 
@@ -411,18 +412,25 @@ async def get_song_urls(
     )
     api = Api(**API[url_type.value], credential=credential)
     urls = {}
+    tasks = []
     for mid in mid_list:
-        # 构造请求参数
-        file_name = [f"{file_type.s}{_}{_}{file_type.e}" for _ in mid]
-        param = {
-            "filename": file_name,
-            "guid": random_string(32, "abcdef1234567890"),
-            "songmid": mid,
-            "songtype": [1 for _ in range(len(mid))],
-        }
-        res = await api.update_params(**param).result
-        data = res["midurlinfo"]
-        for info in data:
-            song_url = domain + info["wifiurl"] if info["wifiurl"] else ""
-            urls[info["songmid"]] = song_url
+
+        async def get_song_url(mid):
+            # 构造请求参数
+            file_name = [f"{file_type.s}{_}{_}{file_type.e}" for _ in mid]
+            param = {
+                "filename": file_name,
+                "guid": random_string(32, "abcdef1234567890"),
+                "songmid": mid,
+                "songtype": [1 for _ in range(len(mid))],
+            }
+
+            res = await api.update_params(**param).result
+            data = res["midurlinfo"]
+            for info in data:
+                song_url = domain + info["wifiurl"] if info["wifiurl"] else ""
+                urls[info["songmid"]] = song_url
+
+        tasks.append(asyncio.create_task(get_song_url(mid)))
+    await asyncio.gather(*tasks)
     return urls

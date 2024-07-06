@@ -1,6 +1,5 @@
 from typing import Optional
-
-from qqmusic_api.api.song import Song
+from .song import Song
 
 from ..utils.common import get_api
 from ..utils.network import Api
