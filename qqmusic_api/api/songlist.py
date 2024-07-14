@@ -78,7 +78,7 @@ class Songlist:
         result = await self.__get_info()
         return result["songtag"]
 
-    async def get_song_mid(self) -> list[dict]:
+    async def get_song_mid(self) -> list[str]:
         """
         获取歌单歌曲全部 mid
 
