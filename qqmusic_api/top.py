@@ -1,9 +1,8 @@
 import datetime
 
-from qqmusic_api.api.song import Song
-from qqmusic_api.utils.network import Api
-
-from ..utils.common import get_api
+from .song import Song
+from .utils.network import Api
+from .utils.utils import get_api
 
 API = get_api("top")
 

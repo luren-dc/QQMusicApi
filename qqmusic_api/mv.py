@@ -1,8 +1,8 @@
 import random
 
-from ..utils.common import get_api, random_string
-from ..utils.network import Api
 from .song import query_by_id
+from .utils.network import Api
+from .utils.utils import get_api
 
 API = get_api("mv")
 
@@ -92,7 +92,7 @@ async def get_mv_urls(vid: list[str]) -> dict:
     param = {
         "vids": vid,
         "request_type": 10003,
-        "guid": random_string(32, "abcdef1234567890"),
+        "guid": "".join(random.choices("abcdef1234567890", k=32)),
         "videoformat": 1,
         "format": 265,
         "dolby": 1,

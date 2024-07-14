@@ -1,6 +1,6 @@
 import pytest
 
-from qqmusic_api.api.song import Song, get_song_urls, query_by_id, query_by_mid
+from qqmusic_api.song import Song, get_song_urls, query_by_id, query_by_mid
 
 pytestmark = pytest.mark.asyncio(scope="module")
 

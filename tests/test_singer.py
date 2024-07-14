@@ -1,9 +1,9 @@
 import pytest
 
-from qqmusic_api.api.singer import (
-    TabType,
+from qqmusic_api.singer import (
     Singer,
     Song,
+    TabType,
 )
 
 pytestmark = pytest.mark.asyncio(scope="module")

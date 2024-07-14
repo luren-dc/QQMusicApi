@@ -1,9 +1,8 @@
 from enum import Enum
 
-from qqmusic_api.api.song import Song
-
-from ..utils.common import get_api, parse_song_info, random_searchID
-from ..utils.network import Api
+from .song import Song
+from .utils.network import Api
+from .utils.utils import get_api, get_searchID, parse_song_info
 
 API = get_api("search")
 
@@ -41,7 +40,7 @@ async def hotkey() -> list[dict]:
     Returns:
         list: 热搜词列表，k为热搜词，n为搜索量
     """
-    params = {"search_id": random_searchID()}
+    params = {"search_id": get_searchID()}
     res = await Api(**API["hotkey"]).update_params(**params).result
     data = res.get("vec_hotkey", [])
     return [{"k": hotkey["query"], "n": hotkey["score"]} for hotkey in data]
@@ -59,7 +58,7 @@ async def complete(keyword: str, highlight: bool = False) -> list[str]:
         list: 补全结果
     """
     params = {
-        "search_id": random_searchID(),
+        "search_id": get_searchID(),
         "query": keyword,
         "num_per_page": 0,
         "page_idx": 0,
@@ -99,7 +98,7 @@ async def general_search(keyword: str, page: int = 1, highlight: bool = False) -
         dict: 包含直接结果，歌曲，歌手，专辑，歌单，mv等.
     """
     params = {
-        "search_id": random_searchID(),
+        "search_id": get_searchID(),
         "search_type": 100,
         "query": keyword,
         "page_id": page,
@@ -141,7 +140,7 @@ async def search_by_type(
         list: 搜索结果.
     """
     params = {
-        "searchid": random_searchID(),
+        "searchid": get_searchID(),
         "query": keyword,
         "search_type": search_type.value,
         "num_per_page": num,

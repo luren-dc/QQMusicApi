@@ -1,7 +1,6 @@
-from qqmusic_api.api.song import Song
-
-from ..utils.common import get_api
-from ..utils.network import Api
+from .song import Song
+from .utils.network import Api
+from .utils.utils import get_api
 
 API = get_api("album")
 

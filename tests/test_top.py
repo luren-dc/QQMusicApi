@@ -1,7 +1,6 @@
 import pytest
 
-from qqmusic_api.api.top import Top, get_top_category
-
+from qqmusic_api.top import Top, get_top_category
 
 pytestmark = pytest.mark.asyncio(scope="module")
 

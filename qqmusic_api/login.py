@@ -1,13 +1,16 @@
 import random
 import re
 import time
+import uuid
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Optional
 
-from ..utils.common import get_api, hash33, random_uuid
-from ..utils.credential import Credential
-from ..utils.network import Api, get_aiohttp_session
+import aiohttp
+
+from .utils.credential import Credential
+from .utils.network import Api
+from .utils.utils import get_api, hash33
 
 API = get_api("login")
 
@@ -58,7 +61,7 @@ class Login(ABC):
         self.credential: Optional[Credential] = None
 
     async def __aenter__(self):
-        self.session = get_aiohttp_session()
+        self.session = aiohttp.ClientSession()
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
@@ -239,7 +242,7 @@ class QQLogin(Login):
                 "openapi": "80901010",
                 "g_tk": hash33(skey, 5381),
                 "auth_time": str(int(time.time())),
-                "ui": random_uuid(),
+                "ui": uuid.uuid4(),
             },
             allow_redirects=False,
         ) as res:
@@ -358,8 +361,7 @@ class PhoneLogin(Login):
         Args:
             phone: 手机号码
         """
-        pattern = re.compile(r"^1[3-9]\d{9}$")
-        if not pattern.match(str(phone)):
+        if not re.compile(r"^1[3-9]\d{9}$").match(str(phone)):
             raise ValueError("非法手机号")
         self.phone = phone
 

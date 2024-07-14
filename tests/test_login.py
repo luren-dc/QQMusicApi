@@ -10,7 +10,7 @@ import qrcode
 from PIL import Image
 from pyzbar.pyzbar import decode
 
-from qqmusic_api.api.login import (
+from qqmusic_api.login import (
     Login,
     PhoneLogin,
     PhoneLoginEvents,
@@ -53,7 +53,6 @@ async def login(login: Login):
                 break
             print("\r", state, end="")
         c = await login.authorize()
-        print(c.musickey)
         return c.musickey
 
 
