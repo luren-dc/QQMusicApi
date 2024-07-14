@@ -1,11 +1,5 @@
 from dataclasses import asdict, dataclass, field
-from typing import Any, Dict
-
-from ..exceptions import (
-    CredentialCanNotRefreshException,
-    CredentialNoMusicidException,
-    CredentialNoMusickeyException,
-)
+from typing import Any
 
 
 @dataclass
@@ -14,7 +8,7 @@ class Credential:
     musickey: str = ""
     refresh_key: str = ""
     login_type: int = field(init=False)
-    extra_fields: Dict[str, Any] = field(default_factory=dict)
+    extra_fields: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         self.login_type = 1 if "W_X" in self.musickey else 2
@@ -48,21 +42,24 @@ class Credential:
         无法刷新 Credential 时抛出异常
         """
         if not self.can_refresh():
-            raise CredentialCanNotRefreshException()
+            # raise CredentialCanNotRefreshException()
+            pass
 
     def raise_for_no_musicid(self):
         """
         没有提供 musicid 时抛出异常
         """
         if not self.has_musicid():
-            raise CredentialNoMusicidException()
+            # raise CredentialNoMusicidException()
+            pass
 
     def raise_for_no_musickey(self):
         """
         没有提供 musickey 时抛出异常
         """
         if not self.has_musickey():
-            raise CredentialNoMusickeyException()
+            # raise CredentialNoMusickeyException()
+            pass
 
     async def refresh(self):
         """

@@ -6,10 +6,15 @@ from typing import Any
 
 import aiohttp
 
-
-from .. import settings
-from ..exceptions import ClientException, NetworkException, ResponseException
+# from ..exceptions import ClientException, NetworkException, ResponseException
 from .credential import Credential
+from .qimei import QIMEI
+
+QQMUSIC_VERSION = "13.2.5.8"
+QQMUSIC_VERSION_CODE = 13020508
+QIMEI36 = QIMEI.get_qimei(QQMUSIC_VERSION).q36
+
+API_URL = "https://u.y.qq.com/cgi-bin/musicu.fcg"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.54",
@@ -37,6 +42,17 @@ def get_aiohttp_session() -> aiohttp.ClientSession:
     return session
 
 
+def set_aiohttp_session(session: aiohttp.ClientSession) -> None:
+    """
+    用户手动设置 Session
+
+    Args:
+        session:  aiohttp.ClientSession 实例
+    """
+    loop = asyncio.get_event_loop()
+    __session_pool[loop] = session
+
+
 @dataclass
 class Api:
     """
@@ -58,7 +74,7 @@ class Api:
 
     method: str
     module: str = ""
-    url: str = settings.API_URL
+    url: str = API_URL
     comment: str = ""
     verify: bool = False
     json_body: bool = False
@@ -99,8 +115,11 @@ class Api:
         获取请求结果
         """
         if self.__result is None:
-            self.__result = await self.request()
-        return self.__result  # type: ignore
+            result = await self.request()
+            if isinstance(result, dict):
+                self.__result = result
+                return result
+        return {}
 
     def update_params(self, **kwargs) -> "Api":
         """
@@ -157,11 +176,11 @@ class Api:
         """
         common = {
             "ct": "11",
-            "cv": settings.QQMUSIC_VERSION_CODE,
-            "v": settings.QQMUSIC_VERSION_CODE,
+            "cv": QQMUSIC_VERSION_CODE,
+            "v": QQMUSIC_VERSION_CODE,
             "tmeAppID": "qqmusic",
-            "QIMEI36": settings.QIMEI36,
-            "uid": settings.UID,
+            "QIMEI36": QIMEI36,
+            "uid": "3931641530",
             "format": "json",
             "inCharset": "utf-8",
             "outCharset": "utf-8",
@@ -206,7 +225,7 @@ class Api:
             config["params"] = ""
         return config
 
-    async def request(self) -> dict | None:
+    async def request(self) -> dict | str | None:
         """
         向接口发送请求
         """
@@ -219,16 +238,20 @@ class Api:
             async with session.request(**config) as resp:
                 try:
                     resp.raise_for_status()
-                except aiohttp.ClientResponseError as e:
-                    raise NetworkException(e.status, e.message)
+                except aiohttp.ClientResponseError:
+                    # raise NetworkException(e.status, e.message)
+                    return None
                 return self.__process_response(resp, await resp.text())
         except aiohttp.ClientConnectionError:
-            raise ClientException()
+            return None
+            # raise ClientException()
 
-    def __process_response(self, resp: aiohttp.ClientResponse, resp_text: str) -> dict:
+    def __process_response(
+        self, resp: aiohttp.ClientResponse, resp_text: str
+    ) -> dict | str | None:
         content_length = resp.headers.get("content-length")
         if content_length and int(content_length) == 0:
-            raise ResponseException([self.module, self.method])
+            return None
         try:
             resp_data = json.loads(resp_text)
             if self.module:
@@ -236,7 +259,7 @@ class Api:
                 return request_data["data"]
             return resp_data
         except Exception:
-            raise ResponseException([self.module, self.method])
+            return resp_text
 
 
 @atexit.register

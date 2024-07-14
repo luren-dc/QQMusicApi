@@ -1,56 +1,54 @@
-import hashlib
 import json
+import os
 import random
 import time
-from pathlib import Path
-
-# 定义全局变量
-UUID_CHARS = "0123456789ABCDEF"
-CACHE_DIR = Path(__file__).resolve().parent.parent.parent / ".cache"
-DATA_DIR = Path(__file__).resolve().parent.parent / "data"
-API_DIR = DATA_DIR / "api"
-
-# 确保缓存目录存在
-CACHE_DIR.mkdir(parents=True, exist_ok=True)
-
-
-def get_cache_file(*args) -> str:
-    return str(CACHE_DIR.joinpath(*args))
 
 
 def get_api(field: str) -> dict:
-    path = API_DIR / f"{field.lower()}.json"
-    if path.exists():
-        with path.open() as f:
+    """
+    获取 api 字典
+
+    Args:
+        field: 字段名
+
+    Returns:
+        dict: api 字典
+    """
+    path = os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__), "..", "data", "api", f"{field.lower()}.json"
+        )
+    )
+    if os.path.exists(path):
+        with open(path, encoding="utf8") as f:
             data = json.load(f)
             return data
     else:
         return {}
 
 
-def random_string(length: int, chars: str = UUID_CHARS) -> str:
-    return "".join(random.choices(chars, k=length))
-
-
-def calc_md5(*multi_string) -> str:
-    md5 = hashlib.md5()
-    for s in multi_string:
-        md5.update(s if isinstance(s, bytes) else s.encode())
-    return md5.hexdigest()
-
-
 def hash33(s: str, h: int = 0) -> int:
+    """
+    hash33
+
+    Args:
+        s: 待计算的字符串
+        h: 前一个计算结果
+    Returns:
+        int: 计算结果
+    """
     for c in s:
         h = (h << 5) + h + ord(c)
     return 2147483647 & h
 
 
-def random_uuid() -> str:
-    uuid_format = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
-    return "".join(random.choice(UUID_CHARS) if c in "xy" else c for c in uuid_format)
+def get_searchID() -> str:
+    """
+    随机 searchID
 
-
-def random_searchID() -> str:
+    Returns:
+        str: 随机 searchID
+    """
     e = random.randint(1, 20)
     t = e * 18014398509481984
     n = random.randint(0, 4194304) * 4294967296
@@ -127,14 +125,3 @@ def parse_song_info(song_info: dict) -> dict:
         "vs": song_info.get("vs", []),
     }
     return result
-
-
-def filter_data(data: dict) -> dict:
-    keys = [""]
-    for key in keys:
-        data.pop(key, "")
-    return data
-
-
-def singer_to_str(data: dict) -> str:
-    return "&".join([singer["name"] for singer in data["singer"]])

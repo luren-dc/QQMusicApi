@@ -1,6 +1,6 @@
 import pytest
 
-from qqmusic_api.api.mv import MV, get_mv_urls
+from qqmusic_api.mv import MV, get_mv_urls
 
 pytestmark = pytest.mark.asyncio(scope="module")
 

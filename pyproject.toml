@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "qqmusic-api-python"
-version = "0.1.0"
+version = "0.1.2"
 description = "QQ音乐API封装库"
 authors = ["Luren <dluren.c@gmail.com>"]
 packages = [{ include = "qqmusic_api" }]

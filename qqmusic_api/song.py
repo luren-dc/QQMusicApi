@@ -1,4 +1,5 @@
 import asyncio
+import random
 from enum import Enum
 from typing import TYPE_CHECKING, Optional
 
@@ -6,10 +7,9 @@ if TYPE_CHECKING:
     from .album import Album
     from .singer import Singer
 
-from ..exceptions import ArgsException
-from ..utils.common import get_api, parse_song_info, random_string
-from ..utils.credential import Credential
-from ..utils.network import Api
+from .utils.credential import Credential
+from .utils.network import Api
+from .utils.utils import get_api, parse_song_info
 
 API = get_api("song")
 
@@ -86,7 +86,7 @@ class Song:
         """
         # ID 检查
         if mid is None and id is None:
-            raise ArgsException("请至少提供 mid 和 id 中的其中一个参数。")
+            raise TypeError("mid or id must be provided")
         self._mid = mid
         self._id = id
         self._info: Optional[dict] = None
@@ -174,18 +174,15 @@ class Song:
         Returns:
             dict: 请求参数
         """
-        if is_mid and is_id:
-            raise ArgsException("参数错误")
         if is_mid:
             return {"songmid": await self.mid}
-        elif is_id:
+        if is_id:
             return {"songid": await self.id}
-        elif self._mid:
+        if self._mid:
             return {"songmid": self._mid}
-        elif self._id:
+        if self._id:
             return {"songid": self._id}
-        else:
-            return {}
+        return {}
 
     async def get_info(self) -> dict:
         """
@@ -427,7 +424,7 @@ async def get_song_urls(
             file_name = [f"{file_type.s}{_}{_}{file_type.e}" for _ in mid]
             param = {
                 "filename": file_name,
-                "guid": random_string(32, "abcdef1234567890"),
+                "guid": "".join(random.choices("abcdef1234567890", k=32)),
                 "songmid": mid,
                 "songtype": [1 for _ in range(len(mid))],
             }

@@ -1,6 +1,6 @@
 import pytest
 
-from qqmusic_api.api.search import (
+from qqmusic_api.search import (
     complete,
     general_search,
     hotkey,
