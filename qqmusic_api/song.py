@@ -416,25 +416,22 @@ async def get_song_urls(
     )
     api = Api(**API[url_type.value], credential=credential)
     urls = {}
-    tasks = []
-    for mid in mid_list:
 
-        async def get_song_url(mid):
-            # 构造请求参数
-            file_name = [f"{file_type.s}{_}{_}{file_type.e}" for _ in mid]
-            param = {
-                "filename": file_name,
-                "guid": "".join(random.choices("abcdef1234567890", k=32)),
-                "songmid": mid,
-                "songtype": [1 for _ in range(len(mid))],
-            }
+    async def get_song_url(mid):
+        # 构造请求参数
+        file_name = [f"{file_type.s}{_}{_}{file_type.e}" for _ in mid]
+        param = {
+            "filename": file_name,
+            "guid": "".join(random.choices("abcdef1234567890", k=32)),
+            "songmid": mid,
+            "songtype": [1 for _ in range(len(mid))],
+        }
 
-            res = await api.update_params(**param).result
-            data = res["midurlinfo"]
-            for info in data:
-                song_url = domain + info["wifiurl"] if info["wifiurl"] else ""
-                urls[info["songmid"]] = song_url
+        res = await api.update_params(**param).result
+        data = res["midurlinfo"]
+        for info in data:
+            song_url = domain + info["wifiurl"] if info["wifiurl"] else ""
+            urls[info["songmid"]] = song_url
 
-        tasks.append(asyncio.create_task(get_song_url(mid)))
-    await asyncio.gather(*tasks)
+    await asyncio.gather(*[asyncio.create_task(get_song_url(mid)) for mid in mid_list])
     return urls
