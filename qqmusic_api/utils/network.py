@@ -186,9 +186,10 @@ class Api:
             "outCharset": "utf-8",
         }
 
-        if self.verify:
-            self.credential.raise_for_no_musickey()
-            self.credential.raise_for_no_musicid()
+        if self.credential:
+            if self.verify:
+                self.credential.raise_for_no_musickey()
+                self.credential.raise_for_no_musicid()
 
             common["qq"] = self.credential.musicid
             common["authst"] = self.credential.musickey
