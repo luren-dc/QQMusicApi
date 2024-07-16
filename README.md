@@ -31,8 +31,16 @@
 
 ### 安装
 
+#### pypi
+
 ```shell
 $ pip install qqmusic-api-python
+```
+
+#### source
+
+```shell
+$ pip install git+https://github.com/luren-dc/QQMusicApi.git
 ```
 
 ### 使用
