@@ -12,7 +12,7 @@ from .qimei import QIMEI
 
 QQMUSIC_VERSION = "13.2.5.8"
 QQMUSIC_VERSION_CODE = 13020508
-QIMEI36 = QIMEI.get_qimei(QQMUSIC_VERSION).q36
+QIMEI36 = None
 
 API_URL = "https://u.y.qq.com/cgi-bin/musicu.fcg"
 
@@ -174,6 +174,9 @@ class Api:
         """
         准备API请求数据
         """
+        global QIMEI36
+        if not QIMEI36:
+            QIMEI36 = QIMEI.get_qimei(QQMUSIC_VERSION).q36
         common = {
             "ct": "11",
             "cv": QQMUSIC_VERSION_CODE,
