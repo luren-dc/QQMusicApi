@@ -53,7 +53,8 @@ def download_file(url):
     except requests.RequestException as e:
         print(f"An error occurred: {e}")
 
-for url in urls:
-    download_file(url)
+for url in urls.values():
+    if url:
+        download_file(url)
 
 ```
