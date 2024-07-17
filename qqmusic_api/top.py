@@ -61,12 +61,18 @@ class Top:
         设置排行榜时间
 
         Args:
-            period: 排行榜周期
+            period: 排行榜周期.%Y-%m-%d or %Y_%W
         """
-        time_type = "%Y-%m-%d" if self.id in [4, 27, 62] else "'%Y_%W"
-        self.period = period or datetime.datetime.strftime(
-            datetime.datetime.now(), time_type
-        )
+        time_type = "%Y-%m-%d" if self.id in [4, 27, 62] else "%Y_%W"
+        self.period = datetime.datetime.strftime(datetime.datetime.now(), time_type)
+        if period:
+            try:
+                datetime.datetime.strptime(period, time_type)
+                self.period = period
+            except ValueError:
+                raise ValueError(
+                    f"error period,right format should be like: {self.period}"
+                )
 
     async def get_detail(self):
         """
@@ -78,17 +84,8 @@ class Top:
         param = {"topId": self.id, "period": self.period}
         result = await Api(**API["detail"]).update_params(**param).result
         data = result["data"]
-        return {
-            "id": data["topId"],
-            "title": data["title"],
-            "subTitle": data["titleSub"],
-            "titleDetail": data["titleDetail"],
-            "desc": data["intro"],
-            "listenNum": data["listenNum"],
-            "total": data["totalNum"],
-            "updateTime": data["updateTime"],
-            "period": self.period,
-        }
+        del data["song"]
+        return data
 
     async def get_song(self) -> list[Song]:
         """
@@ -99,4 +96,6 @@ class Top:
         """
         param = {"topId": self.id, "period": self.period, "offset": 0, "num": 100}
         result = await Api(**API["detail"]).update_params(**param).result
+        if result["songInfoList"]:
+            return Song.from_list(result["songInfoList"])
         return [Song(id=song["songId"]) for song in result["data"]["song"]]
