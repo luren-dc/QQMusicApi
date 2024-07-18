@@ -1,6 +1,12 @@
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
+from qqmusic_api.exceptions import (
+    CredentialNoMusicidException,
+    CredentialNoMusickeyException,
+    CredentialNoRefreshkeyException,
+)
+
 
 @dataclass
 class Credential:
@@ -42,30 +48,27 @@ class Credential:
         无法刷新 Credential 时抛出异常
         """
         if not self.can_refresh():
-            # raise CredentialCanNotRefreshException()
-            pass
+            raise CredentialNoRefreshkeyException()
 
     def raise_for_no_musicid(self):
         """
         没有提供 musicid 时抛出异常
         """
         if not self.has_musicid():
-            # raise CredentialNoMusicidException()
-            pass
+            raise CredentialNoMusicidException()
 
     def raise_for_no_musickey(self):
         """
         没有提供 musickey 时抛出异常
         """
         if not self.has_musickey():
-            # raise CredentialNoMusickeyException()
-            pass
+            raise CredentialNoMusickeyException()
 
     async def refresh(self):
         """
         刷新 cookies
         """
-        from ..api.login import refresh_cookies
+        from ..login import refresh_cookies
 
         c = await refresh_cookies(self)
         self.musicid = c.musicid

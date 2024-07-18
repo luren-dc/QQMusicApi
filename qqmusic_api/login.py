@@ -8,6 +8,7 @@ from typing import Optional
 
 import aiohttp
 
+from .exceptions import ResponseCodeException
 from .utils.credential import Credential
 from .utils.network import Api
 from .utils.utils import get_api, hash33
@@ -387,15 +388,17 @@ class PhoneLogin(Login):
             "areaCode": "86",
         }
         msg = ""
-        res = await Api(**API["send_authcode"]).update_params(**params).result
+        try:
+            res = await Api(**API["send_authcode"]).update_params(**params).result
+        except ResponseCodeException as e:
+            if e.code == 20276:
+                self.auth_url = e.raw["securityURL"]
+                return PhoneLoginEvents.CAPTCHA
+            else:
+                return PhoneLoginEvents.OTHER
         msg = res["errMsg"]
         if msg == "OK":
             return PhoneLoginEvents.SEND
-        elif msg == "robot defense":
-            self.auth_url = res["securityURL"]
-            return PhoneLoginEvents.CAPTCHA
-        else:
-            return PhoneLoginEvents.OTHER
 
     async def authorize(self, authcode: Optional[int] = None):
         if not authcode:
@@ -420,6 +423,7 @@ async def refresh_cookies(credential: Credential) -> Credential:
     Return:
         Credential: 新的用户凭证
     """
+    credential.raise_for_cannot_refresh()
     params = {
         "refresh_key": credential.refresh_key,
         "musicid": credential.musicid,

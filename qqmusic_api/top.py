@@ -63,8 +63,10 @@ class Top:
         Args:
             period: 排行榜周期.%Y-%m-%d or %Y_%W
         """
-        time_type = "%Y-%m-%d" if self.id in [4, 27, 62] else "%Y_%W"
-        self.period = datetime.datetime.strftime(datetime.datetime.now(), time_type)
+        time_type = "%Y_%W"
+        if self.id in [4, 23, 26, 52, 62, 67, 75, 133, 134, 135, 201, 301, 427]:
+            time_type = "%Y-%m-%d"
+        self.period = ""
         if period:
             try:
                 datetime.datetime.strptime(period, time_type)
@@ -96,6 +98,6 @@ class Top:
         """
         param = {"topId": self.id, "period": self.period, "offset": 0, "num": 100}
         result = await Api(**API["detail"]).update_params(**param).result
-        if result["songInfoList"]:
+        if result.get("songInfoList", {}):
             return Song.from_list(result["songInfoList"])
         return [Song(id=song["songId"]) for song in result["data"]["song"]]
