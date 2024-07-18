@@ -87,7 +87,8 @@ class Credential:
             Credential: 凭据类实例
         """
         return cls(
-            musicid=cookies.get("musicid", ""),
-            musickey=cookies.get("musickey", ""),
-            refresh_key=cookies.get("refresh_key", ""),
+            musicid=cookies.pop("musicid", ""),
+            musickey=cookies.pop("musickey", ""),
+            refresh_key=cookies.pop("refresh_key", ""),
+            extra_fields=cookies,
         )
