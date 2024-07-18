@@ -6,13 +6,15 @@ from typing import Any
 
 import aiohttp
 
+from qqmusic_api.exceptions import ResponseCodeException
+
 # from ..exceptions import ClientException, NetworkException, ResponseException
 from .credential import Credential
 from .qimei import QIMEI
 
 QQMUSIC_VERSION = "13.2.5.8"
 QQMUSIC_VERSION_CODE = 13020508
-QIMEI36 = QIMEI.get_qimei(QQMUSIC_VERSION).q36
+QIMEI36 = None
 
 API_URL = "https://u.y.qq.com/cgi-bin/musicu.fcg"
 
@@ -174,6 +176,10 @@ class Api:
         """
         准备API请求数据
         """
+        global QIMEI36
+        if not QIMEI36:
+            QIMEI36 = QIMEI.get_qimei(QQMUSIC_VERSION).q36
+
         common = {
             "ct": "11",
             "cv": QQMUSIC_VERSION_CODE,
@@ -191,9 +197,10 @@ class Api:
                 self.credential.raise_for_no_musickey()
                 self.credential.raise_for_no_musicid()
 
-            common["qq"] = self.credential.musicid
-            common["authst"] = self.credential.musickey
-            common["tmeLoginType"] = str(self.credential.login_type)
+            if self.credential.has_musicid() and self.credential.has_musickey():
+                common["qq"] = self.credential.musicid
+                common["authst"] = self.credential.musickey
+                common["tmeLoginType"] = str(self.credential.login_type)
 
         common.update(self.extra_common)
 
@@ -240,12 +247,10 @@ class Api:
                 try:
                     resp.raise_for_status()
                 except aiohttp.ClientResponseError:
-                    # raise NetworkException(e.status, e.message)
-                    return None
+                    raise
                 return self.__process_response(resp, await resp.text())
         except aiohttp.ClientConnectionError:
-            return None
-            # raise ClientException()
+            raise
 
     def __process_response(
         self, resp: aiohttp.ClientResponse, resp_text: str
@@ -257,9 +262,15 @@ class Api:
             resp_data = json.loads(resp_text)
             if self.module:
                 request_data = resp_data["request"]
+                if request_data["code"] != 0:
+                    raise ResponseCodeException(
+                        request_data["code"],
+                        json.dumps(self.data, ensure_ascii=False),
+                        request_data["data"],
+                    )
                 return request_data["data"]
             return resp_data
-        except Exception:
+        except json.JSONDecodeError:
             return resp_text
 
 

@@ -8,6 +8,9 @@ from typing import Optional
 
 import aiohttp
 
+from qqmusic_api.exceptions import LoginException
+
+from .exceptions import ResponseCodeException
 from .utils.credential import Credential
 from .utils.network import Api
 from .utils.utils import get_api, hash33
@@ -386,27 +389,32 @@ class PhoneLogin(Login):
             "phoneNo": str(self.phone),
             "areaCode": "86",
         }
-        msg = ""
-        res = await Api(**API["send_authcode"]).update_params(**params).result
-        msg = res["errMsg"]
-        if msg == "OK":
+        try:
+            await Api(**API["send_authcode"]).update_params(**params).result
             return PhoneLoginEvents.SEND
-        elif msg == "robot defense":
-            self.auth_url = res["securityURL"]
-            return PhoneLoginEvents.CAPTCHA
-        else:
-            return PhoneLoginEvents.OTHER
+        except ResponseCodeException as e:
+            if e.code == 20276:
+                self.auth_url = e.raw["securityURL"]
+                return PhoneLoginEvents.CAPTCHA
+            else:
+                return PhoneLoginEvents.OTHER
 
     async def authorize(self, authcode: Optional[int] = None):
         if not authcode:
             raise ValueError("authcode 为空")
         params = {"code": str(authcode), "phoneNo": str(self.phone), "loginMode": 1}
-        res = (
-            await Api(**API["phone_login"])
-            .update_params(**params)
-            .update_extra_common(tmeLoginMethod="3")
-            .result
-        )
+        try:
+            res = (
+                await Api(**API["phone_login"])
+                .update_params(**params)
+                .update_extra_common(tmeLoginMethod="3", tmeLoginType="0")
+                .result
+            )
+        except ResponseCodeException as e:
+            if e.code == 20271:
+                raise LoginException("验证码过期或错误")
+            else:
+                raise LoginException("未知情况，请提交 issue")
         return Credential.from_cookies(res)
 
 
@@ -420,6 +428,7 @@ async def refresh_cookies(credential: Credential) -> Credential:
     Return:
         Credential: 新的用户凭证
     """
+    credential.raise_for_cannot_refresh()
     params = {
         "refresh_key": credential.refresh_key,
         "musicid": credential.musicid,
