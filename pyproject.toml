@@ -46,7 +46,24 @@ build-backend = "poetry.core.masonry.api"
 [tool.mypy]
 disable_error_code = ["index", "arg-type", "union-attr", "return-value"]
 pretty = true
+python_version = 3.9
 show_column_numbers = true
+
+[tool.ruff]
+line-length = 120
+target-version = "py39"
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.ruff.lint]
+select = [
+    "F",
+    "E",
+    "W",
+    "UP",
+]
+ignore = ["F401"]
 
 [tool.pytest.ini_options]
 pythonpath = "./"
