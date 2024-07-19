@@ -38,12 +38,7 @@ class Songlist:
                 "userinfo": True,
                 "orderlist": True,
             }
-            result = (
-                await Api(**API["detail"])
-                .update_params(**param)
-                .update_headers(Referer="")
-                .result
-            )
+            result = await Api(**API["detail"]).update_params(**param).update_headers(Referer="").result
             self._info = result  # type: ignore
         return self._info
 

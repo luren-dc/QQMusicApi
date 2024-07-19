@@ -2,7 +2,7 @@ import asyncio
 import atexit
 import json
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Union
 
 import aiohttp
 
@@ -19,7 +19,7 @@ QIMEI36 = None
 API_URL = "https://u.y.qq.com/cgi-bin/musicu.fcg"
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.54",
+    "User-Agent": "Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.54",  # noqa: E501
     "Referer": "https://y.qq.com",
 }
 
@@ -36,9 +36,7 @@ def get_aiohttp_session() -> aiohttp.ClientSession:
     loop = asyncio.get_event_loop()
     session = __session_pool.get(loop, None)
     if session is None:
-        session = aiohttp.ClientSession(
-            loop=loop, connector=aiohttp.TCPConnector(), trust_env=True
-        )
+        session = aiohttp.ClientSession(loop=loop, connector=aiohttp.TCPConnector(), trust_env=True)
         __session_pool[loop] = session
 
     return session
@@ -97,7 +95,7 @@ class Api:
         self.params = {k: "" for k in self.params.keys()}
         self.headers = {k: "" for k in self.headers.keys()}
         self.extra_common = {k: "" for k in self.extra_common.keys()}
-        self.__result: dict | None = None
+        self.__result: Union[dict, None] = None
 
     def __setattr__(self, __name: str, __value: Any) -> None:
         """
@@ -233,7 +231,7 @@ class Api:
             config["params"] = ""
         return config
 
-    async def request(self) -> dict | str | None:
+    async def request(self) -> Union[dict, str, None]:
         """
         向接口发送请求
         """
@@ -252,9 +250,7 @@ class Api:
         except aiohttp.ClientConnectionError:
             raise
 
-    def __process_response(
-        self, resp: aiohttp.ClientResponse, resp_text: str
-    ) -> dict | str | None:
+    def __process_response(self, resp: aiohttp.ClientResponse, resp_text: str) -> Union[dict, str, None]:
         content_length = resp.headers.get("content-length")
         if content_length and int(content_length) == 0:
             return None

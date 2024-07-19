@@ -2,9 +2,7 @@ import pytest
 
 
 def pytest_addoption(parser):
-    parser.addoption(
-        "--test-login", action="store_false", help="Use this option to test login API"
-    )
+    parser.addoption("--test-login", action="store_false", help="Use this option to test login API")
 
 
 @pytest.fixture

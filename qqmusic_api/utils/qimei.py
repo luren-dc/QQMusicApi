@@ -5,6 +5,7 @@ import json
 import random
 import time
 from dataclasses import dataclass
+from typing import Union
 
 import requests
 from cryptography.hazmat.primitives import serialization
@@ -24,7 +25,7 @@ class QImeiResult:
     q36: str
 
 
-def calculate_md5(*strings: str | bytes) -> str:
+def calculate_md5(*strings: Union[str, bytes]) -> str:
     md5 = hashlib.md5()
     for item in strings:
         if isinstance(item, bytes):
@@ -197,9 +198,7 @@ class QIMEI:
 
     @staticmethod
     def get_qimei(app_version: str) -> QImeiResult:
-        data, ts = QIMEI.generate_request_param(
-            DeviceData.generate_random_payload(app_version)
-        )
+        data, ts = QIMEI.generate_request_param(DeviceData.generate_random_payload(app_version))
         sign = calculate_md5("qimei_qq_androidpzAuCmaFAaFaHrdakPjLIEqKrGnSOOvH", ts)
         try:
             res = requests.post(
