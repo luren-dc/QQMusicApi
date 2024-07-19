@@ -74,6 +74,7 @@ class Top:
             except ValueError:
                 raise ValueError(f"error period,right format should be like: {self.period}")
 
+
     async def get_detail(self):
         """
         获取排行榜详细信息

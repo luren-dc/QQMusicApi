@@ -59,9 +59,8 @@ async def login(login: Login):
 async def test_qq_login(is_test_login, capfd):
     with capfd.disabled():
         print("请使用QQ扫码")
-        credential = await login(QQLogin())
-        assert credential.has_musicid() and credential.has_musickey() and credential.can_refresh()
-
+        credential = await login(QQLogin()
+        assert credential.has_musicid() and credential.has_musickey() and credential.can_refresh(
 
 @pytest.mark.timeout(50)
 async def test_wx_login(is_test_login, capfd):
