@@ -275,5 +275,17 @@ def __clean() -> None:
     """
     程序退出清理操作。
     """
-    for session in __session_pool.values():
-        asyncio.run(session.close())
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        return
+
+    async def __clean_task():
+        s0 = __session_pool.get(loop, None)
+        if s0 is not None:
+            await s0.close()
+
+    if loop.is_closed():
+        loop.run_until_complete(__clean_task())
+    else:
+        loop.create_task(__clean_task())
