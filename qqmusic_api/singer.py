@@ -1,5 +1,7 @@
 from enum import Enum
-from typing import Optional
+from typing import Literal, Optional, Union
+
+from typing_extensions import TypeAlias
 
 from .song import Song
 from .utils.network import Api
@@ -113,6 +115,9 @@ class TabType(Enum):
         self.tabName = tabName
 
 
+SongType = Literal["song", "album", "composer", "lyricist", "producer", "arranger", "musician"]
+
+
 async def get_singer_list(
     area: AreaType = AreaType.ALL,
     sex: SexType = SexType.ALL,
@@ -168,9 +173,7 @@ class Singer:
         获取歌手必要信息
         """
         if not self._info:
-            info = (
-                await Api(**API["homepage"]).update_params(SingerMid=self.mid).result
-            )["Info"]
+            info = (await Api(**API["homepage"]).update_params(SingerMid=self.mid).result)["Info"]
             self._info = {
                 "FansNum": info["FansNum"]["Num"],
             }
@@ -231,30 +234,18 @@ class Singer:
         """
         return await self.get_tab_detail(TabType.WIKI)
 
-    async def get_song(
-        self, t: TabType = TabType.SONG, page: int = 1, num: int = 100
-    ) -> list[Song]:
+    async def get_song(self, type: SongType = "song", page: int = 1, num: int = 100) -> list[Song]:
         """
         获取歌手歌曲
 
         Args:
-            t:    Tab 类型. Defaluts to TabType.SONG
+            type: Tab 类型. Defaluts to TabType.SONG
             page: 页码. Defaluts to 1
             num:  返回数量. Defaluts to 100
 
         Returns:
             list: `Song` 列表
         """
-        if t not in [
-            TabType.SONG,
-            TabType.COMPOSER,
-            TabType.LYRICIST,
-            TabType.PRODUCER,
-            TabType.MUSICIAN,
-            TabType.ARRANGER,
-        ]:
-            raise ValueError(
-                "t must be in [TabType.SONG, TabType.COMPOSER, TabType.LYRICIST, TabType.PRODUCER, TabType.MUSICIAN, TabType.ARRANGER]"
-            )
-        data = await self.get_tab_detail(t, page, num)
+        tab_type = TabType[type.upper()]
+        data = await self.get_tab_detail(tab_type, page, num)
         return Song.from_list(data["List"])

@@ -75,10 +75,7 @@ class Login(ABC):
             await self.session.close()
 
     def initialized(self) -> bool:
-        return bool(
-            self.qrcode_data
-            and self.state not in [QrCodeLoginEvents.TIMEOUT, QrCodeLoginEvents.REFUSE]
-        )
+        return bool(self.qrcode_data and self.state not in [QrCodeLoginEvents.TIMEOUT, QrCodeLoginEvents.REFUSE])
 
     @abstractmethod
     async def get_qrcode(self) -> bytes:
@@ -177,7 +174,7 @@ class QQLogin(Login):
                 "g": "1",
                 "from_ui": "1",
                 "ptlang": "2052",
-                "action": "0-0-%s" % int(time.time() * 1000),
+                "action": f"0-0-{int(time.time() * 1000)}",
                 "js_ver": "20102616",
                 "js_type": "1",
                 "login_sig": self.sig,
@@ -251,12 +248,7 @@ class QQLogin(Login):
         ) as res:
             location = res.headers.get("Location", "")
             code = re.findall(r"(?<=code=)(.+?)(?=&)", location)[0]
-        res = (
-            await Api(**API["QQ_login"])
-            .update_params(code=code)
-            .update_extra_common(tmeLoginType="2")
-            .result
-        )
+        res = await Api(**API["QQ_login"]).update_params(code=code).update_extra_common(tmeLoginType="2").result
         self.credential = Credential.from_cookies(res)
         return self.credential
 

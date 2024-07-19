@@ -14,11 +14,7 @@ def get_api(field: str) -> dict:
     Returns:
         dict: api 字典
     """
-    path = os.path.abspath(
-        os.path.join(
-            os.path.dirname(__file__), "..", "data", "api", f"{field.lower()}.json"
-        )
-    )
+    path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "api", f"{field.lower()}.json"))
     if os.path.exists(path):
         with open(path, encoding="utf8") as f:
             data = json.load(f)

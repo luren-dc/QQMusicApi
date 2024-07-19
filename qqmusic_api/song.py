@@ -258,9 +258,7 @@ class Song:
             list: 歌单信息
         """
         param = await self.__prepare_param(is_id=True)
-        return (await Api(**API["playlist"]).update_params(**param).result)[
-            "vecPlaylist"
-        ]
+        return (await Api(**API["playlist"]).update_params(**param).result)["vecPlaylist"]
 
     async def get_related_mv(self) -> list[dict]:
         """
@@ -409,11 +407,7 @@ async def get_song_urls(
     # 分割 id,单次最大请求100
     mid_list = [mid[i : i + 100] for i in range(0, len(mid), 100)]
     # 选择文件域名
-    domain = (
-        "https://isure.stream.qqmusic.qq.com/"
-        if url_type == UrlType.PLAY
-        else "https://dl.stream.qqmusic.qq.com/"
-    )
+    domain = "https://isure.stream.qqmusic.qq.com/" if url_type == UrlType.PLAY else "https://dl.stream.qqmusic.qq.com/"
     api = Api(**API[url_type.value], credential=credential)
     urls = {}
 

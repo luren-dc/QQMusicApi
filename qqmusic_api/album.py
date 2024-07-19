@@ -34,9 +34,5 @@ class Album:
         Returns:
             list: 歌曲列表
         """
-        result = (
-            await Api(**API["song"])
-            .update_params(albumMid=self.mid, begin=0, num=0)
-            .result
-        )
+        result = await Api(**API["song"]).update_params(albumMid=self.mid, begin=0, num=0).result
         return [Song.from_dict(song["songInfo"]) for song in result["songList"]]

@@ -64,9 +64,7 @@ class MV:
             "vidlist": [self.vid],
             "required": ["related_songs"],
         }
-        song_id = (await Api(**API["detail"]).update_params(**param).result)[self.vid][
-            "related_songs"
-        ]
+        song_id = (await Api(**API["detail"]).update_params(**param).result)[self.vid]["related_songs"]
         return await query_by_id(song_id)
 
     async def get_url(self) -> dict:

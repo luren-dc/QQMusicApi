@@ -72,9 +72,7 @@ class Top:
                 datetime.datetime.strptime(period, time_type)
                 self.period = period
             except ValueError:
-                raise ValueError(
-                    f"error period,right format should be like: {self.period}"
-                )
+                raise ValueError(f"error period,right format should be like: {self.period}")
 
     async def get_detail(self):
         """
