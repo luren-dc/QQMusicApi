@@ -4,6 +4,7 @@
 
 ![Python Version 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
 ![GitHub license](https://img.shields.io/github/license/luren-dc/PyQQMusicApi)
 
 </div>
