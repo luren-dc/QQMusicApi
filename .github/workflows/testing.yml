@@ -7,7 +7,7 @@ on:
       - "tests/**"
       - "qqmusic_api/**"
   pull_request:
-    branches: [main]
+    branches: [main, dev]
     paths:
       - "tests/**"
       - "qqmusic_api/**"
