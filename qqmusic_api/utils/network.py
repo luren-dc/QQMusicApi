@@ -6,8 +6,7 @@ from typing import Any, Union
 
 import aiohttp
 
-from qqmusic_api.exceptions import ResponseCodeException
-
+from ..exceptions import ResponseCodeException
 from .credential import Credential
 from .qimei import QIMEI
 
