@@ -1,4 +1,3 @@
-import asyncio
 import random
 import re
 import time
@@ -70,21 +69,12 @@ class QRCodeLogin(Login, ABC):
         self.session = aiohttp.ClientSession()
         return self
 
-    def __del__(self):
-        asyncio.run(self.close())
-
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self.close()
-
-    async def close(self):
         if not self.session.closed:
             await self.session.close()
 
-    def initialized(self) -> bool:
-        return bool(self.qrcode_data and self.state not in [QrCodeLoginEvents.TIMEOUT, QrCodeLoginEvents.REFUSE])
-
     @abstractmethod
-    async def get_qrcode(self) -> bytes:
+    async def get_qrcode(self) -> bytes:  # type: ignore
         """
         获取二维码
 
@@ -107,7 +97,7 @@ class QRCodeLogin(Login, ABC):
         登录鉴权
 
         Returns:
-            Credential: 用户凭证<
+            Credential: 用户凭证
         """
 
 
@@ -115,7 +105,11 @@ class QQLogin(QRCodeLogin):
     """QQ登录"""
 
     async def get_qrcode(self):
-        if self.initialized():
+        if self.qrcode_data and self.state not in [
+            QrCodeLoginEvents.TIMEOUT,
+            QrCodeLoginEvents.REFUSE,
+            QrCodeLoginEvents.DONE,
+        ]:
             return self.qrcode_data
         async with self.session.get(
             "https://xui.ptlogin2.qq.com/cgi-bin/xlogin",
@@ -154,6 +148,8 @@ class QQLogin(QRCodeLogin):
             return self.qrcode_data
 
     async def get_qrcode_state(self):
+        if not self.qrcode_data:
+            raise LoginException("请先获取二维码")
         async with self.session.get(
             "https://ssl.ptlogin2.qq.com/ptqrlogin",
             params={
@@ -198,7 +194,9 @@ class QQLogin(QRCodeLogin):
     async def authorize(self):
         if self.credential:
             return self.credential
-        async with self.session.get(self.auth_url, allow_redirects=False) as res:
+        if self.state != QrCodeLoginEvents.DONE:
+            raise LoginException("未完成二维码认证")
+        async with self.session.get(self.auth_url, allow_redirects=False) as res:  # type: ignore
             from http import cookies
 
             set_cookie_header = res.headers.getall("Set-Cookie", [])
@@ -209,7 +207,7 @@ class QQLogin(QRCodeLogin):
                     if morsel.value:
                         self.session.cookie_jar.update_cookies(cookie)
 
-        skey = self.session.cookie_jar.filter_cookies(self.auth_url).get("p_skey").value
+        skey = self.session.cookie_jar.filter_cookies(self.auth_url).get("p_skey").value  # type: ignore
         async with self.session.post(
             "https://graph.qq.com/oauth2.0/authorize",
             params={
@@ -252,7 +250,11 @@ class WXLogin(QRCodeLogin):
         self.uuid = ""
 
     async def get_qrcode(self):
-        if self.initialized():
+        if self.qrcode_data and self.state not in [
+            QrCodeLoginEvents.TIMEOUT,
+            QrCodeLoginEvents.REFUSE,
+            QrCodeLoginEvents.DONE,
+        ]:
             return self.qrcode_data
         async with self.session.get(
             "https://open.weixin.qq.com/connect/qrconnect",
@@ -282,6 +284,8 @@ class WXLogin(QRCodeLogin):
             return self.qrcode_data
 
     async def get_qrcode_state(self):
+        if not self.qrcode_data:
+            raise LoginException("请先获取二维码")
         async with self.session.get(
             "https://lp.open.weixin.qq.com/connect/l/qrconnect",
             headers={
@@ -325,7 +329,9 @@ class WXLogin(QRCodeLogin):
     async def authorize(self):
         if self.credential:
             return self.credential
-        await self.session.get(self.auth_url, allow_redirects=False)
+        if self.state != QrCodeLoginEvents.DONE:
+            raise LoginException("未完成二维码认证")
+        await self.session.get(self.auth_url, allow_redirects=False)  # type: ignore
         res = (
             await Api(**API["WX_login"])
             .update_params(strAppid="wx48db31d50e334801", code=self.musicid)
@@ -339,12 +345,12 @@ class WXLogin(QRCodeLogin):
 class PhoneLogin(Login):
     """手机号登录"""
 
-    def __init__(self, phone: int):
+    def __init__(self, phone: str):
         """
         Args:
             phone: 手机号码
         """
-        if not re.compile(r"^1[3-9]\d{9}$").match(str(phone)):
+        if not re.compile(r"^1[3-9]\d{9}$").match(phone):
             raise ValueError("非法手机号")
         self.phone = phone
 
@@ -382,7 +388,7 @@ class PhoneLogin(Login):
         """
         if not authcode:
             raise ValueError("authcode 为空")
-        params = {"code": str(authcode), "phoneNo": str(self.phone), "loginMode": 1}
+        params = {"code": str(authcode), "phoneNo": self.phone, "loginMode": 1}
         try:
             res = (
                 await Api(**API["phone_login"])
