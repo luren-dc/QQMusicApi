@@ -153,7 +153,7 @@ class Song:
         """
         if not self._id:
             self._id = (await self.__get_info())["info"]["id"]
-        return int(self._id)
+        return int(self._id)  # type: ignore
 
     def __repr__(self) -> str:
         return f"Song(mid={self._mid}, id={self._id})"

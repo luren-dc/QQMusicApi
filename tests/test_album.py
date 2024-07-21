@@ -1,15 +1,11 @@
 import pytest
 
-from qqmusic_api.album import Album
-
-pytestmark = pytest.mark.asyncio(scope="module")
-
-album = Album("000MkMni19ClKG")
+pytestmark = pytest.mark.asyncio(scope="package")
 
 
-async def test_get_detail():
+async def test_get_detail(album):
     assert await album.get_detail()
 
 
-async def test_get_song():
+async def test_get_song(album):
     assert await album.get_song()

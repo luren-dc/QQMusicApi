@@ -8,7 +8,7 @@ from qqmusic_api.search import (
     search_by_type,
 )
 
-pytestmark = pytest.mark.asyncio(scope="module")
+pytestmark = pytest.mark.asyncio(scope="package")
 
 
 async def test_hotkey():

@@ -33,9 +33,6 @@ aiohttp = "^3.9.5"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.2.0"
 pytest-asyncio = "^0.23.6"
-qrcode = { extras = ["pil"], version = "^7.4.2" }
-pyzbar = "^0.1.9"
-pytest-timeout = "^2.3.1"
 pytest-sugar = "^1.0.0"
 pre-commit = "^3.7.0"
 
@@ -44,7 +41,6 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.mypy]
-disable_error_code = ["index", "arg-type", "union-attr", "return-value"]
 pretty = true
 python_version = 3.9
 show_column_numbers = true
@@ -65,9 +61,8 @@ select = [
     "TCH",
     "UP",
 ]
-ignore = ["F401"]
 
 [tool.pytest.ini_options]
 pythonpath = "./"
-timeout = 30
 testpaths = ["tests"]
+asyncio_mode = "auto"

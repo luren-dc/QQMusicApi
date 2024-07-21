@@ -6,9 +6,7 @@ from typing import Any, Union
 
 import aiohttp
 
-from qqmusic_api.exceptions import ResponseCodeException
-
-# from ..exceptions import ClientException, NetworkException, ResponseException
+from ..exceptions import ResponseCodeException
 from .credential import Credential
 from .qimei import QIMEI
 
@@ -224,7 +222,7 @@ class Api:
             "headers": HEADERS.copy() if len(self.headers) == 0 else self.headers,
         }
         if self.json_body:
-            config["headers"]["Content-Type"] = "application/json"
+            config["headers"]["Content-Type"] = "application/json"  # type: ignore
             config["data"] = json.dumps(config["data"], ensure_ascii=False).encode()
         if self.module:
             config["method"] = "POST"
@@ -282,7 +280,7 @@ def __clean() -> None:
 
     async def __clean_task():
         s0 = __session_pool.get(loop, None)
-        if s0 is not None:
+        if s0 is not None and not s0.closed:
             await s0.close()
 
     if loop.is_closed():

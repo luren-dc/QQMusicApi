@@ -1,19 +1,15 @@
 import pytest
 
-from qqmusic_api.songlist import Songlist
-
-pytestmark = pytest.mark.asyncio(scope="module")
-
-songlist = Songlist(9069454203)
+pytestmark = pytest.mark.asyncio(scope="package")
 
 
-async def test_get_detail():
+async def test_get_detail(songlist):
     assert await songlist.get_detail()
 
 
-async def test_get_song():
+async def test_get_song(songlist):
     assert await songlist.get_song()
 
 
-# async def test_get_song_tag():
-#     assert await songlist.get_song_tag()
+async def test_get_song_tag(songlist):
+    await songlist.get_song_tag()

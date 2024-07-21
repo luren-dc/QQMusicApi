@@ -108,9 +108,9 @@ async def get_mv_urls(vid: list[str]) -> dict:
                 play_urls[url_info["filetype"]] = play_url
         return play_urls
 
-    for vid, data in result.items():
-        urls[vid] = {}
-        urls[vid]["mp4"] = get_play_urls(data["mp4"])
-        urls[vid]["hls"] = get_play_urls(data["hls"])
+    for _, data in result.items():
+        urls[_] = {}
+        urls[_]["mp4"] = get_play_urls(data["mp4"])
+        urls[_]["hls"] = get_play_urls(data["hls"])
 
     return urls
