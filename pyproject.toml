@@ -65,7 +65,6 @@ select = [
     "TCH",
     "UP",
 ]
-ignore = ["F401"]
 
 [tool.pytest.ini_options]
 pythonpath = "./"

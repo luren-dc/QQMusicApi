@@ -1,3 +1,4 @@
+import asyncio
 import random
 import re
 import time
@@ -8,9 +9,7 @@ from typing import Optional
 
 import aiohttp
 
-from qqmusic_api.exceptions import LoginException
-
-from .exceptions import ResponseCodeException
+from .exceptions import LoginException, ResponseCodeException
 from .utils.credential import Credential
 from .utils.network import Api
 from .utils.utils import get_api, hash33
@@ -52,20 +51,27 @@ class PhoneLoginEvents(Enum):
     OTHER = 5
 
 
-class Login(ABC):
-    """登录抽象类"""
+class Login:
+    """登录基类"""
 
+    def __init__(self) -> None:
+        self.auth_url: Optional[str] = None
+        self.credential: Optional[Credential] = None
+
+
+class QRCodeLogin(Login, ABC):
     def __init__(self) -> None:
         super().__init__()
         self.musicid = ""
-        self.auth_url = ""
         self.state: Optional[QrCodeLoginEvents] = None
         self.qrcode_data: Optional[bytes] = None
-        self.credential: Optional[Credential] = None
 
     async def __aenter__(self):
         self.session = aiohttp.ClientSession()
         return self
+
+    def __del__(self):
+        asyncio.run(self.close())
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.close()
@@ -96,32 +102,17 @@ class Login(ABC):
         """
 
     @abstractmethod
-    async def authorize(self, authcode: Optional[int] = None) -> Credential:
+    async def authorize(self) -> Credential:
         """
         登录鉴权
 
-        Args:
-            code: 验证码. Defaluts to None
-
         Returns:
-            Credential: 用户凭证
-        """
-
-    @abstractmethod
-    async def send_authcode(self) -> PhoneLoginEvents:
-        """
-        发送验证码
-
-        Returns:
-            PhoneLoginEvents: 操作状态
+            Credential: 用户凭证<
         """
 
 
-class QQLogin(Login):
+class QQLogin(QRCodeLogin):
     """QQ登录"""
-
-    async def send_authcode(self):
-        raise NotImplementedError("不支持")
 
     async def get_qrcode(self):
         if self.initialized():
@@ -204,7 +195,7 @@ class QQLogin(Login):
             self.auth_url = re.findall(r"'(https:.*?)'", data)[0]
         return state
 
-    async def authorize(self, authcode: Optional[int] = None):
+    async def authorize(self):
         if self.credential:
             return self.credential
         async with self.session.get(self.auth_url, allow_redirects=False) as res:
@@ -253,15 +244,12 @@ class QQLogin(Login):
         return self.credential
 
 
-class WXLogin(Login):
+class WXLogin(QRCodeLogin):
     """微信登录"""
 
     def __init__(self):
         super().__init__()
         self.uuid = ""
-
-    async def send_authcode(self):
-        raise NotImplementedError("不支持")
 
     async def get_qrcode(self):
         if self.initialized():
@@ -334,7 +322,7 @@ class WXLogin(Login):
             )
         return state
 
-    async def authorize(self, authcode: Optional[int] = None):
+    async def authorize(self):
         if self.credential:
             return self.credential
         await self.session.get(self.auth_url, allow_redirects=False)
@@ -360,22 +348,13 @@ class PhoneLogin(Login):
             raise ValueError("非法手机号")
         self.phone = phone
 
-    async def __aenter__(self):
-        pass
-
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        pass
-
-    async def close(self):
-        pass
-
-    async def get_qrcode(self):
-        raise NotImplementedError("不支持")
-
-    async def get_qrcode_state(self):
-        raise NotImplementedError("不支持")
-
     async def send_authcode(self):
+        """
+        发送验证码
+
+        Returns:
+            PhoneLoginEvents: 操作状态
+        """
         params = {
             "tmeAppid": "qqmusic",
             "phoneNo": str(self.phone),
@@ -391,7 +370,16 @@ class PhoneLogin(Login):
             else:
                 return PhoneLoginEvents.OTHER
 
-    async def authorize(self, authcode: Optional[int] = None):
+    async def authorize(self, authcode: int):
+        """
+        登录鉴权
+
+        Args:
+            code: 验证码
+
+        Returns:
+            Credential: 用户凭证
+        """
         if not authcode:
             raise ValueError("authcode 为空")
         params = {"code": str(authcode), "phoneNo": str(self.phone), "loginMode": 1}
@@ -415,7 +403,7 @@ async def refresh_cookies(credential: Credential) -> Credential:
     刷新 Cookies
 
     Args:
-        credential (Credential): 用户凭证
+        credential: 用户凭证
 
     Return:
         Credential: 新的用户凭证

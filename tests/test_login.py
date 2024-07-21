@@ -11,10 +11,10 @@ from PIL import Image
 from pyzbar.pyzbar import decode
 
 from qqmusic_api.login import (
-    Login,
     PhoneLogin,
     PhoneLoginEvents,
     QQLogin,
+    QRCodeLogin,
     QrCodeLoginEvents,
     WXLogin,
 )
@@ -26,7 +26,7 @@ def show_qrcode(img_data):
     barcodes = decode(Image.open(BytesIO(img_data)))
     for barcode in barcodes:
         barcode_url = barcode.data.decode("utf-8")
-    qr = qrcode.QRCode(
+    qr = qrcode.QRCode(  # type: ignore
         version=2,
         box_size=12,
         border=1,
@@ -36,7 +36,7 @@ def show_qrcode(img_data):
     qr.print_ascii(invert=True)
 
 
-async def login(login: Login):
+async def login(login: QRCodeLogin):
     async with login:
         show_qrcode(await login.get_qrcode())
         while 1:
