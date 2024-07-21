@@ -1,7 +1,5 @@
 from enum import Enum
-from typing import Literal, Optional, Union
-
-from typing_extensions import TypeAlias
+from typing import Literal, Optional
 
 from .song import Song
 from .utils.network import Api

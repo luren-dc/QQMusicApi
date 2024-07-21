@@ -282,7 +282,7 @@ def __clean() -> None:
 
     async def __clean_task():
         s0 = __session_pool.get(loop, None)
-        if s0 is not None:
+        if s0 is not None and not s0.closed:
             await s0.close()
 
     if loop.is_closed():
