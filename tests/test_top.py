@@ -1,20 +1,17 @@
 import pytest
 
-from qqmusic_api.top import Top, get_top_category
+from qqmusic_api.top import get_top_category
 
-pytestmark = pytest.mark.asyncio(scope="module")
-
-
-top = Top(62)
+pytestmark = pytest.mark.asyncio(scope="package")
 
 
-async def test_top_category():
+async def test_top_category(top):
     assert await get_top_category()
 
 
-async def test_get_detail():
+async def test_get_detail(top):
     assert await top.get_detail()
 
 
-async def test_get_song():
+async def test_get_song(top):
     assert await top.get_song()

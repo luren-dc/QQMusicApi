@@ -1,23 +1,21 @@
 import pytest
 
-from qqmusic_api.mv import MV, get_mv_urls
+from qqmusic_api.mv import get_mv_urls
 
-pytestmark = pytest.mark.asyncio(scope="module")
-
-mv = MV("003HjRs318mRL2")
+pytestmark = pytest.mark.asyncio(scope="package")
 
 
-async def test_get_detail():
+async def test_get_detail(mv):
     await mv.get_detail()
 
 
-async def test_get_related_song():
+async def test_get_related_song(mv):
     await mv.get_related_song()
 
 
-async def test_get_mv_url():
+async def test_get_mv_url(mv):
     await mv.get_url()
 
 
-async def test_get_mv_urls():
+async def test_get_mv_urls(mv):
     await get_mv_urls([mv.vid])
