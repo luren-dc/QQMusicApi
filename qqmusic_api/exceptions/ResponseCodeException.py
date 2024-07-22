@@ -4,16 +4,13 @@ from .ApiException import ApiException
 
 
 class ResponseCodeException(ApiException):
-    """
-    API 返回 code 错误。
-    """
+    """API 返回 code 错误。"""
 
     def __init__(self, code: int, msg: str, raw: Optional[dict] = None):
-        """
-        Args:
-            code: 错误代码
-            msg: 错误信息
-            raw: 原始返回数据
+        """Args:
+        code: 错误代码
+        msg: 错误信息
+        raw: 原始返回数据
         """
         super().__init__(msg)
         self.code = code

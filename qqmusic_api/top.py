@@ -8,8 +8,7 @@ API = get_api("top")
 
 
 async def get_top_category(show_detail: bool = False) -> list[dict]:
-    """
-    获取所有排行榜
+    """获取所有排行榜
     Args:
         show_detail: 是否显示详情(包括介绍，前三歌曲). Defaults to False
     Returns:
@@ -42,10 +41,9 @@ class Top:
     """排行榜类"""
 
     def __init__(self, id: int, period: str = "") -> None:
-        """
-        Args:
-            id: 排行榜 ID
-            period: 排行榜时间
+        """Args:
+        id: 排行榜 ID
+        period: 排行榜时间
         """
         self.id = id
         self.set_period(period)
@@ -57,8 +55,7 @@ class Top:
         return self.__repr__()
 
     def set_period(self, period: str):
-        """
-        设置排行榜时间
+        """设置排行榜时间
 
         Args:
             period: 排行榜周期.%Y-%m-%d or %Y_%W
@@ -75,8 +72,7 @@ class Top:
                 raise ValueError(f"error period,right format should be like: {self.period}")
 
     async def get_detail(self):
-        """
-        获取排行榜详细信息
+        """获取排行榜详细信息
 
         Returns:
             dict: 排行榜信息
@@ -88,8 +84,7 @@ class Top:
         return data
 
     async def get_song(self) -> list[Song]:
-        """
-        获取排行榜歌曲
+        """获取排行榜歌曲
 
         Returns:
             list: 排行榜歌曲

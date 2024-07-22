@@ -8,9 +8,7 @@ API = get_api("mv")
 
 
 class MV:
-    """
-    MV 类
-    """
+    """MV 类"""
 
     def __init__(self, vid: str):
         self.vid = vid
@@ -19,8 +17,7 @@ class MV:
         return f"MV(vid={self.vid})"
 
     async def get_detail(self) -> dict:
-        """
-        获取 MV 详细信息
+        """获取 MV 详细信息
 
         Return:
             dict: 视频信息
@@ -54,8 +51,7 @@ class MV:
         return (await Api(**API["detail"]).update_params(**param).result)[self.vid]
 
     async def get_related_song(self) -> list[dict]:
-        """
-        获取 MV 相关歌曲
+        """获取 MV 相关歌曲
 
         Return:
             list: 歌曲基本信息
@@ -68,8 +64,7 @@ class MV:
         return await query_by_id(song_id)
 
     async def get_url(self) -> dict:
-        """
-        获取 MV 播放链接
+        """获取 MV 播放链接
 
         Return:
             dict: 视频播放链接
@@ -78,8 +73,7 @@ class MV:
 
 
 async def get_mv_urls(vid: list[str]) -> dict:
-    """
-    获取 MV 播放链接
+    """获取 MV 播放链接
 
     Args:
         vid: 视频 vid 列表
