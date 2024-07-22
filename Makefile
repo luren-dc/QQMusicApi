@@ -1,11 +1,35 @@
+sources = qqmusic_api tests
+
 .PHONY: .pdm ## Check if PDM is installed
 .pdm:
 	@pdm -V || echo 'Please install PDM: https://pdm.fming.dev/latest/#installation'
 
-.PHONY: install ## Install dependencies and pdm run pre-commit hooks
+.PHONY: install ## Install dependencies and pre-commit hooks for development
 install: .pdm
 	pdm install --group :all
 	pdm run pre-commit install --install-hooks
+
+.PHONY: format ## Format code and check with ruff
+format:
+	pdm run ruff check $(sources)
+	pdm run ruff format --check $(sources)
+
+.PHONY: lint ## Run linter checks with ruff
+lint:
+	pdm run ruff check $(sources)
+	pdm run ruff format --check $(sources)
+
+.PHONY: typecheck ## Run type checks with mypy
+typecheck:
+	pdm run mypy --scripts-are-modules --ignore-missing-imports --check-untyped-defs $(sources)
+
+.PHONY: test ## Run tests with pytest
+test: .pdm
+	pdm run pytest
+
+.PHONY: docs ## Build documentation with mkdocs
+docs:
+	pdm run mkdocs build --strict
 
 .PHONY: clean ## Remove build artifacts and cache files
 clean:
@@ -18,27 +42,7 @@ clean:
 	rm -rf .mypy_cache
 	rm -rf .cache
 
-.PHONY: format ## Format code and check with ruff
-format:
-	pdm run pre-commit run ruff-format --all-files
-
-.PHONY: lint ## Run linter checks with ruff
-lint:
-	pdm run pre-commit run ruff --all-files
-
-.PHONY: typecheck ## Run type checks with mypy
-typecheck:
-	pdm run pre-commit run mypy --all-files
-
-.PHONY: test ## Run tests with pytest
-test: .pdm
-	pdm run pytest
-
-.PHONY: docs ## Build documentation with mkdocs
-docs:
-	pdm run mkdocs build --strict
-
-.PHONY: help ## Display available Makefile targets and their descriptions
+.PHONY: help ## Display this message
 help:
 	@grep -E \
 		'^.PHONY: .*?## .*$$' $(MAKEFILE_LIST) | \
