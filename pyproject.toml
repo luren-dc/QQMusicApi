@@ -61,6 +61,13 @@ docs = [
   "mkdocs-embed-external-markdown>=3.0.2",
   "termynal>=0.12.1",
 ]
+mypy = [
+    "mypy>=1.11.0",
+    "types-requests>=2.32.0.20240712",
+]
+linting = [
+    "ruff>=0.5.4",
+]
 
 [tool.pdm.build]
 includes = ["qqmusic_api", "README.md", "LICENSE", "tests"]
