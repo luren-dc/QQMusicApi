@@ -9,8 +9,7 @@ API = get_api("singer")
 
 
 class AreaType(Enum):
-    """
-    地区
+    """地区
 
     + ALL:     全部
     + CHINA:   内地
@@ -31,8 +30,7 @@ class AreaType(Enum):
 
 
 class GenreType(Enum):
-    """
-    风格
+    """风格
 
     + ALL:           全部
     + POP:           流行
@@ -67,8 +65,7 @@ class GenreType(Enum):
 
 
 class SexType(Enum):
-    """
-    性别
+    """性别
 
     + ALL:    全部
     + MALE:   男
@@ -83,8 +80,7 @@ class SexType(Enum):
 
 
 class TabType(Enum):
-    """
-    Tab 类型
+    """Tab 类型
 
     + WIKI:     wiki
     + ALBUM:    专辑
@@ -121,8 +117,7 @@ async def get_singer_list(
     sex: SexType = SexType.ALL,
     genre: GenreType = GenreType.ALL,
 ) -> list:
-    """
-    获取歌手列表
+    """获取歌手列表
 
     Args:
         area:  地区.Defaluts to AreaType.ALL
@@ -146,14 +141,11 @@ async def get_singer_list(
 
 
 class Singer:
-    """
-    歌手类
-    """
+    """歌手类"""
 
     def __init__(self, mid: str) -> None:
-        """
-        Args:
-            mid: 歌手 mid
+        """Args:
+        mid: 歌手 mid
         """
         self.mid = mid
         self._info: Optional[dict] = None
@@ -167,9 +159,7 @@ class Singer:
         return f"Singer(mid={self.mid})"
 
     async def __get_info(self) -> dict:
-        """
-        获取歌手必要信息
-        """
+        """获取歌手必要信息"""
         if not self._info:
             info = (await Api(**API["homepage"]).update_params(SingerMid=self.mid).result)["Info"]
             self._info = {
@@ -179,8 +169,7 @@ class Singer:
         return self._info
 
     async def get_info(self) -> dict:
-        """
-        获取歌手信息
+        """获取歌手信息
 
         Returns:
             dict: 歌手信息
@@ -190,8 +179,7 @@ class Singer:
         return self._info
 
     async def get_fans_num(self) -> int:
-        """
-        获取歌手粉丝数
+        """获取歌手粉丝数
 
         Returns:
             int: 粉丝数
@@ -199,8 +187,7 @@ class Singer:
         return (await self.__get_info())["FansNum"]
 
     async def get_tab_detail(self, tab_type: TabType, page: int = 1, num: int = 100):
-        """
-        获取歌手 Tab 详细信息
+        """获取歌手 Tab 详细信息
 
         Args:
             tab_type: Tab 类型
@@ -224,8 +211,7 @@ class Singer:
         )[tab_type.tabName]
 
     async def get_wiki(self) -> dict:
-        """
-        获取歌手WiKi
+        """获取歌手WiKi
 
         Returns:
             dict: 歌手WiKi
@@ -233,8 +219,7 @@ class Singer:
         return await self.get_tab_detail(TabType.WIKI)
 
     async def get_song(self, type: SongType = "song", page: int = 1, num: int = 100) -> list[Song]:
-        """
-        获取歌手歌曲
+        """获取歌手歌曲
 
         Args:
             type: Tab 类型. Defaluts to TabType.SONG

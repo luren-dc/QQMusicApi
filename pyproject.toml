@@ -1,15 +1,24 @@
-[tool.poetry]
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[project]
 name = "qqmusic-api-python"
-version = "0.1.2"
 description = "QQ音乐API封装库"
-authors = ["Luren <dluren.c@gmail.com>"]
-packages = [{ include = "qqmusic_api" }]
-license = "MIT"
+authors = [
+  { name = "Luren", email = "68656403+luren-dc@users.noreply.github.com" },
+]
+dependencies = [
+  "cryptography<42.0.0,>=41.0.2",
+  "requests<3.0.0,>=2.31.0",
+  "aiohttp<4.0.0,>=3.9.5",
+]
+requires-python = "<4.0,>=3.9"
 readme = "README.md"
-maintainers = ["Luren <dluren.c@gmail.com>"]
-homepage = "https://github.com/luren-dc/QQMusicApi"
-repository = "https://github.com/luren-dc/QQMusicApi"
-documentation = "https://github.com/luren-dc/QQMusicApi"
+license = { text = "MIT" }
+maintainers = [
+  { name = "Luren", email = "68656403+luren-dc@users.noreply.github.com" },
+]
 keywords = ["music", "api", "qqmusic", "tencentmusic"]
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -23,22 +32,41 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
+dynamic = ["version"]
 
-[tool.poetry.dependencies]
-python = "^3.9"
-cryptography = "^41.0.2"
-requests = "^2.31.0"
-aiohttp = "^3.9.5"
+[project.urls]
+homepage = "https://github.com/luren-dc/QQMusicApi"
+repository = "https://github.com/luren-dc/QQMusicApi"
+documentation = "https://github.com/luren-dc/QQMusicApi"
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.2.0"
-pytest-asyncio = "^0.23.6"
-pytest-sugar = "^1.0.0"
-pre-commit = "^3.7.0"
+[tool.pdm]
+distribution = true
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.pdm.version]
+source = "file"
+path = "qqmusic_api/__init__.py"
+
+[tool.pdm.dev-dependencies]
+pre-commit = ["pre-commit<4.0.0,>=3.7.0"]
+testing = [
+  "pytest<9.0.0,>=8.2.0",
+  "pytest-asyncio<1.0.0,>=0.23.6",
+  "pytest-sugar<2.0.0,>=1.0.0",
+]
+docs = [
+  "mkdocs-material>=9.5.29",
+  "mkdocstrings-python>=1.10.5",
+  "mkdocstrings>=0.25.1",
+  "mkdocs>=1.6.0",
+  "mkdocs-embed-external-markdown>=3.0.2",
+  "termynal>=0.12.1",
+]
+
+[tool.pdm.build]
+includes = ["qqmusic_api", "README.md", "LICENSE", "tests"]
+
+[tool.pdm.scripts]
+docs = "mkdocs serve"
 
 [tool.mypy]
 pretty = true
@@ -53,14 +81,15 @@ target-version = "py39"
 docstring-code-format = true
 
 [tool.ruff.lint]
-select = [
-    "F",
-    "E",
-    "W",
-    "I",
-    "TCH",
-    "UP",
-]
+extend-select = ["Q", "RUF100", "C90", "UP", "I", "D", "T"]
+extend-ignore = ["D105", "D107", "D205", "D415"]
+pydocstyle = { convention = "google" }
+
+[tool.ruff.lint.per-file-ignores]
+"docs/*" = ["D"]
+"tests/*" = ["D"]
+"qqmusic_api/__init__.py" = ["F405", "F403", "D"]
+"qqmusic_api/**/__init__.py" = ["F405", "F403", "D"]
 
 [tool.pytest.ini_options]
 pythonpath = "./"

@@ -5,8 +5,7 @@ import time
 
 
 def get_api(field: str) -> dict:
-    """
-    获取 api 字典
+    """获取 api 字典
 
     Args:
         field: 字段名
@@ -24,8 +23,7 @@ def get_api(field: str) -> dict:
 
 
 def hash33(s: str, h: int = 0) -> int:
-    """
-    hash33
+    """hash33
 
     Args:
         s: 待计算的字符串
@@ -39,8 +37,7 @@ def hash33(s: str, h: int = 0) -> int:
 
 
 def get_searchID() -> str:
-    """
-    随机 searchID
+    """随机 searchID
 
     Returns:
         str: 随机 searchID

@@ -2,10 +2,12 @@
     <h1> QQMusic Api </h1>
     <p> Python QQ音乐 API 封装库 </p>
 
-![Python Version 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue)
+[![Python](https://img.shields.io/badge/python-3.9+-blue)](https://www.python.org)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
-![GitHub license](https://img.shields.io/github/license/luren-dc/PyQQMusicApi)
+[![pdm-managed](https://img.shields.io/endpoint?url=https%3A%2F%2Fcdn.jsdelivr.net%2Fgh%2Fpdm-project%2F.github%2Fbadge.json)](https://pdm-project.org)
+[![GitHub license](https://img.shields.io/github/license/luren-dc/PyQQMusicApi)](https://github.com/luren-dc/QQMusicApi/tree/build?tab=License-1-ov-file)
+[![STARS](https://img.shields.io/github/stars/luren-dc/QQMusicApi?color=yellow&label=Github%20Stars)](https://github.com/luren-dc/QQMusicApi/stargazers)
+[![Testing](https://github.com/luren-dc/QQMusicApi/actions/workflows/testing.yml/badge.svg?branch=dev)](https://github.com/luren-dc/QQMusicApi/actions/workflows/testing.yml)
 
 </div>
 

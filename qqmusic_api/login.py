@@ -17,8 +17,7 @@ API = get_api("login")
 
 
 class QrCodeLoginEvents(Enum):
-    """
-    二维码登录状态
+    """二维码登录状态
 
     + SCAN:    未扫描二维码
     + CONF:    未确认登录
@@ -37,8 +36,7 @@ class QrCodeLoginEvents(Enum):
 
 
 class PhoneLoginEvents(Enum):
-    """
-    手机登录状态
+    """手机登录状态
 
     + SEND:    发送成功
     + CAPTCHA: 需要滑块验证
@@ -75,8 +73,7 @@ class QRCodeLogin(Login, ABC):
 
     @abstractmethod
     async def get_qrcode(self) -> bytes:  # type: ignore
-        """
-        获取二维码
+        """获取二维码
 
         Returns:
             bytes: 二维码图像数据
@@ -84,8 +81,7 @@ class QRCodeLogin(Login, ABC):
 
     @abstractmethod
     async def get_qrcode_state(self) -> QrCodeLoginEvents:
-        """
-        获取二维码状态
+        """获取二维码状态
 
         Returns:
             QrCodeLoginEvents: 二维码状态
@@ -93,8 +89,7 @@ class QRCodeLogin(Login, ABC):
 
     @abstractmethod
     async def authorize(self) -> Credential:
-        """
-        登录鉴权
+        """登录鉴权
 
         Returns:
             Credential: 用户凭证
@@ -346,17 +341,15 @@ class PhoneLogin(Login):
     """手机号登录"""
 
     def __init__(self, phone: str):
-        """
-        Args:
-            phone: 手机号码
+        """Args:
+        phone: 手机号码
         """
         if not re.compile(r"^1[3-9]\d{9}$").match(phone):
             raise ValueError("非法手机号")
         self.phone = phone
 
     async def send_authcode(self):
-        """
-        发送验证码
+        """发送验证码
 
         Returns:
             PhoneLoginEvents: 操作状态
@@ -377,8 +370,7 @@ class PhoneLogin(Login):
                 return PhoneLoginEvents.OTHER
 
     async def authorize(self, authcode: int):
-        """
-        登录鉴权
+        """登录鉴权
 
         Args:
             code: 验证码
@@ -405,8 +397,7 @@ class PhoneLogin(Login):
 
 
 async def refresh_cookies(credential: Credential) -> Credential:
-    """
-    刷新 Cookies
+    """刷新 Cookies
 
     Args:
         credential: 用户凭证

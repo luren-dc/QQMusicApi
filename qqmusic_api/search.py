@@ -8,8 +8,7 @@ API = get_api("search")
 
 
 class SearchType(Enum):
-    """
-    搜索类型
+    """搜索类型
 
     + SONG:       歌曲
     + SINGER:     歌手
@@ -34,8 +33,7 @@ class SearchType(Enum):
 
 
 async def hotkey() -> list[dict]:
-    """
-    获取热搜词
+    """获取热搜词
 
     Returns:
         list: 热搜词列表，k为热搜词，n为搜索量
@@ -47,8 +45,7 @@ async def hotkey() -> list[dict]:
 
 
 async def complete(keyword: str, highlight: bool = False) -> list[str]:
-    """
-    搜索词补全
+    """搜索词补全
 
     Args:
         keyword:   关键词
@@ -72,8 +69,7 @@ async def complete(keyword: str, highlight: bool = False) -> list[str]:
 
 
 async def quick_search(keyword: str) -> dict:
-    """
-    快速搜索
+    """快速搜索
 
     Args:
         keyword: 关键词
@@ -86,8 +82,7 @@ async def quick_search(keyword: str) -> dict:
 
 
 async def general_search(keyword: str, page: int = 1, highlight: bool = False) -> dict:
-    """
-    综合搜索
+    """综合搜索
 
     Args:
         keyword:   关键词
@@ -125,8 +120,7 @@ async def search_by_type(
     selectors: dict = {},
     highlight: bool = False,
 ) -> list[Song]:
-    """
-    搜索
+    """搜索
 
     Args:
         keyword:     关键词
