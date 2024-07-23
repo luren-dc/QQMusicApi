@@ -2,10 +2,10 @@
 # It is not intended for manual editing.
 
 [metadata]
-groups = ["default", "docs", "linting", "mypy", "testing"]
+groups = ["default", "docs", "linting", "markdown-callouts", "mypy", "testing"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:6bbe0da4aac22541cc3263558cdb165b1ecdea669326ba1158db9aef4a39fdcf"
+content_hash = "sha256:12847580bb16bb8e6a8199001e5600aa3ddbb3740db7e270542464158707be5d"
 
 [[metadata.targets]]
 requires_python = "~=3.9"
@@ -531,6 +531,20 @@ files = [
 ]
 
 [[package]]
+name = "markdown-callouts"
+version = "0.4.0"
+requires_python = ">=3.8"
+summary = "Markdown extension: a classier syntax for admonitions"
+groups = ["docs"]
+dependencies = [
+    "markdown>=3.3.3",
+]
+files = [
+    {file = "markdown_callouts-0.4.0-py3-none-any.whl", hash = "sha256:ed0da38f29158d93116a0d0c6ecaf9df90b37e0d989b5337d678ee6e6d6550b7"},
+    {file = "markdown_callouts-0.4.0.tar.gz", hash = "sha256:7ed2c90486967058a73a547781121983839522d67041ae52c4979616f1b2b746"},
+]
+
+[[package]]
 name = "markdown-exec"
 version = "1.9.3"
 requires_python = ">=3.8"
@@ -662,21 +676,6 @@ dependencies = [
 files = [
     {file = "mkdocs_autorefs-1.0.1-py3-none-any.whl", hash = "sha256:aacdfae1ab197780fb7a2dac92ad8a3d8f7ca8049a9cbe56a4218cd52e8da570"},
     {file = "mkdocs_autorefs-1.0.1.tar.gz", hash = "sha256:f684edf847eced40b570b57846b15f0bf57fb93ac2c510450775dcf16accb971"},
-]
-
-[[package]]
-name = "mkdocs-embed-external-markdown"
-version = "3.0.2"
-requires_python = ">=3.9"
-summary = "Mkdocs plugin that allow to inject external markdown or markdown section from given url"
-groups = ["docs"]
-dependencies = [
-    "Jinja2>=3.1.0",
-    "requests>=2.3.0",
-]
-files = [
-    {file = "mkdocs-embed-external-markdown-3.0.2.tar.gz", hash = "sha256:9a3d14a9cc6efb4201175530f277e84da472a576772db264a3b19570cf266317"},
-    {file = "mkdocs_embed_external_markdown-3.0.2-py3-none-any.whl", hash = "sha256:82088296cfd117b36ef45b58b4342005727a1f891f0c429c21756215e89099d2"},
 ]
 
 [[package]]

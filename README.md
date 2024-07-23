@@ -1,4 +1,3 @@
-<div align="center">
     <h1> QQMusic Api </h1>
     <p> Python QQ音乐 API 封装库 </p>
 
@@ -9,46 +8,47 @@
 [![STARS](https://img.shields.io/github/stars/luren-dc/QQMusicApi?color=yellow&label=Github%20Stars)](https://github.com/luren-dc/QQMusicApi/stargazers)
 [![Testing](https://github.com/luren-dc/QQMusicApi/actions/workflows/testing.yml/badge.svg?branch=dev)](https://github.com/luren-dc/QQMusicApi/actions/workflows/testing.yml)
 
-</div>
-
 ---
 
 > [!WARNING]
 > 本仓库的所有内容仅供学习和参考之用，禁止用于商业用途。
 
-文档: [https://luren-dc.github.io/QQMusicApi/](https://luren-dc.github.io/QQMusicApi/)
+<!----8<-- [start:intro]-->
 
 ## 介绍
 
 使用 Python 编写的用于调用 [QQ音乐](https://y.qq.com/) 各种 API 的库.
 
-## 依赖
+## 特色
 
-本项目基于：
+- 涵盖常见 API
+- 调用简便，函数命名易懂，代码注释详细
+- 异步操作
+
+## 依赖
 
 - [AIOHTTP](https://docs.aiohttp.org/)
 - [Requests](https://requests.readthedocs.io/)
 - [Cryptography](https://cryptography.io/)
+<!----8<-- [end:intro]-->
+
+## 帮助
+
+查看[文档](https://luren-dc.github.io/QQMusicApi/)更多帮助
 
 ## 快速上手
 
 ### 安装
 
-#### pypi
-
-```shell
+```bash
 $ pip install qqmusic-api-python
-```
-
-#### source
-
-```shell
-$ pip install git+https://github.com/luren-dc/QQMusicApi.git
 ```
 
 ### 使用
 
-```python
+<!----8<-- [start:example]-->
+
+```python exec="1" result="pycon" source="tabbed-left"
 import asyncio
 
 from qqmusic_api import search
@@ -59,21 +59,19 @@ async def main():
     # 打印结果
     print(result)
 
-if __name__ == "__main__":
-    asyncio.run(main())
+asyncio.run(main())
 ```
 
-## TODO
+<!----8<-- [end:example]-->
 
-- [ ] 歌手 API
-- [ ] 评论 API
-- [ ] 用户 API
+<!----8<-- [start:refer]-->
 
 ## 参考项目
 
 - [Rain120/qq-muisc-api](https://github.com/Rain120/qq-music-api)
 - [jsososo/QQMusicApi](https://github.com/jsososo/QQMusicApi)
 - [Nemo2011/bilibili-api](https://github.com/Nemo2011/bilibili-api/)
+<!----8<-- [end:refer]-->
 
 ## Licence
 
