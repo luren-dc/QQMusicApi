@@ -47,19 +47,19 @@ source = "file"
 path = "qqmusic_api/__init__.py"
 
 [tool.pdm.dev-dependencies]
-pre-commit = ["pre-commit<4.0.0,>=3.7.0"]
 testing = [
   "pytest<9.0.0,>=8.2.0",
   "pytest-asyncio<1.0.0,>=0.23.6",
   "pytest-sugar<2.0.0,>=1.0.0",
 ]
 docs = [
-  "mkdocs-material>=9.5.29",
-  "mkdocstrings-python>=1.10.5",
-  "mkdocstrings>=0.25.1",
-  "mkdocs>=1.6.0",
-  "mkdocs-embed-external-markdown>=3.0.2",
-  "termynal>=0.12.1",
+    "mkdocs-material>=9.5.29",
+    "mkdocstrings-python>=1.10.5",
+    "mkdocstrings>=0.25.1",
+    "mkdocs>=1.6.0",
+    "mkdocs-embed-external-markdown>=3.0.2",
+    "termynal>=0.12.1",
+    "markdown-exec[ansi]>=1.9.3",
 ]
 mypy = [
     "mypy>=1.11.0",
