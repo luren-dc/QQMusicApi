@@ -293,9 +293,9 @@
     transparent
   );
 
-  --md-shadow-z1:0 0.2rem 0.5rem #0000000d,0 0 0.05rem #0000001a;
-  --md-shadow-z2:0 0.2rem 0.5rem #00000040,0 0 0.05rem #00000040;
-  --md-shadow-z3:0 0.2rem 0.5rem #0006,0 0 0.05rem #00000059;
+  --md-shadow-z1: 0 0.2rem 0.5rem #0000000d, 0 0 0.05rem #0000001a;
+  --md-shadow-z2: 0 0.2rem 0.5rem #00000040, 0 0 0.05rem #00000040;
+  --md-shadow-z3: 0 0.2rem 0.5rem #0006, 0 0 0.05rem #00000059;
   color-scheme: dark;
 
   --md-admonition-fg-color: var(--ctp-macchiato-text);
