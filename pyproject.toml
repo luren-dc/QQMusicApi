@@ -57,8 +57,6 @@ docs = [
     "mkdocstrings-python>=1.10.5",
     "mkdocstrings>=0.25.1",
     "mkdocs>=1.6.0",
-    "termynal>=0.12.1",
-    "markdown-exec[ansi]>=1.9.3",
     "markdown-callouts>=0.4.0",
 ]
 mypy = [

@@ -63,7 +63,7 @@ pdm docs
 
 ### 创建 Pull Request
 
-> [!WARNING]
+> [!NOTE]
 > 请向 `dev` 分支发起 [Pull Request](https://github.com/luren-dc/QQMusicapi/pulls)
 
 提交更改，将分支推送到 GitHub，然后创建拉取请求。

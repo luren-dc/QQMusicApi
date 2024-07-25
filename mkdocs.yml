@@ -4,43 +4,48 @@ site_description: 使用 Python 编写的用于调用 QQ音乐 各种 API 的库
 theme:
   name: "material"
   language: zh
-  font:
-    text: false
-    code: false
+  font: false
+  icon:
+    repo: fontawesome/brands/github
   features:
     - content.tabs.link
     - content.code.annotate
     - content.code.copy
     - announce.dismiss
-    - navigation.tabs
     - navigation.instant
-    - navigation.instant.prefetch
-    - navigation.instant.preview
-    - navigation.instant.progress
-    - navigation.path
+    - navigation.tabs
     - navigation.sections
     - navigation.top
     - navigation.tracking
+    - navigation.indexes
     - search.suggest
     - toc.follow
   palette:
-    - media: "(prefers-color-scheme: light)"
-      scheme: forest
+    - media: "(prefers-color-scheme)"
       toggle:
-        icon: material/weather-night
-        name: "Switch to dark mode"
-    - media: "(prefers-color-scheme: dark)"
-      scheme: forest-dark
+        icon: material/theme-light-dark
+        name: Automatically Switch ui mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: latte
       toggle:
         icon: material/weather-sunny
-        name: "Switch to light mode"
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: macchiato
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
 
 repo_name: luren-dc/QQMusicApi
 repo_url: https://github.com/luren-dc/QQMusicApi
-edit_uri: edit/main/docs/
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/luren-dc/QQMusicApi
+
 extra_css:
-  - extra/font.css
-  - extra/scheme.css
+  - assets/stylesheets/font.css
+  - assets/stylesheets/scheme.css
   - https://cdn.tonycrane.cc/jbmono/jetbrainsmono.css
   - https://cdn.tonycrane.cc/lxgw/lxgwscreen.css
   - https://fonts.loli.net/css2?family=Noto+Serif+SC&display=swap
@@ -50,14 +55,13 @@ markdown_extensions:
   - abbr
   - attr_list
   - admonition
-  - callouts
   - def_list
   - footnotes
   - md_in_html
   - markdown_callouts.github_callouts
   - toc:
       slugify: !!python/object/apply:pymdownx.slugs.slugify {kwds: {case: lower}}
-      permalink: true
+      permalink: ""
   - pymdownx.arithmatex:
       generic: true
   - pymdownx.betterem:
@@ -79,15 +83,12 @@ markdown_extensions:
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.highlight:
       anchor_linenums: true
-      guess_lang: true
-      linenums: true
-      linenums_style: pymdownx-inline
-      use_pygments: true
       line_spans: __span
       pygments_lang_class: true
   - pymdownx.inlinehilite
   - pymdownx.keys
   - pymdownx.mark
+  - pymdownx.critic
   - pymdownx.smartsymbols
   - pymdownx.superfences
   - pymdownx.snippets:
@@ -97,14 +98,12 @@ markdown_extensions:
   - pymdownx.tilde
 
 plugins:
-  - markdown-exec
-  - termynal
   - search:
       lang: zh
   - mkdocstrings:
       handlers:
         python:
-          paths: [qqmusic_api]
+          paths: [.,qqmusic_api]
           options:
             members_order: source
             group_by_category: true
@@ -116,13 +115,37 @@ plugins:
             merge_init_into_class: true
             show_signature_annotations: true
             signature_crossrefs: true
+            docstring_section_style: spacy
+            preload_modules:
+              - aiohttp
+              - requests
           import:
             - https://docs.python.org/3/objects.inv
 
 nav:
   - 主页: index.md
-  - Contributing: contributing.md
-
+  - API 示例:
+      - 登录: examples/login.md
+      - 搜索: examples/search.md
+      - 歌曲: examples/song.md
+  - API 文档:
+      - api/index.md
+      - album 专辑: api/album.md
+      - login 登录: api/login.md
+      - mv MV: api/mv.md
+      - search 搜索: api/search.md
+      - singer 歌手: api/singer.md
+      - song 歌曲: api/song.md
+      - songlist 歌单: api/songlist.md
+      - top 排行榜: api/top.md
+      - utils:
+          - qimei: api/utils/qimei.md
+          - utils 实用程序: api/utils/utils.md
+          - network 接口通讯: api/utils/network.md
+          - credential 凭据: api/utils/credential.md
+          - sync 同步: api/utils/sync.md
+  - 贡献指南: contributing.md
 
 watch:
   - qqmusic_api
+  - README.md
