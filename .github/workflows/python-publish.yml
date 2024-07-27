@@ -9,19 +9,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Setup PDM
+        uses: pdm-project/setup-pdm@v4
         with:
-          python-version: "3.9"
-      - name: Install Poetry
-        run: |
-          pipx install poetry==1.8.3
+            python-version: 3.9
       - name: Install dependencies
         run: |
-          poetry install
+          pdm install
       - name: Build and publish
         env:
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
         run: |
-          poetry build
-          poetry publish --username __token__ --password $PYPI_TOKEN
+          pdm build
+          pdm publish --username __token__ --password $PYPI_TOKEN

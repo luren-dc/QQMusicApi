@@ -1,3 +1,5 @@
+"""MV 相关 API"""
+
 import random
 
 from .song import query_by_id
@@ -8,22 +10,28 @@ API = get_api("mv")
 
 
 class MV:
-    """
-    MV 类
+    """MV 类
+
+    Attributes:
+        vid: mv id
     """
 
     def __init__(self, vid: str):
+        """初始化 MV 类
+
+        Args:
+            vid: 视频 id
+        """
         self.vid = vid
 
     def __repr__(self) -> str:
         return f"MV(vid={self.vid})"
 
     async def get_detail(self) -> dict:
-        """
-        获取 MV 详细信息
+        """获取 MV 详细信息
 
         Return:
-            dict: 视频信息
+            视频信息
         """
         param = {
             "vidlist": [self.vid],
@@ -54,11 +62,10 @@ class MV:
         return (await Api(**API["detail"]).update_params(**param).result)[self.vid]
 
     async def get_related_song(self) -> list[dict]:
-        """
-        获取 MV 相关歌曲
+        """获取 MV 相关歌曲
 
         Return:
-            list: 歌曲基本信息
+            歌曲基本信息
         """
         param = {
             "vidlist": [self.vid],
@@ -68,24 +75,22 @@ class MV:
         return await query_by_id(song_id)
 
     async def get_url(self) -> dict:
-        """
-        获取 MV 播放链接
+        """获取 MV 播放链接
 
         Return:
-            dict: 视频播放链接
+            视频播放链接
         """
         return (await get_mv_urls([self.vid]))[self.vid]
 
 
 async def get_mv_urls(vid: list[str]) -> dict:
-    """
-    获取 MV 播放链接
+    """获取 MV 播放链接
 
     Args:
         vid: 视频 vid 列表
 
     Return:
-        dict: 视频播放链接
+        视频播放链接
     """
     param = {
         "vids": vid,

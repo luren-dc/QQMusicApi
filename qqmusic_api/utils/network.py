@@ -1,3 +1,5 @@
+"""网络请求"""
+
 import asyncio
 import atexit
 import json
@@ -17,7 +19,7 @@ QIMEI36 = None
 API_URL = "https://u.y.qq.com/cgi-bin/musicu.fcg"
 
 HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.54",  # noqa: E501
+    "User-Agent": "Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.54",
     "Referer": "https://y.qq.com",
 }
 
@@ -25,8 +27,7 @@ __session_pool: dict[asyncio.AbstractEventLoop, aiohttp.ClientSession] = {}
 
 
 def get_aiohttp_session() -> aiohttp.ClientSession:
-    """
-    获取当前模块的 aiohttp.ClientSession 对象，用于自定义请求
+    """获取当前模块的 aiohttp.ClientSession 对象，用于自定义请求
 
     Returns:
         aiohttp.ClientSession
@@ -41,8 +42,7 @@ def get_aiohttp_session() -> aiohttp.ClientSession:
 
 
 def set_aiohttp_session(session: aiohttp.ClientSession) -> None:
-    """
-    用户手动设置 Session
+    """用户手动设置 Session
 
     Args:
         session:  aiohttp.ClientSession 实例
@@ -53,10 +53,9 @@ def set_aiohttp_session(session: aiohttp.ClientSession) -> None:
 
 @dataclass
 class Api:
-    """
-    用于请求的 Api 类
+    """用于请求的 Api 类
 
-    Args:
+    Attributes:
         url: 请求地址. Defaults to API_URL
         method: 请求方法
         module: 请求模块. Defaults to ""
@@ -96,22 +95,19 @@ class Api:
         self.__result: Union[dict, None] = None
 
     def __setattr__(self, __name: str, __value: Any) -> None:
-        """
-        每次更新参数都要把 __result 清除
-        """
+        """每次更新参数都要把 __result 清除"""
         if self.initialized and __name != "__Api__result":
             self.__result = None
         return super().__setattr__(__name, __value)
 
     @property
     def initialized(self):
+        """是否已经初始化"""
         return "__Api__result" in self.__dict__
 
     @property
     async def result(self) -> dict:
-        """
-        获取请求结果
-        """
+        """获取请求结果"""
         if self.__result is None:
             result = await self.request()
             if isinstance(result, dict):
@@ -120,41 +116,31 @@ class Api:
         return {}
 
     def update_params(self, **kwargs) -> "Api":
-        """
-        毫无亮点的更新 params
-        """
+        """毫无亮点的更新 params"""
         self.params = kwargs
         self.__result = None
         return self
 
     def update_data(self, **kwargs) -> "Api":
-        """
-        毫无亮点的更新 data
-        """
+        """毫无亮点的更新 data"""
         self.data = kwargs
         self.__result = None
         return self
 
     def update_headers(self, **kwargs) -> "Api":
-        """
-        毫无亮点的更新 headers
-        """
+        """毫无亮点的更新 headers"""
         self.headers = kwargs
         self.__result = None
         return self
 
     def update_extra_common(self, **kwargs) -> "Api":
-        """
-        毫无亮点的更新 extra_common
-        """
+        """毫无亮点的更新 extra_common"""
         self.extra_common = kwargs
         self.__result = None
         return self
 
     def __prepare_params_data(self) -> None:
-        """
-        准备请求参数
-        """
+        """准备请求参数"""
         new_params, new_data = {}, {}
         for key, value in self.params.items():
             if isinstance(value, bool):
@@ -169,9 +155,7 @@ class Api:
         self.params, self.data = new_params, new_data
 
     def __prepare_api_data(self) -> None:
-        """
-        准备API请求数据
-        """
+        """准备API请求数据"""
         global QIMEI36
         if not QIMEI36:
             QIMEI36 = QIMEI.get_qimei(QQMUSIC_VERSION).q36
@@ -211,9 +195,7 @@ class Api:
         self.data = data
 
     def __prepare_request(self) -> dict:
-        """
-        准备请求配置参数
-        """
+        """准备请求配置参数"""
         config = {
             "url": self.url,
             "method": self.method,
@@ -230,9 +212,7 @@ class Api:
         return config
 
     async def request(self) -> Union[dict, str, None]:
-        """
-        向接口发送请求
-        """
+        """向接口发送请求"""
         if self.module:
             self.__prepare_api_data()
         self.__prepare_params_data()
@@ -270,9 +250,7 @@ class Api:
 
 @atexit.register
 def __clean() -> None:
-    """
-    程序退出清理操作。
-    """
+    """程序退出清理操作。"""
     try:
         loop = asyncio.get_event_loop()
     except RuntimeError:

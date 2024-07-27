@@ -1,3 +1,5 @@
+"""实用函数"""
+
 import json
 import os
 import random
@@ -5,14 +7,13 @@ import time
 
 
 def get_api(field: str) -> dict:
-    """
-    获取 api 字典
+    """获取 api 字典
 
     Args:
         field: 字段名
 
     Returns:
-        dict: api 字典
+        api 字典
     """
     path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "api", f"{field.lower()}.json"))
     if os.path.exists(path):
@@ -24,14 +25,13 @@ def get_api(field: str) -> dict:
 
 
 def hash33(s: str, h: int = 0) -> int:
-    """
-    hash33
+    """hash33
 
     Args:
         s: 待计算的字符串
         h: 前一个计算结果
     Returns:
-        int: 计算结果
+        计算结果
     """
     for c in s:
         h = (h << 5) + h + ord(c)
@@ -39,11 +39,10 @@ def hash33(s: str, h: int = 0) -> int:
 
 
 def get_searchID() -> str:
-    """
-    随机 searchID
+    """随机 searchID
 
     Returns:
-        str: 随机 searchID
+        随机 searchID
     """
     e = random.randint(1, 20)
     t = e * 18014398509481984
@@ -54,6 +53,14 @@ def get_searchID() -> str:
 
 
 def parse_song_info(song_info: dict) -> dict:
+    """解析歌曲信息
+
+    Args:
+        song_info: 歌曲信息
+
+    Returns:
+        解析后的歌曲信息
+    """
     # 解析专辑信息
     album = {
         "id": song_info["album"]["id"],

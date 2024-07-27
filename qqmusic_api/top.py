@@ -1,3 +1,5 @@
+"""排行榜相关 API"""
+
 import datetime
 
 from .song import Song
@@ -8,12 +10,11 @@ API = get_api("top")
 
 
 async def get_top_category(show_detail: bool = False) -> list[dict]:
-    """
-    获取所有排行榜
+    """获取所有排行榜
     Args:
         show_detail: 是否显示详情(包括介绍，前三歌曲). Defaults to False
     Returns:
-        list: 排行榜信息
+        排行榜信息
     """
     result = await Api(**API["category"]).result
     return [
@@ -39,10 +40,16 @@ async def get_top_category(show_detail: bool = False) -> list[dict]:
 
 
 class Top:
-    """排行榜类"""
+    """排行榜类
+
+    Attributes:
+        id: 排行榜 ID
+        period: 排行榜时间
+    """
 
     def __init__(self, id: int, period: str = "") -> None:
-        """
+        """初始化排行榜类
+
         Args:
             id: 排行榜 ID
             period: 排行榜时间
@@ -57,8 +64,7 @@ class Top:
         return self.__repr__()
 
     def set_period(self, period: str):
-        """
-        设置排行榜时间
+        """设置排行榜时间
 
         Args:
             period: 排行榜周期.%Y-%m-%d or %Y_%W
@@ -74,12 +80,11 @@ class Top:
             except ValueError:
                 raise ValueError(f"error period,right format should be like: {self.period}")
 
-    async def get_detail(self):
-        """
-        获取排行榜详细信息
+    async def get_detail(self) -> dict:
+        """获取排行榜详细信息
 
         Returns:
-            dict: 排行榜信息
+            排行榜信息
         """
         param = {"topId": self.id, "period": self.period}
         result = await Api(**API["detail"]).update_params(**param).result
@@ -88,11 +93,10 @@ class Top:
         return data
 
     async def get_song(self) -> list[Song]:
-        """
-        获取排行榜歌曲
+        """获取排行榜歌曲
 
         Returns:
-            list: 排行榜歌曲
+            排行榜歌曲
         """
         param = {"topId": self.id, "period": self.period, "offset": 0, "num": 100}
         result = await Api(**API["detail"]).update_params(**param).result

@@ -12,32 +12,39 @@ repos:
       - id: check-json
       - id: check-toml
       - id: check-yaml
+        args: [--unsafe]
       - id: detect-private-key
       - id: no-commit-to-branch
       - id: end-of-file-fixer
         exclude: ^LICENSE|\.(html|csv|txt|svg)$
       - id: pretty-format-json
-        args: [--autofix, --no-ensure-ascii, --no-sort-keys,--indent,"4"]
+        args: [--autofix, --no-ensure-ascii, --no-sort-keys, --indent, "4"]
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
         exclude: \.(html|svg)$
-
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.5.3
-    hooks:
-      - id: ruff
-        args:
-         - --fix
-      - id: ruff-format
-
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.11.0
-    hooks:
-      - id: mypy
-        additional_dependencies:
-          - types-requests
 
   - repo: https://github.com/commitizen-tools/commitizen
     rev: v3.28.0
     hooks:
       - id: commitizen
+
+  - repo: local
+    hooks:
+      - id: lint
+        name: lint
+        entry: ruff check --fix
+        language: python
+        types_or: [python, pyi]
+
+      - id: format
+        name: format
+        entry: ruff format
+        language: python
+        types_or: [python, pyi]
+
+      - id: typecheck
+        name: typecheck
+        entry: mypy
+        args: [--ignore-missing-imports, --scripts-are-modules]
+        language: python
+        types_or: [python, pyi]

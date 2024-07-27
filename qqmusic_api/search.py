@@ -1,4 +1,7 @@
+"""搜索相关 API"""
+
 from enum import Enum
+from typing import Union
 
 from .song import Song
 from .utils.network import Api
@@ -8,8 +11,7 @@ API = get_api("search")
 
 
 class SearchType(Enum):
-    """
-    搜索类型
+    """搜索类型
 
     + SONG:       歌曲
     + SINGER:     歌手
@@ -34,11 +36,10 @@ class SearchType(Enum):
 
 
 async def hotkey() -> list[dict]:
-    """
-    获取热搜词
+    """获取热搜词
 
     Returns:
-        list: 热搜词列表，k为热搜词，n为搜索量
+        热搜词列表，k为热搜词，n为搜索量
     """
     params = {"search_id": get_searchID()}
     res = await Api(**API["hotkey"]).update_params(**params).result
@@ -47,15 +48,14 @@ async def hotkey() -> list[dict]:
 
 
 async def complete(keyword: str, highlight: bool = False) -> list[str]:
-    """
-    搜索词补全
+    """搜索词补全
 
     Args:
         keyword:   关键词
         highlight: 是否高亮关键词. Defaluts to False
 
     Returns:
-        list: 补全结果
+        补全结果
     """
     params = {
         "search_id": get_searchID(),
@@ -72,22 +72,20 @@ async def complete(keyword: str, highlight: bool = False) -> list[str]:
 
 
 async def quick_search(keyword: str) -> dict:
-    """
-    快速搜索
+    """快速搜索
 
     Args:
         keyword: 关键词
 
     Returns:
-        dict: 包含专辑，歌手，歌曲的简略信息
+        包含专辑，歌手，歌曲的简略信息
     """
     res = await Api(**API["quick_search"]).update_params(key=keyword).result
     return res["data"]
 
 
 async def general_search(keyword: str, page: int = 1, highlight: bool = False) -> dict:
-    """
-    综合搜索
+    """综合搜索
 
     Args:
         keyword:   关键词
@@ -95,7 +93,7 @@ async def general_search(keyword: str, page: int = 1, highlight: bool = False) -
         highlight: 是否高亮关键词. Defaluts to False
 
     Returns:
-        dict: 包含直接结果，歌曲，歌手，专辑，歌单，mv等.
+        包含直接结果，歌曲，歌手，专辑，歌单，mv等.
     """
     params = {
         "search_id": get_searchID(),
@@ -124,9 +122,8 @@ async def search_by_type(
     page: int = 1,
     selectors: dict = {},
     highlight: bool = False,
-) -> list[Song]:
-    """
-    搜索
+) -> Union[list[dict], list[Song]]:
+    """搜索
 
     Args:
         keyword:     关键词
@@ -137,7 +134,7 @@ async def search_by_type(
         highlight:   是否高亮关键词. Defaluts to False
 
     Returns:
-        list: 搜索结果.
+        搜索结果
     """
     params = {
         "searchid": get_searchID(),

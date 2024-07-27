@@ -1,34 +1,31 @@
 # 搜索
 
-## 综合搜索(手机端)
-
-```python
-import asynico
-
-from qqmusic_api import search
-
-print(asyncio.run(search.general_search(query="周杰伦", page=1, highlight=False)))
-
-```
-
-## 类型搜索(桌面端)
+## 综合搜索
 
 ```python
 import asyncio
 
 from qqmusic_api import search
 
-print(asyncio.run(search.search_by_type(query="周杰伦", search_type=search.SearchType.SINGER, page=1, highlight=False)))
-
+print(asyncio.run(search.general_search("周杰伦", page=1, highlight=False)))
 ```
 
-## 快速搜索(桌面端)
+## 类型搜索
 
 ```python
 import asyncio
 
 from qqmusic_api import search
 
-print(asyncio.run(search.quick_search(query="周杰伦")))
+print(asyncio.run(search.search_by_type("周杰伦", search_type=search.SearchType.SINGER, page=1, highlight=False)))
+```
 
+## 快速搜索
+
+```python
+import asyncio
+
+from qqmusic_api import search
+
+print(asyncio.run(search.quick_search("周杰伦")))
 ```

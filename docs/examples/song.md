@@ -36,25 +36,23 @@ MUSICKEY = ""
 credential = Credential(musicid=MUSICID, musickey=MUSICKEY)
 
 # 会员歌曲需登录
-urls = asyncio.run(song.get_song_urls(mid=["003w2xz20QlUZt", "000Zu3Ah1jb4gl"], file_type=SongFileType.FLAC, credential=credential))
+urls = asyncio.run(song.get_song_urls(mid=["003w2xz20QlUZt", "000Zu3Ah1jb4gl"], credential=credential))
 
-def download_file(url):
+def download_file(mid, url):
     try:
         response = requests.get(url, stream=True)
         response.raise_for_status()
 
-        # 文件名 {mid}.flac
-        file_path = os.path.basename(url)
-        with open(file_path, 'wb') as f:
-            for chunk in response.iter_content(chunk_size=8192):
+        # 文件名 {mid}.mp3
+        with open(f"{mid}.mp3", 'wb') as f:
+            for chunk in response.iter_content(chunk_size=1024):
                 if chunk:
                     f.write(chunk)
         print(f"Downloaded {file_path}")
     except requests.RequestException as e:
         print(f"An error occurred: {e}")
 
-for url in urls.values():
+for mid, url in urls.items():
     if url:
-        download_file(url)
-
+        download_file(mid, url)
 ```

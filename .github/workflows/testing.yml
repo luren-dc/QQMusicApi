@@ -18,17 +18,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Install Poetry
-        run: |
-          pipx install poetry==1.8.3
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+      - name: Setup PDM
+        uses: pdm-project/setup-pdm@v4
         with:
           python-version: ${{ matrix.python-version }}
-          cache: "poetry"
+          cache: true
       - name: Install dependencies
         run: |
-          poetry install
+          pdm sync -dG testing
       - name: Run tests
         run: |
-          poetry run pytest
+          pdm run pytest

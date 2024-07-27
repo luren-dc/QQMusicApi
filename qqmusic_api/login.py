@@ -1,3 +1,5 @@
+"""登录相关 API"""
+
 import random
 import re
 import time
@@ -7,6 +9,7 @@ from enum import Enum
 from typing import Optional
 
 import aiohttp
+from typing_extensions import override
 
 from .exceptions import LoginException, ResponseCodeException
 from .utils.credential import Credential
@@ -17,8 +20,7 @@ API = get_api("login")
 
 
 class QrCodeLoginEvents(Enum):
-    """
-    二维码登录状态
+    """二维码登录状态
 
     + SCAN:    未扫描二维码
     + CONF:    未确认登录
@@ -37,8 +39,7 @@ class QrCodeLoginEvents(Enum):
 
 
 class PhoneLoginEvents(Enum):
-    """
-    手机登录状态
+    """手机登录状态
 
     + SEND:    发送成功
     + CAPTCHA: 需要滑块验证
@@ -51,7 +52,12 @@ class PhoneLoginEvents(Enum):
 
 
 class Login:
-    """登录基类"""
+    """登录基类
+
+    Attributes:
+        auth_url: 验证链接，用于鉴权和滑块验证
+        credential: 用户凭证
+    """
 
     def __init__(self) -> None:
         self.auth_url: Optional[str] = None
@@ -59,11 +65,17 @@ class Login:
 
 
 class QRCodeLogin(Login, ABC):
+    """二维码登录基类
+
+    Attributes:
+        musicid: 登录账号
+    """
+
     def __init__(self) -> None:
         super().__init__()
         self.musicid = ""
-        self.state: Optional[QrCodeLoginEvents] = None
-        self.qrcode_data: Optional[bytes] = None
+        self._state: Optional[QrCodeLoginEvents] = None
+        self._qrcode_data: Optional[bytes] = None
 
     async def __aenter__(self):
         self.session = aiohttp.ClientSession()
@@ -74,43 +86,48 @@ class QRCodeLogin(Login, ABC):
             await self.session.close()
 
     @abstractmethod
-    async def get_qrcode(self) -> bytes:  # type: ignore
-        """
-        获取二维码
+    async def get_qrcode(self) -> bytes:
+        """获取二维码
 
         Returns:
-            bytes: 二维码图像数据
+            二维码二进制数据
         """
 
     @abstractmethod
     async def get_qrcode_state(self) -> QrCodeLoginEvents:
-        """
-        获取二维码状态
+        """获取二维码状态
 
         Returns:
-            QrCodeLoginEvents: 二维码状态
+            二维码状态
+
+        Raises:
+            LoginException: 未获取二维码
         """
 
     @abstractmethod
     async def authorize(self) -> Credential:
-        """
-        登录鉴权
+        """登录鉴权
 
         Returns:
-            Credential: 用户凭证
+            用户凭证
+
+        Raises:
+            LoginException: 未完成二维码认证
         """
 
 
+# TODO: 优化扫码登录流程
 class QQLogin(QRCodeLogin):
     """QQ登录"""
 
+    @override
     async def get_qrcode(self):
-        if self.qrcode_data and self.state not in [
+        if self._qrcode_data and self._state not in [
             QrCodeLoginEvents.TIMEOUT,
             QrCodeLoginEvents.REFUSE,
             QrCodeLoginEvents.DONE,
         ]:
-            return self.qrcode_data
+            return self._qrcode_data
         async with self.session.get(
             "https://xui.ptlogin2.qq.com/cgi-bin/xlogin",
             params={
@@ -144,11 +161,12 @@ class QQLogin(QRCodeLogin):
             },
         ) as res:
             self.ptqrtoken = hash33(res.cookies.get("qrsig").value)
-            self.qrcode_data = await res.read()
-            return self.qrcode_data
+            self._qrcode_data = await res.read()
+            return self._qrcode_data
 
+    @override
     async def get_qrcode_state(self):
-        if not self.qrcode_data:
+        if not self._qrcode_data:
             raise LoginException("请先获取二维码")
         async with self.session.get(
             "https://ssl.ptlogin2.qq.com/ptqrlogin",
@@ -185,17 +203,19 @@ class QQLogin(QRCodeLogin):
             if text in data:
                 state = value
                 break
-        self.state = state
+        self._state = state
         if state == QrCodeLoginEvents.DONE:
             self.musicid = re.findall(r"&uin=(.+?)&service", data)[0]
             self.auth_url = re.findall(r"'(https:.*?)'", data)[0]
         return state
 
+    @override
     async def authorize(self):
         if self.credential:
             return self.credential
-        if self.state != QrCodeLoginEvents.DONE:
+        if self._state != QrCodeLoginEvents.DONE:
             raise LoginException("未完成二维码认证")
+        # TODO: 优化获取 p_skey
         async with self.session.get(self.auth_url, allow_redirects=False) as res:  # type: ignore
             from http import cookies
 
@@ -247,15 +267,16 @@ class WXLogin(QRCodeLogin):
 
     def __init__(self):
         super().__init__()
-        self.uuid = ""
+        self.__uuid = ""
 
+    @override
     async def get_qrcode(self):
-        if self.qrcode_data and self.state not in [
+        if self._qrcode_data and self._state not in [
             QrCodeLoginEvents.TIMEOUT,
             QrCodeLoginEvents.REFUSE,
             QrCodeLoginEvents.DONE,
         ]:
-            return self.qrcode_data
+            return self._qrcode_data
         async with self.session.get(
             "https://open.weixin.qq.com/connect/qrconnect",
             params={
@@ -267,9 +288,9 @@ class WXLogin(QRCodeLogin):
                 "href": "https://y.qq.com/mediastyle/music_v17/src/css/popup_wechat.css#wechat_redirect",
             },
         ) as res:
-            self.uuid = re.findall(r"uuid=(.+?)\"", await res.text())[0]
+            self.__uuid = re.findall(r"uuid=(.+?)\"", await res.text())[0]
         async with self.session.get(
-            f"https://open.weixin.qq.com/connect/qrcode/{self.uuid}",
+            f"https://open.weixin.qq.com/connect/qrcode/{self.__uuid}",
             headers={
                 "referer": "https://open.weixin.qq.com/connect/qrconnect?appid=wx48db31d50e334801"
                 "&redirect_uri="
@@ -280,11 +301,12 @@ class WXLogin(QRCodeLogin):
                 "%23wechat_redirect"
             },
         ) as res:
-            self.qrcode_data = await res.read()
-            return self.qrcode_data
+            self._qrcode_data = await res.read()
+            return self._qrcode_data
 
+    @override
     async def get_qrcode_state(self):
-        if not self.qrcode_data:
+        if not self._qrcode_data:
             raise LoginException("请先获取二维码")
         async with self.session.get(
             "https://lp.open.weixin.qq.com/connect/l/qrconnect",
@@ -292,7 +314,7 @@ class WXLogin(QRCodeLogin):
                 "referer": "https://open.weixin.qq.com/",
             },
             params={
-                "uuid": self.uuid,
+                "uuid": self.__uuid,
                 "_": str(int(round(time.time() * 1000))),
             },
         ) as res:
@@ -309,7 +331,7 @@ class WXLogin(QRCodeLogin):
             if text in await res.text():
                 state = value
                 break
-        self.state = state
+        self._state = state
         if state == QrCodeLoginEvents.DONE:
             self.musicid = re.findall(r"wx_code='(.+?)';", data)[0]
             self.auth_url = (
@@ -319,17 +341,18 @@ class WXLogin(QRCodeLogin):
             await self.session.get(
                 "https://lp.open.weixin.qq.com/connect/l/qrconnect",
                 params={
-                    "uuid": self.uuid,
+                    "uuid": self.__uuid,
                     "_": str(int(round(time.time() * 1000))),
                     "last": "404",
                 },
             )
         return state
 
+    @override
     async def authorize(self):
         if self.credential:
             return self.credential
-        if self.state != QrCodeLoginEvents.DONE:
+        if self._state != QrCodeLoginEvents.DONE:
             raise LoginException("未完成二维码认证")
         await self.session.get(self.auth_url, allow_redirects=False)  # type: ignore
         res = (
@@ -343,23 +366,30 @@ class WXLogin(QRCodeLogin):
 
 
 class PhoneLogin(Login):
-    """手机号登录"""
+    """手机号登录
+
+    Attributes:
+        phone: 手机号码
+    """
 
     def __init__(self, phone: str):
-        """
+        """初始化手机号登录类
+
         Args:
             phone: 手机号码
+
+        Raises:
+            ValueError: 非法手机号
         """
         if not re.compile(r"^1[3-9]\d{9}$").match(phone):
             raise ValueError("非法手机号")
         self.phone = phone
 
-    async def send_authcode(self):
-        """
-        发送验证码
+    async def send_authcode(self) -> PhoneLoginEvents:
+        """发送验证码
 
         Returns:
-            PhoneLoginEvents: 操作状态
+            操作状态
         """
         params = {
             "tmeAppid": "qqmusic",
@@ -371,20 +401,22 @@ class PhoneLogin(Login):
             return PhoneLoginEvents.SEND
         except ResponseCodeException as e:
             if e.code == 20276:
-                self.auth_url = e.raw["securityURL"]
+                self.auth_url = e.raw["securityURL"]  # type: ignore
                 return PhoneLoginEvents.CAPTCHA
             else:
                 return PhoneLoginEvents.OTHER
 
-    async def authorize(self, authcode: int):
-        """
-        登录鉴权
+    async def authorize(self, authcode: int) -> Credential:
+        """登录鉴权
 
         Args:
-            code: 验证码
+            authcode: 验证码
 
         Returns:
-            Credential: 用户凭证
+            用户凭证
+
+        Raises:
+            LoginException: 鉴权失败
         """
         if not authcode:
             raise ValueError("authcode 为空")
@@ -405,14 +437,13 @@ class PhoneLogin(Login):
 
 
 async def refresh_cookies(credential: Credential) -> Credential:
-    """
-    刷新 Cookies
+    """刷新 Cookies
 
     Args:
         credential: 用户凭证
 
     Return:
-        Credential: 新的用户凭证
+        新的用户凭证
     """
     credential.raise_for_cannot_refresh()
     params = {

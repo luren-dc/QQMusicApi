@@ -1,28 +1,46 @@
 <div align="center">
-    <h1> QQMusic Api </h1>
+    <h1> QQMusicApi </h1>
     <p> Python QQ音乐 API 封装库 </p>
-
-![Python Version 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue)
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
-![GitHub license](https://img.shields.io/github/license/luren-dc/PyQQMusicApi)
-
+    <a href="https://www.python.org">
+        <img src="https://img.shields.io/badge/python-3.9+-blue" alt="Python">
+    </a>
+    <a href="https://github.com/astral-sh/ruff">
+        <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff">
+    </a>
+    <a href="https://pdm-project.org">
+        <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fcdn.jsdelivr.net%2Fgh%2Fpdm-project%2F.github%2Fbadge.json" alt="pdm-managed">
+    </a>
+    <a href="https://github.com/luren-dc/QQMusicApi/tree/build?tab=License-1-ov-file">
+        <img src="https://img.shields.io/github/license/luren-dc/PyQQMusicApi" alt="GitHub license">
+    </a>
+    <a href="https://github.com/luren-dc/QQMusicApi/stargazers">
+        <img src="https://img.shields.io/github/stars/luren-dc/QQMusicApi?color=yellow&label=Github%20Stars" alt="STARS">
+    </a>
+    <a href="https://github.com/luren-dc/QQMusicApi/actions/workflows/testing.yml">
+        <img src="https://github.com/luren-dc/QQMusicApi/actions/workflows/testing.yml/badge.svg?branch=dev" alt="Testing">
+    </a>
 </div>
 
 ---
 
 > [!WARNING]
-> 本仓库的所有内容仅供学习和参考之用，禁止用于商业用途。
+> 本仓库的所有内容仅供学习和参考之用，禁止用于商业用途
 
-文档: [https://luren-dc.github.io/QQMusicApi/](https://luren-dc.github.io/QQMusicApi/)
+**文档**: <a href="https://luren-dc.github.io/QQMusicApi" target="_blank">https://luren-dc.github.io/QQMusicApi</a>
+
+**源代码**: <a href="https://github.com/luren-dc/QQMusicApi" target="_blank">https://github.com/luren-dc/QQMusicApi</a>
 
 ## 介绍
 
 使用 Python 编写的用于调用 [QQ音乐](https://y.qq.com/) 各种 API 的库.
 
-## 依赖
+## 特色
 
-本项目基于：
+- 涵盖常见 API
+- 调用简便，函数命名易懂，代码注释详细
+- 异步操作
+
+## 依赖
 
 - [AIOHTTP](https://docs.aiohttp.org/)
 - [Requests](https://requests.readthedocs.io/)
@@ -32,16 +50,8 @@
 
 ### 安装
 
-#### pypi
-
-```shell
-$ pip install qqmusic-api-python
-```
-
-#### source
-
-```shell
-$ pip install git+https://github.com/luren-dc/QQMusicApi.git
+```bash
+pip install qqmusic-api-python
 ```
 
 ### 使用
@@ -57,15 +67,8 @@ async def main():
     # 打印结果
     print(result)
 
-if __name__ == "__main__":
-    asyncio.run(main())
+asyncio.run(main())
 ```
-
-## TODO
-
-- [ ] 歌手 API
-- [ ] 评论 API
-- [ ] 用户 API
 
 ## 参考项目
 
