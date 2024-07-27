@@ -1,4 +1,7 @@
+"""搜索相关 API"""
+
 from enum import Enum
+from typing import Union
 
 from .song import Song
 from .utils.network import Api
@@ -36,7 +39,7 @@ async def hotkey() -> list[dict]:
     """获取热搜词
 
     Returns:
-        list: 热搜词列表，k为热搜词，n为搜索量
+        热搜词列表，k为热搜词，n为搜索量
     """
     params = {"search_id": get_searchID()}
     res = await Api(**API["hotkey"]).update_params(**params).result
@@ -52,7 +55,7 @@ async def complete(keyword: str, highlight: bool = False) -> list[str]:
         highlight: 是否高亮关键词. Defaluts to False
 
     Returns:
-        list: 补全结果
+        补全结果
     """
     params = {
         "search_id": get_searchID(),
@@ -75,7 +78,7 @@ async def quick_search(keyword: str) -> dict:
         keyword: 关键词
 
     Returns:
-        dict: 包含专辑，歌手，歌曲的简略信息
+        包含专辑，歌手，歌曲的简略信息
     """
     res = await Api(**API["quick_search"]).update_params(key=keyword).result
     return res["data"]
@@ -90,7 +93,7 @@ async def general_search(keyword: str, page: int = 1, highlight: bool = False) -
         highlight: 是否高亮关键词. Defaluts to False
 
     Returns:
-        dict: 包含直接结果，歌曲，歌手，专辑，歌单，mv等.
+        包含直接结果，歌曲，歌手，专辑，歌单，mv等.
     """
     params = {
         "search_id": get_searchID(),
@@ -119,7 +122,7 @@ async def search_by_type(
     page: int = 1,
     selectors: dict = {},
     highlight: bool = False,
-) -> list[Song]:
+) -> Union[list[dict], list[Song]]:
     """搜索
 
     Args:
@@ -131,7 +134,7 @@ async def search_by_type(
         highlight:   是否高亮关键词. Defaluts to False
 
     Returns:
-        list: 搜索结果.
+        搜索结果
     """
     params = {
         "searchid": get_searchID(),

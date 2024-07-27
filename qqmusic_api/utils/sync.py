@@ -1,4 +1,4 @@
-"""From: https://github.com/Nemo2011/bilibili-api
+"""代码来源: [bilibili-api](https://github.com/Nemo2011/bilibili-api)
 
 同步执行异步函数
 """
@@ -19,7 +19,7 @@ def __ensure_event_loop() -> None:
 
 
 def sync(coroutine: Coroutine[Any, Any, T]) -> T:
-    """同步执行异步函数，使用可参考 [同步执行异步代码](https://nemo2011.github.io/bilibili-api/#/sync-executor)
+    """同步执行异步函数
 
     Args:
         coroutine (Coroutine): 异步函数

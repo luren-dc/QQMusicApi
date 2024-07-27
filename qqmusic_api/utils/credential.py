@@ -1,3 +1,5 @@
+"""凭据类，用于请求验证"""
+
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
@@ -10,6 +12,16 @@ from qqmusic_api.exceptions import (
 
 @dataclass
 class Credential:
+    """凭据类
+
+    Attributes:
+        musicid: 音乐 ID
+        musickey: 音乐 Key
+        refresh_key: 刷新 Key
+        login_type: 登录类型
+        extra_fields: 额外字段
+    """
+
     musicid: str = ""
     musickey: str = ""
     refresh_key: str = ""
@@ -64,10 +76,10 @@ class Credential:
         """从 cookies 创建 Credential 实例
 
         Args:
-            cookies : Cookies 字典.
+            cookies: Cookies 字典
 
         Returns:
-            Credential: 凭据类实例
+            凭据类实例
         """
         return cls(
             musicid=cookies.pop("musicid", ""),

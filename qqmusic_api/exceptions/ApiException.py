@@ -1,3 +1,6 @@
+"""API 基类异常"""
+
+
 class ApiException(Exception):
     """API 基类异常。"""
 

@@ -1,3 +1,5 @@
+"""手机设备相关 API"""
+
 import base64
 import datetime
 import hashlib
@@ -21,11 +23,26 @@ APP_KEY = "0AND0HD6FE4HY80F"
 
 @dataclass
 class QImeiResult:
+    """Qimei 获取结果
+
+    Attributes:
+        q16: 16位设备唯一标识
+        q36: 36位设备唯一标识
+    """
+
     q16: str
     q36: str
 
 
 def calculate_md5(*strings: Union[str, bytes]) -> str:
+    """计算 MD5 值
+
+    Args:
+        strings: 字符串或字节串
+
+    Returns:
+        MD5 值
+    """
     md5 = hashlib.md5()
     for item in strings:
         if isinstance(item, bytes):
@@ -38,6 +55,15 @@ def calculate_md5(*strings: Union[str, bytes]) -> str:
 
 
 def calculate_luhn_checksum(number_str: str) -> int:
+    """计算 Luhn 校验和
+
+    Args:
+        number_str: 数字字符串
+
+    Returns:
+        Luhn 校验和
+    """
+
     def digits_of(n: int) -> list[int]:
         return [int(digit) for digit in str(n)]
 
@@ -49,11 +75,25 @@ def calculate_luhn_checksum(number_str: str) -> int:
 
 
 def rsa_encrypt(content: bytes) -> bytes:
+    """RSA 加密
+
+    Args:
+        content: 待加密内容
+
+    Returns:
+        加密后内容
+    """
     key = serialization.load_pem_public_key(PUBLIC_KEY.encode())
     return key.encrypt(content, padding.PKCS1v15())  # type: ignore
 
 
 class AES:
+    """AES加密
+
+    Attributes:
+        key: 密钥
+    """
+
     block_size = 16
 
     def __init__(self, key: bytes):
@@ -69,10 +109,26 @@ class AES:
         return v[: -v[-1]]
 
     def encrypt(self, content: bytes) -> bytes:
+        """加密
+
+        Args:
+            content: 待加密内容
+
+        Returns:
+            加密后内容
+        """
         enc = self._cipher.encryptor()
         return enc.update(self._pad(content)) + enc.finalize()
 
     def decrypt(self, content: bytes) -> bytes:
+        """解密
+
+        Args:
+            content: 待解密内容
+
+        Returns:
+            解密后内容
+        """
         dec = self._cipher.decryptor()
         return self._unpad(dec.update(content) + dec.finalize())
 
@@ -82,7 +138,15 @@ class DeviceData:
 
     @staticmethod
     def generate_random_payload(app_version: str) -> dict:
-        beacon_id = DeviceData.generate_beacon_id()
+        """生成随机 payload
+
+        Args:
+            app_version: app 版本
+
+        Returns:
+            随机 payload
+        """
+        beacon_id = DeviceData._generate_beacon_id()
         brand = random.choice(("VIVO", "Xiaomi", "OPPO", "HUAWEI", "Redmi", "Realme"))
         fixed_rand_seconds = random.randint(0, 14400)
         current_time = datetime.datetime.now()
@@ -117,7 +181,7 @@ class DeviceData:
             "brand": brand,
             "channelId": "10003505",
             "cid": "",
-            "imei": DeviceData.generate_random_imei(),
+            "imei": DeviceData._generate_random_imei(),
             "imsi": "",
             "mac": "",
             "model": "",
@@ -137,7 +201,7 @@ class DeviceData:
         }
 
     @staticmethod
-    def generate_beacon_id() -> str:
+    def _generate_beacon_id() -> str:
         beacon_id = ""
         time_month = datetime.datetime.now().strftime("%Y-%m-") + "01"
         rand1 = random.randint(100000, 999999)
@@ -156,7 +220,7 @@ class DeviceData:
         return beacon_id
 
     @staticmethod
-    def generate_random_imei() -> str:
+    def _generate_random_imei() -> str:
         tac = random.randint(100000, 999999)
         snr = random.randint(100000, 999999)
         imei_without_checksum = f"{tac}{snr}"
@@ -165,8 +229,10 @@ class DeviceData:
 
 
 class QIMEI:
+    """QImei"""
+
     @staticmethod
-    def generate_request_param(payload: dict) -> tuple[dict, str]:
+    def _generate_request_param(payload: dict) -> tuple[dict, str]:
         crypt_key = "".join(random.choices("adbcdef1234567890", k=16))
         nonce = "".join(random.choices("adbcdef1234567890", k=16))
         ts = int(time.time() * 1000)
@@ -198,7 +264,15 @@ class QIMEI:
 
     @staticmethod
     def get_qimei(app_version: str) -> QImeiResult:
-        data, ts = QIMEI.generate_request_param(DeviceData.generate_random_payload(app_version))
+        """获取 Qimei
+
+        Args:
+            app_version: 应用版本
+
+        Returns:
+            Qimei
+        """
+        data, ts = QIMEI._generate_request_param(DeviceData.generate_random_payload(app_version))
         sign = calculate_md5("qimei_qq_androidpzAuCmaFAaFaHrdakPjLIEqKrGnSOOvH", ts)
         try:
             res = requests.post(

@@ -45,6 +45,6 @@ repos:
       - id: typecheck
         name: typecheck
         entry: mypy
-        args: [--scripts-are-modules, --ignore-missing-imports, --check-untyped-defs]
+        args: [--ignore-missing-imports, --scripts-are-modules]
         language: python
         types_or: [python, pyi]

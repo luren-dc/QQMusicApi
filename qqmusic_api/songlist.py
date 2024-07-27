@@ -1,3 +1,5 @@
+"""歌单相关 API"""
+
 from typing import Optional
 
 from .song import Song
@@ -8,11 +10,17 @@ API = get_api("songlist")
 
 
 class Songlist:
-    """歌单类"""
+    """歌单类
+
+    Attributes:
+        id: 歌单 ID
+    """
 
     def __init__(self, id: int):
-        """Args:
-        id: 歌单 ID
+        """初始化歌单类
+
+        Args:
+            id: 歌单 ID
         """
         self.id = id
         self._info: Optional[dict] = None
@@ -43,7 +51,7 @@ class Songlist:
         """获取歌单详细信息
 
         Returns:
-            dict: 歌单信息
+            歌单信息
         """
         result = await self.__get_info()
         return result["dirinfo"]
@@ -52,7 +60,7 @@ class Songlist:
         """获取歌单歌曲
 
         Returns:
-            list: 歌单歌曲
+            歌单歌曲
         """
         result = await self.__get_info()
         return [Song.from_dict(song) for song in result["songlist"]]
@@ -62,7 +70,7 @@ class Songlist:
         注：存在几率返回为空
 
         Returns:
-            list: 歌单歌曲标签
+            歌单歌曲标签
         """
         result = await self.__get_info()
         return result["songtag"]
@@ -71,7 +79,7 @@ class Songlist:
         """获取歌单歌曲全部 mid
 
         Returns:
-            list: 歌单歌曲 mid
+            歌单歌曲 mid
         """
         result = await self.__get_info()
         return [song["mid"] for song in result["songlist"]]

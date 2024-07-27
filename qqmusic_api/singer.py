@@ -1,3 +1,5 @@
+"""歌手相关 API"""
+
 from enum import Enum
 from typing import Literal, Optional
 
@@ -125,7 +127,7 @@ async def get_singer_list(
         genre: 风格.Defaluts to GenreType.ALL
 
     Returns:
-        list: 歌手列表
+        歌手列表
     """
     result = (
         await Api(**API["singer_list"])
@@ -141,11 +143,17 @@ async def get_singer_list(
 
 
 class Singer:
-    """歌手类"""
+    """歌手类
+
+    Args:
+        mid: 歌手 mid
+    """
 
     def __init__(self, mid: str) -> None:
-        """Args:
-        mid: 歌手 mid
+        """初始化歌手类
+
+        Args:
+            mid: 歌手 mid
         """
         self.mid = mid
         self._info: Optional[dict] = None
@@ -172,7 +180,7 @@ class Singer:
         """获取歌手信息
 
         Returns:
-            dict: 歌手信息
+            歌手信息
         """
         if not self._info:
             self._info = await self.__get_info()
@@ -182,11 +190,11 @@ class Singer:
         """获取歌手粉丝数
 
         Returns:
-            int: 粉丝数
+            粉丝数
         """
         return (await self.__get_info())["FansNum"]
 
-    async def get_tab_detail(self, tab_type: TabType, page: int = 1, num: int = 100):
+    async def get_tab_detail(self, tab_type: TabType, page: int = 1, num: int = 100) -> dict:
         """获取歌手 Tab 详细信息
 
         Args:
@@ -195,7 +203,7 @@ class Singer:
             num:      返回数量
 
         Returns:
-            list: Tab 详细信息
+            Tab 详细信息
         """
         return (
             await Api(**API["homepage_tab_detail"])
@@ -214,7 +222,7 @@ class Singer:
         """获取歌手WiKi
 
         Returns:
-            dict: 歌手WiKi
+            歌手WiKi
         """
         return await self.get_tab_detail(TabType.WIKI)
 
@@ -227,7 +235,7 @@ class Singer:
             num:  返回数量. Defaluts to 100
 
         Returns:
-            list: `Song` 列表
+            `Song` 列表
         """
         tab_type = TabType[type.upper()]
         data = await self.get_tab_detail(tab_type, page, num)

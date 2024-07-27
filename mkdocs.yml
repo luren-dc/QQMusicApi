@@ -109,18 +109,20 @@ plugins:
             group_by_category: true
             separate_signature: true
             show_root_heading: true
-            heading_level: 1
             show_symbol_type_heading: true
-            filters: ["!^_", "^__init__$"]
-            merge_init_into_class: true
+            heading_level: 1
+            filters: ["!^_"]
             show_signature_annotations: true
             signature_crossrefs: true
             docstring_section_style: spacy
             preload_modules:
               - aiohttp
               - requests
+            extensions:
+              - griffe_inherited_docstrings
           import:
             - https://docs.python.org/3/objects.inv
+            - https://docs.aiohttp.org/en/stable/objects.inv
 
 nav:
   - 主页: index.md
@@ -139,11 +141,12 @@ nav:
       - songlist 歌单: api/songlist.md
       - top 排行榜: api/top.md
       - utils:
-          - qimei: api/utils/qimei.md
+          - qimei 识别标识: api/utils/qimei.md
           - utils 实用程序: api/utils/utils.md
-          - network 接口通讯: api/utils/network.md
+          - network 网络请求: api/utils/network.md
           - credential 凭据: api/utils/credential.md
           - sync 同步: api/utils/sync.md
+      - exceptions: api/exceptions.md
   - 贡献指南: contributing.md
 
 watch:

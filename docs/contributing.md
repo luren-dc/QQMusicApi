@@ -148,8 +148,6 @@ API 文档使用 [mkdocstrings](https://mkdocstrings.github.io/) 构建
 ### Markdown 拓展语法
 
 - [PyMdown Extensions](https://facelessuser.github.io/pymdown-extensions/extensions)([Material for MkDocs](https://squidfunk.github.io/mkdocs-material/reference/))
-- [Termynal](https://termynal.github.io/termynal.py/)
-- [Markdown Exec](https://pawamoy.github.io/markdown-exec/)
 
 ## 提交规范
 
