@@ -1,3 +1,5 @@
+"""网络请求"""
+
 import asyncio
 import atexit
 import json
@@ -53,7 +55,7 @@ def set_aiohttp_session(session: aiohttp.ClientSession) -> None:
 class Api:
     """用于请求的 Api 类
 
-    Args:
+    Attributes:
         url: 请求地址. Defaults to API_URL
         method: 请求方法
         module: 请求模块. Defaults to ""
@@ -100,6 +102,7 @@ class Api:
 
     @property
     def initialized(self):
+        """是否已经初始化"""
         return "__Api__result" in self.__dict__
 
     @property

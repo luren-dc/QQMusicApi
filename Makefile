@@ -4,8 +4,12 @@ sources = qqmusic_api tests
 .pdm:
 	@pdm -V || echo 'Please install PDM: https://pdm.fming.dev/latest/#installation'
 
+.PHONY: .pre-commit ## Check if pre-commit is installed
+.pre-commit:
+	@pre-commit -V || echo 'Please install pre-commit: https://pre-commit.com/'
+
 .PHONY: install ## Install dependencies and pre-commit hooks for development
-install: .pdm
+install: .pdm .pre-commit
 	pdm install --group :all
 	pdm run pre-commit install --install-hooks
 

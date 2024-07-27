@@ -9,9 +9,10 @@ authors = [
   { name = "Luren", email = "68656403+luren-dc@users.noreply.github.com" },
 ]
 dependencies = [
-  "cryptography<42.0.0,>=41.0.2",
-  "requests<3.0.0,>=2.31.0",
-  "aiohttp<4.0.0,>=3.9.5",
+    "cryptography<42.0.0,>=41.0.2",
+    "requests<3.0.0,>=2.31.0",
+    "aiohttp<4.0.0,>=3.9.5",
+    "typing-extensions>=4.12.2",
 ]
 requires-python = "<4.0,>=3.9"
 readme = "README.md"
@@ -47,19 +48,18 @@ source = "file"
 path = "qqmusic_api/__init__.py"
 
 [tool.pdm.dev-dependencies]
-pre-commit = ["pre-commit<4.0.0,>=3.7.0"]
 testing = [
   "pytest<9.0.0,>=8.2.0",
   "pytest-asyncio<1.0.0,>=0.23.6",
   "pytest-sugar<2.0.0,>=1.0.0",
 ]
 docs = [
-  "mkdocs-material>=9.5.29",
-  "mkdocstrings-python>=1.10.5",
-  "mkdocstrings>=0.25.1",
-  "mkdocs>=1.6.0",
-  "mkdocs-embed-external-markdown>=3.0.2",
-  "termynal>=0.12.1",
+    "mkdocs-material>=9.5.29",
+    "mkdocstrings-python>=1.10.5",
+    "mkdocstrings>=0.25.1",
+    "mkdocs>=1.6.0",
+    "markdown-callouts>=0.4.0",
+    "griffe-inherited-docstrings>=1.0.0",
 ]
 mypy = [
     "mypy>=1.11.0",
@@ -68,6 +68,7 @@ mypy = [
 linting = [
     "ruff>=0.5.4",
 ]
+markdown-callouts = []
 
 [tool.pdm.build]
 includes = ["qqmusic_api", "README.md", "LICENSE", "tests"]
