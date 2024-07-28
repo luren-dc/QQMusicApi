@@ -68,10 +68,9 @@ mypy = [
 linting = [
     "ruff>=0.5.4",
 ]
-markdown-callouts = []
 
 [tool.pdm.build]
-includes = ["qqmusic_api", "README.md", "LICENSE", "tests"]
+source-includes = ["qqmusic_api", "README.md", "LICENSE", "tests"]
 
 [tool.pdm.scripts]
 docs = "mkdocs serve"
