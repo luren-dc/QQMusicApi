@@ -69,8 +69,6 @@ linting = [
     "ruff>=0.5.4",
 ]
 
-[tool.pdm.build]
-source-includes = ["qqmusic_api", "README.md", "LICENSE", "tests"]
 
 [tool.pdm.scripts]
 docs = "mkdocs serve"
