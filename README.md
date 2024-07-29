@@ -10,7 +10,7 @@
     <a href="https://pdm-project.org">
         <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fcdn.jsdelivr.net%2Fgh%2Fpdm-project%2F.github%2Fbadge.json" alt="pdm-managed">
     </a>
-    <a href="https://github.com/luren-dc/QQMusicApi/tree/build?tab=License-1-ov-file">
+    <a href="https://github.com/luren-dc/QQMusicApi?tab=MIT-1-ov-file">
         <img src="https://img.shields.io/github/license/luren-dc/PyQQMusicApi" alt="GitHub license">
     </a>
     <a href="https://github.com/luren-dc/QQMusicApi/stargazers">
