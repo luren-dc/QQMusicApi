@@ -14,7 +14,7 @@ dependencies = [
     "aiohttp<4.0.0,>=3.9.5",
     "typing-extensions>=4.12.2",
 ]
-requires-python = "<4.0,>=3.9"
+requires-python = ">=3.9"
 readme = "README.md"
 license = { text = "MIT" }
 maintainers = [

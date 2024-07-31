@@ -106,7 +106,6 @@ class TabType(Enum):
     VIDEO = ("video", "VideoTab")
 
     def __init__(self, tabID: str, tabName: str) -> None:
-        super().__init__()
         self.tabID = tabID
         self.tabName = tabName
 
