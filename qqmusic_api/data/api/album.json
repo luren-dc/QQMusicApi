@@ -3,7 +3,8 @@
         "module": "music.musichallAlbum.AlbumInfoServer",
         "method": "GetAlbumDetail",
         "params": {
-            "albumMid": "str 专辑 mid"
+            "albumMid": "str 专辑 mid",
+            "albumId": "str 专辑 id"
         },
         "comment": "获取专辑信息"
     },
@@ -12,6 +13,7 @@
         "method": "GetAlbumSongList",
         "params": {
             "albumMid": "str 专辑 mid",
+            "albumId": "str 专辑 id",
             "begin": "int 开启位置",
             "num": "int 返回数量"
         },
