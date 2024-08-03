@@ -93,6 +93,7 @@ pydocstyle = { convention = "google" }
 [tool.ruff.lint.per-file-ignores]
 "docs/*" = ["D"]
 "tests/*" = ["D"]
+"qqmusic_api/login.py" = ["F405", "F403", "D102"]
 "qqmusic_api/__init__.py" = ["F405", "F403", "D"]
 "qqmusic_api/**/__init__.py" = ["F405", "F403", "D"]
 
