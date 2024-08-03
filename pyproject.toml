@@ -69,8 +69,6 @@ linting = [
     "ruff>=0.5.4",
 ]
 
-[tool.pdm.build]
-source-includes = ["qqmusic_api", "README.md", "LICENSE", "tests"]
 
 [tool.pdm.scripts]
 docs = "mkdocs serve"
@@ -95,6 +93,7 @@ pydocstyle = { convention = "google" }
 [tool.ruff.lint.per-file-ignores]
 "docs/*" = ["D"]
 "tests/*" = ["D"]
+"qqmusic_api/login.py" = ["F405", "F403", "D102"]
 "qqmusic_api/__init__.py" = ["F405", "F403", "D"]
 "qqmusic_api/**/__init__.py" = ["F405", "F403", "D"]
 

@@ -261,7 +261,7 @@ def __clean() -> None:
         if s0 is not None and not s0.closed:
             await s0.close()
 
-    if loop.is_closed():
+    if not loop.is_closed():
         loop.run_until_complete(__clean_task())
     else:
-        loop.create_task(__clean_task())
+        asyncio.run(__clean_task())

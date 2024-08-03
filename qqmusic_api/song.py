@@ -93,7 +93,7 @@ class Song:
         """
         # ID 检查
         if mid is None and id is None:
-            raise TypeError("mid or id must be provided")
+            raise ValueError("mid or id must be provided")
         self._mid = mid
         self._id = id
         self._info: Optional[dict] = None
