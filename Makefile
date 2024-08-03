@@ -1,4 +1,4 @@
-sources = qqmusic_api tests
+sources = qqmusic_api tests examples
 
 .PHONY: .pdm ## Check if PDM is installed
 .pdm:
@@ -15,12 +15,12 @@ install: .pdm .pre-commit
 
 .PHONY: format ## Format code and check with ruff
 format:
-	pdm run ruff check $(sources)
+	pdm run ruff check $(sources) --fix
 	pdm run ruff format --check $(sources)
 
 .PHONY: lint ## Run linter checks with ruff
 lint:
-	pdm run ruff check $(sources)
+	pdm run ruff check $(sources) --fix
 	pdm run ruff format --check $(sources)
 
 .PHONY: typecheck ## Run type checks with mypy
@@ -41,7 +41,7 @@ clean:
 	find . -type d -name '__pycache__' -delete
 	rm -rf .pytest_cache
 	rm -rf .ruff_cache
-	rm -rf docs/_build
+	rm -rf site
 	rm -rf dist
 	rm -rf .mypy_cache
 	rm -rf .cache
