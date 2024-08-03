@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Optional
 
-import aiohttp
+import httpx
 
 if sys.version_info >= (3, 12):
     from typing import override
@@ -81,12 +81,12 @@ class QRCodeLogin(Login):
         self.musicid = ""
         self._state: Optional[QrCodeLoginEvents] = None
         self._qrcode_data: Optional[bytes] = None
-        self._session = aiohttp.ClientSession()
+        self._session = httpx.AsyncClient(timeout=20)
 
     async def close(self):
         """关闭登录会话"""
-        if not self._session.closed:
-            await self._session.close()
+        if not self._session.is_closed:
+            await self._session.aclose()
 
     async def __aenter__(self):
         await self._session.__aenter__()
@@ -126,7 +126,6 @@ class QRCodeLogin(Login):
         """
 
 
-# TODO: 优化扫码登录流程
 class QQLogin(QRCodeLogin):
     """QQ登录"""
 
@@ -138,7 +137,7 @@ class QQLogin(QRCodeLogin):
             QrCodeLoginEvents.DONE,
         ]:
             return self._qrcode_data
-        async with self._session.get(
+        res = await self._session.get(
             "https://xui.ptlogin2.qq.com/cgi-bin/xlogin",
             params={
                 "appid": "716027609",
@@ -154,9 +153,10 @@ class QQLogin(QRCodeLogin):
                 "theme": "2",
                 "verify_theme": "",
             },
-        ) as res:
-            self.sig = res.cookies.get("pt_login_sig").value
-        async with self._session.get(
+        )
+        self.sig = res.cookies["pt_login_sig"]
+
+        res = await self._session.get(
             "https://ssl.ptlogin2.qq.com/ptqrshow",
             params={
                 "appid": "716027609",
@@ -169,16 +169,16 @@ class QQLogin(QRCodeLogin):
                 "daid": "383",
                 "pt_3rd_aid": "100497308",
             },
-        ) as res:
-            self.ptqrtoken = hash33(res.cookies.get("qrsig").value)
-            self._qrcode_data = await res.read()
-            return self._qrcode_data
+        )
+        self.ptqrtoken = hash33(res.cookies["qrsig"])
+        self._qrcode_data = res.read()
+        return self._qrcode_data
 
     @override
     async def get_qrcode_state(self):
         if not self._qrcode_data:
             raise LoginException("请先获取二维码")
-        async with self._session.get(
+        res = await self._session.get(
             "https://ssl.ptlogin2.qq.com/ptqrlogin",
             params={
                 "u1": "https://graph.qq.com/oauth2.0/login_jump",
@@ -199,8 +199,9 @@ class QQLogin(QRCodeLogin):
                 "pt_3rd_aid": "100497308",
                 "has_onekey": "1",
             },
-        ) as res:
-            data = await res.text()
+        )
+        data = res.text
+
         text_to_state = {
             "二维码未失效": QrCodeLoginEvents.SCAN,
             "二维码认证中": QrCodeLoginEvents.CONF,
@@ -208,12 +209,16 @@ class QQLogin(QRCodeLogin):
             "本次登录已被拒绝": QrCodeLoginEvents.REFUSE,
             "登录成功": QrCodeLoginEvents.DONE,
         }
+
         state = QrCodeLoginEvents.OTHER
+
         for text, value in text_to_state.items():
             if text in data:
                 state = value
                 break
+
         self._state = state
+
         if state == QrCodeLoginEvents.DONE:
             self.musicid = re.findall(r"&uin=(.+?)&service", data)[0]
             self.auth_url = re.findall(r"'(https:.*?)'", data)[0]
@@ -223,22 +228,13 @@ class QQLogin(QRCodeLogin):
     async def authorize(self):
         if self.credential:
             return self.credential
-        if self._state != QrCodeLoginEvents.DONE:
+        if self._state != QrCodeLoginEvents.DONE or self.auth_url is None:
             raise LoginException("未完成二维码认证")
-        # TODO: 优化获取 p_skey
-        async with self._session.get(self.auth_url, allow_redirects=False) as res:  # type: ignore
-            from http import cookies
+        res = await self._session.get(self.auth_url, follow_redirects=True)
 
-            set_cookie_header = res.headers.getall("Set-Cookie", [])
-            for header in set_cookie_header:
-                cookie: cookies.SimpleCookie = cookies.SimpleCookie()
-                cookie.load(header)
-                for key, morsel in cookie.items():
-                    if morsel.value:
-                        self._session.cookie_jar.update_cookies(cookie)
+        skey = self._session.cookies["p_skey"]
 
-        skey = self._session.cookie_jar.filter_cookies(self.auth_url).get("p_skey").value  # type: ignore
-        async with self._session.post(
+        res = await self._session.post(
             "https://graph.qq.com/oauth2.0/authorize",
             params={
                 "Referer": "https://graph.qq.com/oauth2.0/show?which=Login&display=pc&response_type=code&client_id"
@@ -263,10 +259,10 @@ class QQLogin(QRCodeLogin):
                 "auth_time": str(int(time.time())),
                 "ui": uuid.uuid4(),
             },
-            allow_redirects=False,
-        ) as res:
-            location = res.headers.get("Location", "")
-            code = re.findall(r"(?<=code=)(.+?)(?=&)", location)[0]
+            follow_redirects=False,
+        )
+        location = res.headers.get("Location", "")
+        code = re.findall(r"(?<=code=)(.+?)(?=&)", location)[0]
         res = await Api(**API["QQ_login"]).update_params(code=code).update_extra_common(tmeLoginType="2").result
         self.credential = Credential.from_cookies(res)
         return self.credential
@@ -287,7 +283,7 @@ class WXLogin(QRCodeLogin):
             QrCodeLoginEvents.DONE,
         ]:
             return self._qrcode_data
-        async with self._session.get(
+        res = await self._session.get(
             "https://open.weixin.qq.com/connect/qrconnect",
             params={
                 "appid": "wx48db31d50e334801",
@@ -297,9 +293,9 @@ class WXLogin(QRCodeLogin):
                 "state": "STATE",
                 "href": "https://y.qq.com/mediastyle/music_v17/src/css/popup_wechat.css#wechat_redirect",
             },
-        ) as res:
-            self.__uuid = re.findall(r"uuid=(.+?)\"", await res.text())[0]
-        async with self._session.get(
+        )
+        self.__uuid = re.findall(r"uuid=(.+?)\"", res.text)[0]
+        res = await self._session.get(
             f"https://open.weixin.qq.com/connect/qrcode/{self.__uuid}",
             headers={
                 "referer": "https://open.weixin.qq.com/connect/qrconnect?appid=wx48db31d50e334801"
@@ -310,25 +306,30 @@ class WXLogin(QRCodeLogin):
                 "&href=https%3A%2F%2Fy.qq.com%2Fmediastyle%2Fmusic_v17%2Fsrc%2Fcss%2Fpopup_wechat.css"
                 "%23wechat_redirect"
             },
-        ) as res:
-            self._qrcode_data = await res.read()
-            return self._qrcode_data
+        )
+        self._qrcode_data = res.read()
+        return self._qrcode_data
 
     @override
     async def get_qrcode_state(self):
         if not self._qrcode_data:
             raise LoginException("请先获取二维码")
-        async with self._session.get(
-            "https://lp.open.weixin.qq.com/connect/l/qrconnect",
-            headers={
-                "referer": "https://open.weixin.qq.com/",
-            },
-            params={
-                "uuid": self.__uuid,
-                "_": str(int(round(time.time() * 1000))),
-            },
-        ) as res:
-            data = await res.text()
+
+        try:
+            res = await self._session.get(
+                "https://lp.open.weixin.qq.com/connect/l/qrconnect",
+                headers={
+                    "referer": "https://open.weixin.qq.com/",
+                },
+                params={
+                    "uuid": self.__uuid,
+                    "_": str(int(round(time.time() * 1000))),
+                },
+            )
+        except httpx.ReadTimeout:
+            return QrCodeLoginEvents.SCAN
+
+        data = res.text
 
         text_to_state = {
             "408": QrCodeLoginEvents.SCAN,
@@ -338,10 +339,12 @@ class WXLogin(QRCodeLogin):
         }
         state = QrCodeLoginEvents.OTHER
         for text, value in text_to_state.items():
-            if text in await res.text():
+            if text in data:
                 state = value
                 break
+
         self._state = state
+
         if state == QrCodeLoginEvents.DONE:
             self.musicid = re.findall(r"wx_code='(.+?)';", data)[0]
             self.auth_url = (
@@ -364,7 +367,7 @@ class WXLogin(QRCodeLogin):
             return self.credential
         if self._state != QrCodeLoginEvents.DONE:
             raise LoginException("未完成二维码认证")
-        await self._session.get(self.auth_url, allow_redirects=False)  # type: ignore
+        await self._session.get(self.auth_url, follow_redirects=False)  # type: ignore
         res = (
             await Api(**API["WX_login"])
             .update_params(strAppid="wx48db31d50e334801", code=self.musicid)
