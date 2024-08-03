@@ -41,7 +41,7 @@ clean:
 	find . -type d -name '__pycache__' -delete
 	rm -rf .pytest_cache
 	rm -rf .ruff_cache
-	rm -rf docs/_build
+	rm -rf site
 	rm -rf dist
 	rm -rf .mypy_cache
 	rm -rf .cache

@@ -115,14 +115,10 @@ plugins:
             show_signature_annotations: true
             signature_crossrefs: true
             docstring_section_style: spacy
-            preload_modules:
-              - aiohttp
-              - requests
             extensions:
               - griffe_inherited_docstrings
           import:
             - https://docs.python.org/3/objects.inv
-            - https://docs.aiohttp.org/en/stable/objects.inv
 
 nav:
   - 主页: index.md
@@ -152,3 +148,4 @@ nav:
 watch:
   - qqmusic_api
   - README.md
+  - examples
