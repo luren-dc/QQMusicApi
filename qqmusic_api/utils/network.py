@@ -6,8 +6,8 @@ import json
 from typing import Any, Union
 
 import httpx
+from pydantic import Field
 from pydantic.dataclasses import dataclass
-from pydantic.fields import Field
 
 from ..exceptions import ResponseCodeException
 from .credential import Credential

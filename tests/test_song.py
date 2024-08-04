@@ -5,12 +5,12 @@ from qqmusic_api.song import get_song_urls, query_by_id, query_by_mid
 pytestmark = pytest.mark.asyncio(scope="package")
 
 
-async def test_query_by_mid(song):
+async def test_query_by_mid():
     assert await query_by_mid(["004emQMs09Z1lz"])
 
 
 async def test_query_by_id(song):
-    assert await query_by_id([await song.id])
+    assert await query_by_id([await song.get_id()])
 
 
 async def test_get_info(song):
