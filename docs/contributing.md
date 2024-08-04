@@ -31,6 +31,7 @@ pipx install pdm
 pipx install pre-commit
 
 # 安装开发依赖
+git checkout dev
 make install
 ```
 
@@ -50,6 +51,7 @@ pipx install pdm
 pipx install pre-commit
 
 # 安装开发依赖
+git checkout dev
 pdm install --group :all
 pdm run pre-commit install --install-hooks
 ```
@@ -60,7 +62,7 @@ pdm run pre-commit install --install-hooks
 
 ```bash
 # 从 dev 分支创建并切换到新分支
-git checkout -b {分支名} dev
+git checkout -b {分支名}
 # 开始编码
 ```
 
