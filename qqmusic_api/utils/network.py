@@ -3,11 +3,10 @@
 import asyncio
 import atexit
 import json
+from dataclasses import dataclass, field
 from typing import Any, Union
 
 import httpx
-from pydantic.dataclasses import dataclass
-from pydantic.fields import Field
 
 from ..exceptions import ResponseCodeException
 from .credential import Credential
@@ -28,10 +27,10 @@ __session_pool: dict[asyncio.AbstractEventLoop, httpx.AsyncClient] = {}
 
 
 def get_session() -> httpx.AsyncClient:
-    """获取当前模块的 aiohttp.ClientSession 对象，用于自定义请求
+    """获取当前模块的 Session 对象，用于自定义请求
 
     Returns:
-        aiohttp.ClientSession
+        httpx.AsyncClient
     """
     loop = asyncio.get_event_loop()
     session = __session_pool.get(loop, None)
@@ -46,7 +45,7 @@ def set_session(session: httpx.AsyncClient) -> None:
     """用户手动设置 Session
 
     Args:
-        session:  aiohttp.ClientSession 实例
+        session: httpx.AsyncClient 实例
     """
     loop = asyncio.get_event_loop()
     __session_pool[loop] = session
@@ -72,15 +71,15 @@ class Api:
 
     method: str
     module: str = ""
-    url: str = Field(default=API_URL)
+    url: str = field(default=API_URL)
     comment: str = ""
     verify: bool = False
     json_body: bool = False
-    data: dict = Field(default_factory=dict)
-    params: dict = Field(default_factory=dict)
-    headers: dict = Field(default_factory=dict)
-    credential: Credential = Field(default_factory=Credential)
-    extra_common: dict = Field(default_factory=dict)
+    data: dict = field(default_factory=dict)
+    params: dict = field(default_factory=dict)
+    headers: dict = field(default_factory=dict)
+    credential: Credential = field(default_factory=Credential)
+    extra_common: dict = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         if not self.module:
