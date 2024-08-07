@@ -50,7 +50,8 @@
         "method": "GetSongRelatedMv",
         "params": {
             "songid": "int 歌曲 ID",
-            "songmid": "str 歌曲 mid"
+            "songtype": "int 1",
+            "lastmvid": "用于刷新列表"
         },
         "comment": "获取相关MV"
     },
