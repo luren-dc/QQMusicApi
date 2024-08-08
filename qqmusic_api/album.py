@@ -22,7 +22,9 @@ class Album:
         mid: Optional[str] = None,
         id: Optional[int] = None,
     ):
-        """初始化专辑类
+        """/// admonition | 注意
+        歌曲 mid 和 id，两者至少提供一个
+        ///
 
         Args:
             mid: 专辑 mid

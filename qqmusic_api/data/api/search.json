@@ -11,10 +11,10 @@
         "module": "tencent_music_soso_smartbox_cgi.SmartBoxCgi",
         "method": "GetSmartBoxResult",
         "params": {
+            "search_id": "int 随机生成",
             "query": "str 搜索词",
             "num_per_page": "int 每页返回数量",
-            "highlight": "int 是否高亮搜索词",
-            "page_idx": "int 页数"
+            "page_idx": "int 1"
         },
         "comment": "获取搜索词补全"
     },
@@ -30,12 +30,13 @@
         "module": "music.adaptor.SearchAdaptor",
         "method": "do_search_v2",
         "params": {
-            "search_id": "int 随机生成",
+            "searchid": "int 随机生成",
             "search_type": "int 100",
             "query": "str 搜索词",
-            "highlight": "int 是否高亮搜索词",
             "grp": "int 是否返回歌曲其他版本",
-            "page_id": "int 页数"
+            "highlight": "int 是否高亮搜索词",
+            "page_id": "int 页数",
+            "page_num": "int 15"
         },
         "comment": "综合搜索"
     },
@@ -46,10 +47,9 @@
             "search_id": "int 随机生成",
             "search_type": "int 搜索类型",
             "query": "str 搜索词",
-            "highlight": "int 是否高亮搜索词",
-            "page_id": "int 页数",
             "page_num": "int 页数",
             "num_per_page": "int 每页返回数量",
+            "highlight": "int 是否高亮搜索词",
             "selectors": "dict 选择器"
         },
         "comment": "桌面端搜索"
@@ -58,13 +58,12 @@
         "module": "music.search.SearchCgiService",
         "method": "DoSearchForQQMusicMobile",
         "params": {
-            "search_id": "int 随机生成",
+            "searchid": "int 随机生成",
             "search_type": "int 搜索类型",
             "query": "str 搜索词",
-            "highlight": "int 是否高亮搜索词",
-            "page_id": "int 页数",
             "page_num": "int 页数",
             "grp": "int 是否返回歌曲其他版本",
+            "highlight": "int 是否高亮搜索词",
             "num_per_page": "int 每页返回数量",
             "selectors": "dict 选择器"
         },

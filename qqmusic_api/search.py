@@ -1,11 +1,9 @@
 """搜索相关 API"""
 
 from enum import Enum
-from typing import Union
 
-from .song import Song
 from .utils.network import Api
-from .utils.utils import get_api, get_searchID, parse_song_info
+from .utils.utils import get_api, get_searchID
 
 API = get_api("search")
 
@@ -39,20 +37,18 @@ async def hotkey() -> list[dict]:
     """获取热搜词
 
     Returns:
-        热搜词列表，k为热搜词，n为搜索量
+        热搜词列表
     """
     params = {"search_id": get_searchID()}
     res = await Api(**API["hotkey"]).update_params(**params).result
-    data = res.get("vec_hotkey", [])
-    return [{"k": hotkey["query"], "n": hotkey["score"]} for hotkey in data]
+    return res["vec_hotkey"]
 
 
-async def complete(keyword: str, highlight: bool = False) -> list[str]:
+async def complete(keyword: str) -> list[str]:
     """搜索词补全
 
     Args:
-        keyword:   关键词
-        highlight: 是否高亮关键词. Defaluts to False
+        keyword: 关键词
 
     Returns:
         补全结果
@@ -64,11 +60,7 @@ async def complete(keyword: str, highlight: bool = False) -> list[str]:
         "page_idx": 0,
     }
     res = await Api(**API["complete"]).update_params(**params).result
-    data = res["items"]
-    if highlight:
-        return [item["hint_hilight"] for item in data]
-    else:
-        return [item["hint"] for item in data]
+    return res["items"]
 
 
 async def quick_search(keyword: str) -> dict:
@@ -84,54 +76,44 @@ async def quick_search(keyword: str) -> dict:
     return res["data"]
 
 
-async def general_search(keyword: str, page: int = 1, highlight: bool = False) -> dict:
+async def general_search(
+    keyword: str,
+    page: int = 1,
+    highlight: bool = True,
+) -> dict:
     """综合搜索
 
     Args:
-        keyword:   关键词
-        page:      页码. Defaluts to 1
-        highlight: 是否高亮关键词. Defaluts to False
+        keyword: 关键词
+        page: 页码. Defaluts to 1
+        highlight: 是否高亮关键词. Defaluts to True
 
     Returns:
         包含直接结果，歌曲，歌手，专辑，歌单，mv等.
     """
     params = {
-        "search_id": get_searchID(),
+        "searchid": get_searchID(),
         "search_type": 100,
+        "page_num": 15,
         "query": keyword,
         "page_id": page,
         "highlight": highlight,
-        "grp": 1,
+        "grp": True,
     }
-    res = await Api(**API["general_search"]).update_params(**params).result
-    data = res["body"]
-    return {
-        "direct": data["direct_result"]["direct_group"],
-        "song": [parse_song_info(d) for d in data["item_song"]["items"]],
-        "singer": data["singer"]["items"],
-        "album": data["item_album"]["items"],
-        "songlist": data["item_songlist"]["items"],
-        "mv": data["item_mv"]["items"],
-    }
+    return (await Api(**API["general_search"]).update_params(**params).result)["body"]
 
 
 async def search_by_type(
-    keyword: str,
-    search_type: SearchType = SearchType.SONG,
-    num: int = 10,
-    page: int = 1,
-    selectors: dict = {},
-    highlight: bool = False,
-) -> Union[list[dict], list[Song]]:
+    keyword: str, search_type: SearchType = SearchType.SONG, num: int = 10, page: int = 1, highlight: bool = True
+) -> list[dict]:
     """搜索
 
     Args:
-        keyword:     关键词
+        keyword: 关键词
         search_type: 搜索类型. Defaluts to SearchType.SONG
-        num:         返回数量. Defaluts to 10
-        page:        页码. Defaluts to 1
-        selectors:   选择器. Defaluts to {}
-        highlight:   是否高亮关键词. Defaluts to False
+        num: 返回数量. Defaluts to 10
+        page: 页码. Defaluts to 1
+        highlight: 是否高亮关键词. Defaluts to True
 
     Returns:
         搜索结果
@@ -143,22 +125,18 @@ async def search_by_type(
         "num_per_page": num,
         "page_num": page,
         "highlight": highlight,
-        "page_id": page,
-        "selectors": selectors,
+        "grp": True,
     }
-    res = await Api(**API["desktop_search_by_type"]).update_params(**params).result
+    res = await Api(**API["mobile_search_by_type"]).update_params(**params).result
     types = {
-        SearchType.SONG: "song",
-        SearchType.SINGER: "singer",
-        SearchType.ALBUM: "album",
-        SearchType.SONGLIST: "songlist",
-        SearchType.MV: "mv",
-        SearchType.LYRIC: "song",
-        SearchType.USER: "user",
-        SearchType.AUDIO_ALBUM: "album",
-        SearchType.AUDIO: "song",
+        SearchType.SONG: "item_song",
+        SearchType.SINGER: "item_singer",
+        SearchType.ALBUM: "item_album",
+        SearchType.SONGLIST: "item_songlist",
+        SearchType.MV: "item_mv",
+        SearchType.LYRIC: "item_song",
+        SearchType.USER: "item_user",
+        SearchType.AUDIO_ALBUM: "item_album",
+        SearchType.AUDIO: "item_song",
     }
-    data = res["body"][types[search_type]]["list"]
-    if search_type in [SearchType.SONG, SearchType.LYRIC, SearchType.AUDIO]:
-        return [Song.from_dict(song) for song in data]
-    return data
+    return res["body"][types[search_type]]
