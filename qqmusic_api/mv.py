@@ -2,7 +2,8 @@
 
 import random
 
-from .song import query_by_id
+from qqmusic_api.song import query_song
+
 from .utils.network import Api
 from .utils.utils import get_api
 
@@ -23,9 +24,6 @@ class MV:
             vid: 视频 id
         """
         self.vid = vid
-
-    def __repr__(self) -> str:
-        return f"MV(vid={self.vid})"
 
     async def get_detail(self) -> dict:
         """获取 MV 详细信息
@@ -72,7 +70,7 @@ class MV:
             "required": ["related_songs"],
         }
         song_id = (await Api(**API["detail"]).update_params(**param).result)[self.vid]["related_songs"]
-        return await query_by_id(song_id)
+        return await query_song(song_id)
 
     async def get_url(self) -> dict:
         """获取 MV 播放链接

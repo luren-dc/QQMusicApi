@@ -200,7 +200,7 @@ class Song:
         file_type: SongFileType = SongFileType.MP3_128,
         url_type: UrlType = UrlType.PLAY,
         credential: Optional[Credential] = None,
-    ) -> dict[str, str]:
+    ) -> str:
         """获取歌曲文件链接
 
         Args:
@@ -211,7 +211,7 @@ class Song:
         Returns:
             链接字典
         """
-        return await get_song_urls([await self.get_mid()], file_type, url_type, credential)
+        return (await get_song_urls([await self.get_mid()], file_type, url_type, credential))[self.mid]
 
 
 async def query_song(value: Union[list[str], list[int]]) -> list[dict]:
