@@ -1,6 +1,6 @@
 """凭据类，用于请求验证"""
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from typing import Any
 
 from qqmusic_api.exceptions import (
@@ -15,10 +15,10 @@ class Credential:
     """凭据类
 
     Attributes:
-        musicid: 音乐 ID
-        musickey: 音乐 Key
-        refresh_key: 刷新 Key
-        login_type: 登录类型
+        musicid:      QQMusic ID
+        musickey:     QQMusic Key
+        refresh_key:  刷新 Key
+        login_type:   登录类型
         extra_fields: 额外字段
     """
 
@@ -30,10 +30,6 @@ class Credential:
 
     def __post_init__(self):
         self.login_type = 1 if "W_X" in self.musickey else 2
-
-    def get_dict(self) -> dict:
-        """返回 Credential 的字典表示，包括所有字段。"""
-        return {**asdict(self), **self.extra_fields}
 
     def has_musicid(self) -> bool:
         """是否提供 musicid"""

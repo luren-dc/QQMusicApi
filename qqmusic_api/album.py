@@ -13,7 +13,7 @@ class Album:
 
     Attributes:
         mid: 专辑 mid
-        id: 专辑 id
+        id:  专辑 id
     """
 
     def __init__(
@@ -28,7 +28,7 @@ class Album:
 
         Args:
             mid: 专辑 mid
-            id: 专辑 id
+            id:  专辑 id
         """
         if mid is None and id is None:
             raise ValueError("mid or id must be provided")

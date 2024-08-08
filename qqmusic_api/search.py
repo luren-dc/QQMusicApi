@@ -84,8 +84,8 @@ async def general_search(
     """综合搜索
 
     Args:
-        keyword: 关键词
-        page: 页码. Defaluts to 1
+        keyword:   关键词
+        page:      页码. Defaluts to 1
         highlight: 是否高亮关键词. Defaluts to True
 
     Returns:
@@ -104,16 +104,20 @@ async def general_search(
 
 
 async def search_by_type(
-    keyword: str, search_type: SearchType = SearchType.SONG, num: int = 10, page: int = 1, highlight: bool = True
+    keyword: str,
+    search_type: SearchType = SearchType.SONG,
+    num: int = 10,
+    page: int = 1,
+    highlight: bool = True,
 ) -> list[dict]:
     """搜索
 
     Args:
-        keyword: 关键词
+        keyword:     关键词
         search_type: 搜索类型. Defaluts to SearchType.SONG
-        num: 返回数量. Defaluts to 10
-        page: 页码. Defaluts to 1
-        highlight: 是否高亮关键词. Defaluts to True
+        num:         返回数量. Defaluts to 10
+        page:        页码. Defaluts to 1
+        highlight:   是否高亮关键词. Defaluts to True
 
     Returns:
         搜索结果

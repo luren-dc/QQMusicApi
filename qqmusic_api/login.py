@@ -60,7 +60,7 @@ class Login(ABC):
     """登录基类
 
     Attributes:
-        auth_url: 验证链接，用于鉴权和滑块验证
+        auth_url:   验证链接，用于鉴权和滑块验证
         credential: 用户凭证
     """
 

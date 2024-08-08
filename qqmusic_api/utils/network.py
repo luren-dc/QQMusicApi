@@ -20,7 +20,6 @@ API_URL = "https://u.y.qq.com/cgi-bin/musicu.fcg"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.54",
-    "Referer": "https://y.qq.com",
 }
 
 __session_pool: dict[asyncio.AbstractEventLoop, httpx.AsyncClient] = {}
