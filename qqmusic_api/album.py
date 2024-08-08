@@ -2,7 +2,6 @@
 
 from typing import Optional
 
-from .song import Song
 from .utils.network import Api
 from .utils.utils import get_api
 
@@ -14,10 +13,12 @@ class Album:
 
     Attributes:
         mid: 专辑 mid
+        id: 专辑 id
     """
 
     def __init__(
         self,
+        *,
         mid: Optional[str] = None,
         id: Optional[int] = None,
     ):
@@ -27,14 +28,27 @@ class Album:
             mid: 专辑 mid
             id: 专辑 id
         """
-        # ID 检查
         if mid is None and id is None:
             raise ValueError("mid or id must be provided")
         self.mid = mid
         self.id = id
+        self._info: Optional[dict] = None
 
-    def __repr__(self) -> str:
-        return f"Album(mid={self.mid}, id={self.id})"
+    async def get_mid(self) -> str:
+        """获取专辑 mid
+
+        Returns:
+            专辑 mid
+        """
+        return (await self.get_detail())["basicInfo"]["albumMid"]
+
+    async def get_id(self) -> int:
+        """获取专辑 id
+
+        Returns:
+            专辑 id
+        """
+        return (await self.get_detail())["basicInfo"]["albumID"]
 
     async def get_detail(self) -> dict:
         """获取专辑详细信息
@@ -42,13 +56,15 @@ class Album:
         Returns:
             专辑详细信息
         """
-        return await Api(**API["detail"]).update_params(albumMid=self.mid, albumId=self.id).result
+        if not self._info:
+            self._info = await Api(**API["detail"]).update_params(albumMid=self.mid, albumId=self.id).result
+        return self._info
 
-    async def get_song(self) -> list[Song]:
+    async def get_song(self) -> list[dict]:
         """获取专辑歌曲
 
         Returns:
             歌曲列表
         """
         result = await Api(**API["song"]).update_params(albumMid=self.mid, albumId=self.id, begin=0, num=0).result
-        return [Song.from_dict(song["songInfo"]) for song in result["songList"]]
+        return [song["songInfo"] for song in result["songList"]]
