@@ -213,9 +213,9 @@ class Api:
 
     async def request(self) -> Union[dict, str, None]:
         """向接口发送请求"""
+        self.__prepare_params_data()
         if self.module:
             self.__prepare_api_data()
-        self.__prepare_params_data()
         config = self.__prepare_request()
         session = get_session()
         try:
