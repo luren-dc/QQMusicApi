@@ -81,7 +81,12 @@ class QRCodeLogin(Login):
         self.musicid = ""
         self._state: Optional[QrCodeLoginEvents] = None
         self._qrcode_data: Optional[bytes] = None
-        self._session = httpx.AsyncClient(timeout=20)
+        self._session = httpx.AsyncClient(
+            timeout=20,
+            headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/116.0.1938.54",
+            },
+        )
 
     async def close(self):
         """关闭登录会话"""
@@ -128,6 +133,10 @@ class QRCodeLogin(Login):
 
 class QQLogin(QRCodeLogin):
     """QQ登录"""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._session.headers.update({"Referer": "https://xui.ptlogin2.qq.com/"})
 
     @override
     async def get_qrcode(self):
@@ -236,7 +245,7 @@ class QQLogin(QRCodeLogin):
 
         res = await self._session.post(
             "https://graph.qq.com/oauth2.0/authorize",
-            params={
+            headers={
                 "Referer": "https://graph.qq.com/oauth2.0/show?which=Login&display=pc&response_type=code&client_id"
                 "=100497308&redirect_uri=https://y.qq.com/portal/wx_redirect.html?login_type=1&surl=https"
                 "://y.qq.com/portal/profile.html#stat=y_new.top.user_pic&stat=y_new.top.pop.logout"
@@ -431,6 +440,8 @@ class PhoneLogin(Login):
         Raises:
             LoginException: 鉴权失败
         """
+        if self.credential:
+            return self.credential
         if not authcode:
             raise ValueError("authcode 为空")
         params = {"code": str(authcode), "phoneNo": self.phone, "loginMode": 1}
@@ -446,7 +457,8 @@ class PhoneLogin(Login):
                 raise LoginException("验证码过期或错误")
             else:
                 raise LoginException("未知情况，请提交 issue")
-        return Credential.from_cookies(res)
+        self.credential = Credential.from_cookies(res)
+        return self.credential
 
 
 async def refresh_cookies(credential: Credential) -> Credential:
@@ -461,13 +473,10 @@ async def refresh_cookies(credential: Credential) -> Credential:
     credential.raise_for_cannot_refresh()
     params = {
         "refresh_key": credential.refresh_key,
+        "musickey": credential.musickey,
         "musicid": credential.musicid,
-        "loginMode": 2,
     }
-    res = (
-        await Api(**API["refresh"])
-        .update_params(**params)
-        .update_extra_common(tmeLoginType=str(credential.login_type))
-        .result
-    )
+
+    api = API["WX_login"] if credential.login_type == 1 else API["QQ_login"]
+    res = await Api(**api).update_params(**params).update_extra_common(tmeLoginType=str(credential.login_type)).result
     return Credential.from_cookies(res)

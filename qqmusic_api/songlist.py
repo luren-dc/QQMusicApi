@@ -21,7 +21,7 @@ class Songlist:
         """
         self.id = id
 
-    async def get_detail(self):
+    async def get_detail(self) -> dict:
         """获取歌单详细信息
 
         Returns:

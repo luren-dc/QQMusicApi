@@ -29,17 +29,24 @@ async def qrcode_login(login: QRCodeLogin):
     show_qrcode(await login.get_qrcode())
     while True:
         state = await login.get_qrcode_state()
-
-        if state == QrCodeLoginEvents.DONE:
-            break
+        if state == QrCodeLoginEvents.REFUSE:
+            print("拒绝登录")
+            exit()
         elif state == QrCodeLoginEvents.TIMEOUT:
-            show_qrcode(await login.get_qrcode())
-        else:
-            print("\r", state, "    ", end="")
+            print("二维码过期")
+            exit()
+        elif state == QrCodeLoginEvents.CONF:
+            print("\r请确认登录", end="")
+        elif state == QrCodeLoginEvents.SCAN:
+            print("\r请扫描二维码", end="")
+        elif state == QrCodeLoginEvents.DONE:
+            print("\n登录成功")
+            break
 
-        await asyncio.sleep(1)
-    print("")
+        await asyncio.sleep(4)
+
     credential = await login.authorize()
+
     print(credential)
 
 
