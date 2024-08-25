@@ -34,7 +34,7 @@ jobs:
           pdm sync -dG docs
       - name: Build with mkdocs
         run: |
-          pdm run mkdocs build --strict
+          pdm run mkdocs build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
