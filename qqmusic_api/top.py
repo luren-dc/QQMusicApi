@@ -1,6 +1,5 @@
 """排行榜相关 API"""
 
-from .song import Song
 from .utils.network import Api
 from .utils.utils import get_api
 
@@ -43,7 +42,7 @@ class Top:
         """
         return (await Api(**API["detail"]).update_params(topId=self.id, num=100).result)["data"]
 
-    async def get_song(self) -> list[Song]:
+    async def get_song(self) -> list[dict]:
         """获取排行榜歌曲信息
 
         Returns:

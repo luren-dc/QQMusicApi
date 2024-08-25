@@ -2,8 +2,7 @@
 
 import random
 
-from qqmusic_api.song import query_song
-
+from .song import query_song
 from .utils.network import Api
 from .utils.utils import get_api
 

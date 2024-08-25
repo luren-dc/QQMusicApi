@@ -3,7 +3,6 @@
 from enum import Enum
 from typing import Literal, Optional
 
-from .song import Song
 from .utils.network import Api
 from .utils.utils import get_api
 
@@ -209,7 +208,7 @@ class Singer:
         ] = TabType.SONG,
         page: int = 1,
         num: int = 100,
-    ) -> list[Song]:
+    ) -> list[dict]:
         """获取歌手歌曲
 
         Args:
