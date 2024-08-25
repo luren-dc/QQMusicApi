@@ -3,7 +3,7 @@
 import asyncio
 import random
 from enum import Enum
-from typing import Optional, Union
+from typing import Literal, Optional, Union
 
 from .utils.credential import Credential
 from .utils.network import Api
@@ -26,7 +26,6 @@ class SongFileType(Enum):
     + ACC_192: AAC 格式，192kbps
     + ACC_96:  AAC 格式，96kbps
     + ACC_48:  AAC 格式，48kbps
-    + TRY:     试听文件
     """
 
     NEW_0 = ("AI00", ".flac")
@@ -40,7 +39,6 @@ class SongFileType(Enum):
     ACC_192 = ("C600", ".m4a")
     ACC_96 = ("C400", ".m4a")
     ACC_48 = ("C200", ".m4a")
-    TRY = ("RS02", ".mp3")
 
     def __init__(self, start_code: str, extension: str):
         self.__start_code = start_code
@@ -55,15 +53,7 @@ class SongFileType(Enum):
         return self.__extension
 
 
-class UrlType(Enum):
-    """歌曲文件链接类型
-
-    + PLAY:     播放链接
-    + DOWNLOAD: 下载链接
-    """
-
-    PLAY = "play_url"
-    DOWNLOAD = "download_url"
+UrlType = Literal["play_url", "download_url"]
 
 
 class Song:
@@ -167,9 +157,15 @@ class Song:
         Returns:
             MV信息
         """
-        return (await Api(**API["mv"]).update_params(songid=str(await self.get_id()), songtype=1, lastvid=0).result)[
-            "list"
-        ]
+        return (
+            await Api(**API["mv"])
+            .update_params(
+                songid=str(await self.get_id()),
+                songtype=1,
+                lastvid=0,
+            )
+            .result
+        )["list"]
 
     async def get_other_version(self) -> list[dict]:
         """获取歌曲其他版本
@@ -198,7 +194,7 @@ class Song:
     async def get_url(
         self,
         file_type: SongFileType = SongFileType.MP3_128,
-        url_type: UrlType = UrlType.PLAY,
+        url_type: UrlType = "play_url",
         credential: Optional[Credential] = None,
     ) -> str:
         """获取歌曲文件链接
@@ -243,7 +239,7 @@ async def query_song(value: Union[list[str], list[int]]) -> list[dict]:
 async def get_song_urls(
     mid: list[str],
     file_type: SongFileType = SongFileType.MP3_128,
-    url_type: UrlType = UrlType.PLAY,
+    url_type: UrlType = "play_url",
     credential: Optional[Credential] = None,
 ) -> dict[str, str]:
     """获取歌曲文件链接
@@ -260,8 +256,8 @@ async def get_song_urls(
     # 分割 id,单次最大请求100
     mid_list = [mid[i : i + 100] for i in range(0, len(mid), 100)]
     # 选择文件域名
-    domain = "https://isure.stream.qqmusic.qq.com/" if url_type == UrlType.PLAY else "https://dl.stream.qqmusic.qq.com/"
-    api = Api(**API[url_type.value], credential=credential or Credential())
+    domain = "https://isure.stream.qqmusic.qq.com/" if url_type == "play_url" else "https://dl.stream.qqmusic.qq.com/"
+    api = Api(**API[url_type], credential=credential or Credential())
     urls = {}
 
     async def get_song_url(mid):
@@ -282,3 +278,31 @@ async def get_song_urls(
 
     await asyncio.gather(*[asyncio.create_task(get_song_url(mid)) for mid in mid_list])
     return urls
+
+
+async def get_try_url(mid: str, vs: str) -> Optional[str]:
+    """获取试听文件链接
+
+    Args:
+        mid: 歌曲 mid
+        vs:  歌曲 vs
+
+    Returns:
+        试听文件链接
+    """
+    res = await (
+        Api(**API["play_url"])
+        .update_params(
+            filename=[f"RS02{vs}.mp3"],
+            guid="".join(
+                random.choices("abedf1234567890", k=32),
+            ),
+            songmid=[mid],
+            songtype=[1],
+        )
+        .result
+    )
+    if url := res["midurlinfo"][0]["wifiurl"]:
+        return f"https://isure.stream.qqmusic.qq.com/{url}"
+    else:
+        return None

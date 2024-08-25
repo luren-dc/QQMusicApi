@@ -1,6 +1,6 @@
 import pytest
 
-from qqmusic_api.song import get_song_urls, query_song
+from qqmusic_api.song import get_song_urls, get_try_url, query_song
 
 pytestmark = pytest.mark.asyncio(scope="package")
 
@@ -47,3 +47,4 @@ async def test_get_other_version(song):
 
 async def test_get_song_urls():
     assert await get_song_urls(["004emQMs09Z1lz"])
+    assert await get_try_url("00041h1u3kgquE", "062sn0lg3VGZad")
