@@ -73,7 +73,7 @@ class QRCodeLogin(Login):
     """二维码登录基类
 
     Attributes:
-        musicid: 登录账号
+        musicid:    登录账号
         credential: 用户凭证
     """
 
@@ -88,7 +88,6 @@ class QRCodeLogin(Login):
                 "User-Agent": "Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/116.0.1938.54",
             },
         )
-        self.credential: Optional[Credential] = None
 
     async def close(self):
         """关闭登录会话"""
@@ -405,6 +404,7 @@ class PhoneLogin(Login):
         Raises:
             ValueError: 非法手机号
         """
+        super().__init__()
         if not re.compile(r"^1[3-9]\d{9}$").match(phone):
             raise ValueError("非法手机号")
         self.phone = phone
