@@ -100,10 +100,7 @@ class Credential:
         from ..login import refresh_cookies
 
         c = await refresh_cookies(self)
-        self.openid = c.openid
-        self.musickey = c.musickey
-        self.refresh_key = c.refresh_key
-        self.extra_fields = c.extra_fields
+        self.__dict__.update(c.__dict__)
 
     @classmethod
     def from_cookies(cls, cookies: dict) -> "Credential":

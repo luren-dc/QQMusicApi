@@ -50,6 +50,7 @@ def set_session(session: httpx.AsyncClient) -> None:
     __session_pool[loop] = session
 
 
+# TODO: 优化结构
 @dataclass
 class Api:
     """用于请求的 Api 类

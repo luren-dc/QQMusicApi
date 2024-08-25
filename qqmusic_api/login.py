@@ -74,6 +74,7 @@ class QRCodeLogin(Login):
 
     Attributes:
         musicid: 登录账号
+        credential: 用户凭证
     """
 
     def __init__(self) -> None:
@@ -87,6 +88,7 @@ class QRCodeLogin(Login):
                 "User-Agent": "Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/116.0.1938.54",
             },
         )
+        self.credential: Optional[Credential] = None
 
     async def close(self):
         """关闭登录会话"""
@@ -163,7 +165,7 @@ class QQLogin(QRCodeLogin):
                 "verify_theme": "",
             },
         )
-        self.sig = res.cookies["pt_login_sig"]
+        self._sig = res.cookies["pt_login_sig"]
 
         res = await self._session.get(
             "https://ssl.ptlogin2.qq.com/ptqrshow",
@@ -179,7 +181,7 @@ class QQLogin(QRCodeLogin):
                 "pt_3rd_aid": "100497308",
             },
         )
-        self.ptqrtoken = hash33(res.cookies["qrsig"])
+        self._ptqrtoken = hash33(res.cookies["qrsig"])
         self._qrcode_data = res.read()
         return self._qrcode_data
 
@@ -191,7 +193,7 @@ class QQLogin(QRCodeLogin):
             "https://ssl.ptlogin2.qq.com/ptqrlogin",
             params={
                 "u1": "https://graph.qq.com/oauth2.0/login_jump",
-                "ptqrtoken": self.ptqrtoken,
+                "ptqrtoken": self._ptqrtoken,
                 "ptredirect": "0",
                 "h": "1",
                 "t": "1",
@@ -201,7 +203,7 @@ class QQLogin(QRCodeLogin):
                 "action": f"0-0-{int(time.time() * 1000)}",
                 "js_ver": "20102616",
                 "js_type": "1",
-                "login_sig": self.sig,
+                "login_sig": self._sig,
                 "pt_uistyle": "40",
                 "aid": "716027609",
                 "daid": "383",
@@ -467,12 +469,13 @@ async def refresh_cookies(credential: Credential) -> Credential:
     Args:
         credential: 用户凭证
 
-    Return:
+    Returns:
         新的用户凭证
     """
     credential.raise_for_cannot_refresh()
     params = {
         "refresh_key": credential.refresh_key,
+        "refresh_token": credential.refresh_token,
         "musickey": credential.musickey,
         "musicid": credential.musicid,
     }
