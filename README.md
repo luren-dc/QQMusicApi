@@ -42,9 +42,10 @@
 
 ## 依赖
 
-- [AIOHTTP](https://docs.aiohttp.org/)
-- [Requests](https://requests.readthedocs.io/)
+- ~~[AIOHTTP](https://docs.aiohttp.org/)~~
+- ~~[Requests](https://requests.readthedocs.io/)~~
 - [Cryptography](https://cryptography.io/)
+- [HTTPX](https://github.com/encode/httpx/)
 
 ## 快速上手
 

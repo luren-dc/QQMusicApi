@@ -21,7 +21,7 @@ def credential():
 
 @pytest.fixture(scope="package")
 def album():
-    return Album("000MkMni19ClKG")
+    return Album(mid="000MkMni19ClKG")
 
 
 @pytest.fixture(scope="package")

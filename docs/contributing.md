@@ -31,6 +31,7 @@ pipx install pdm
 pipx install pre-commit
 
 # 安装开发依赖
+git checkout dev
 make install
 ```
 
@@ -50,6 +51,7 @@ pipx install pdm
 pipx install pre-commit
 
 # 安装开发依赖
+git checkout dev
 pdm install --group :all
 pdm run pre-commit install --install-hooks
 ```
@@ -60,7 +62,7 @@ pdm run pre-commit install --install-hooks
 
 ```bash
 # 从 dev 分支创建并切换到新分支
-git checkout -b {分支名} dev
+git checkout -b {分支名}
 # 开始编码
 ```
 
@@ -120,7 +122,7 @@ pdm docs
 ### 创建 Pull Request
 
 > [!NOTE]
-> 请向 `dev` 分支发起 [Pull Request](https://github.com/luren-dc/QQMusicapi/pulls)
+> 请向 `main` 分支发起 [Pull Request](https://github.com/luren-dc/QQMusicapi/pulls)
 
 提交更改，将分支推送到 GitHub，然后创建拉取请求。
 
@@ -128,7 +130,7 @@ pdm docs
 
 ## 代码规范
 
-- 代码风格遵循 [Google Python Style](https://google.github.io/styleguide/pyguide.html)（[中文版](https://google-styleguide.readthedocs.io/zh_CN/latest/google-python-styleguide/contents.html)）
+- 代码风格遵循 [Google Python Style](https://google.github.io/styleguide/pyguide.html)
 - 代码格式遵循 [PEP8](https://www.python.org/dev/peps/pep-0008/)
 
 ## 代码注释

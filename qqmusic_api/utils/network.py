@@ -6,7 +6,7 @@ import json
 from dataclasses import dataclass, field
 from typing import Any, Union
 
-import aiohttp
+import httpx
 
 from ..exceptions import ResponseCodeException
 from .credential import Credential
@@ -20,37 +20,37 @@ API_URL = "https://u.y.qq.com/cgi-bin/musicu.fcg"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.54",
-    "Referer": "https://y.qq.com",
 }
 
-__session_pool: dict[asyncio.AbstractEventLoop, aiohttp.ClientSession] = {}
+__session_pool: dict[asyncio.AbstractEventLoop, httpx.AsyncClient] = {}
 
 
-def get_aiohttp_session() -> aiohttp.ClientSession:
-    """获取当前模块的 aiohttp.ClientSession 对象，用于自定义请求
+def get_session() -> httpx.AsyncClient:
+    """获取当前模块的 Session 对象，用于自定义请求
 
     Returns:
-        aiohttp.ClientSession
+        httpx.AsyncClient
     """
     loop = asyncio.get_event_loop()
     session = __session_pool.get(loop, None)
     if session is None:
-        session = aiohttp.ClientSession(loop=loop, connector=aiohttp.TCPConnector(), trust_env=True)
+        session = httpx.AsyncClient(timeout=30)
         __session_pool[loop] = session
 
     return session
 
 
-def set_aiohttp_session(session: aiohttp.ClientSession) -> None:
+def set_session(session: httpx.AsyncClient) -> None:
     """用户手动设置 Session
 
     Args:
-        session:  aiohttp.ClientSession 实例
+        session: httpx.AsyncClient 实例
     """
     loop = asyncio.get_event_loop()
     __session_pool[loop] = session
 
 
+# TODO: 优化结构
 @dataclass
 class Api:
     """用于请求的 Api 类
@@ -71,7 +71,7 @@ class Api:
 
     method: str
     module: str = ""
-    url: str = API_URL
+    url: str = field(default=API_URL)
     comment: str = ""
     verify: bool = False
     json_body: bool = False
@@ -199,13 +199,13 @@ class Api:
         config = {
             "url": self.url,
             "method": self.method,
-            "data": self.data,
             "params": self.params,
             "headers": HEADERS.copy() if len(self.headers) == 0 else self.headers,
         }
         if self.json_body:
-            config["headers"]["Content-Type"] = "application/json"  # type: ignore
-            config["data"] = json.dumps(config["data"], ensure_ascii=False).encode()
+            config["json"] = self.data
+        else:
+            config["data"] = self.data
         if self.module:
             config["method"] = "POST"
             config["params"] = ""
@@ -213,27 +213,24 @@ class Api:
 
     async def request(self) -> Union[dict, str, None]:
         """向接口发送请求"""
+        self.__prepare_params_data()
         if self.module:
             self.__prepare_api_data()
-        self.__prepare_params_data()
         config = self.__prepare_request()
-        session = get_aiohttp_session()
+        session = get_session()
         try:
-            async with session.request(**config) as resp:
-                try:
-                    resp.raise_for_status()
-                except aiohttp.ClientResponseError:
-                    raise
-                return self.__process_response(resp, await resp.text())
-        except aiohttp.ClientConnectionError:
+            resp = await session.request(**config)
+            resp.raise_for_status()
+            return self.__process_response(resp)
+        except Exception:
             raise
 
-    def __process_response(self, resp: aiohttp.ClientResponse, resp_text: str) -> Union[dict, str, None]:
-        content_length = resp.headers.get("content-length")
+    def __process_response(self, resp: httpx.Response) -> Union[dict, str, None]:
+        content_length = resp.headers.get("Content-Length")
         if content_length and int(content_length) == 0:
             return None
         try:
-            resp_data = json.loads(resp_text)
+            resp_data = resp.json()
             if self.module:
                 request_data = resp_data["request"]
                 if request_data["code"] != 0:
@@ -245,7 +242,7 @@ class Api:
                 return request_data["data"]
             return resp_data
         except json.JSONDecodeError:
-            return resp_text
+            return resp.text
 
 
 @atexit.register
@@ -258,8 +255,8 @@ def __clean() -> None:
 
     async def __clean_task():
         s0 = __session_pool.get(loop, None)
-        if s0 is not None and not s0.closed:
-            await s0.close()
+        if s0 is not None and not s0.is_closed:
+            await s0.aclose()
 
     if not loop.is_closed():
         loop.run_until_complete(__clean_task())

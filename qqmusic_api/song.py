@@ -3,15 +3,11 @@
 import asyncio
 import random
 from enum import Enum
-from typing import TYPE_CHECKING, Optional
-
-if TYPE_CHECKING:
-    from .album import Album
-    from .singer import Singer
+from typing import Optional, Union
 
 from .utils.credential import Credential
 from .utils.network import Api
-from .utils.utils import get_api, parse_song_info
+from .utils.utils import get_api
 
 API = get_api("song")
 
@@ -75,11 +71,12 @@ class Song:
 
     Attributes:
         mid: 歌曲 mid
-        id: 歌曲 id
+        id:  歌曲 id
     """
 
     def __init__(
         self,
+        *,
         mid: Optional[str] = None,
         id: Optional[int] = None,
     ):
@@ -89,128 +86,48 @@ class Song:
 
         Args:
             mid: 歌曲 mid
-            id: 歌曲 id
+            id:  歌曲 id
         """
-        # ID 检查
         if mid is None and id is None:
             raise ValueError("mid or id must be provided")
-        self._mid = mid
-        self._id = id
+        self.mid = mid or ""
+        self.id = id or 0
         self._info: Optional[dict] = None
 
-    @classmethod
-    def from_dict(cls, info: dict) -> "Song":
-        """从字典新建 Song
-
-        Args:
-            info: 歌曲字典
-
-        Returns:
-            歌曲类
-        """
-        info = parse_song_info(info)
-        s = cls(id=info["info"]["id"], mid=info["info"]["mid"])
-        s._info = info
-        return s
-
-    @classmethod
-    def from_list(cls, data: list[dict]) -> list["Song"]:
-        """从列表新建 Song
-
-        Args:
-            data: 歌曲列表
-
-        Returns:
-            歌曲列表
-        """
-        return [cls.from_dict(info) for info in data]
-
-    async def __get_info(self) -> dict:
-        """获取歌曲必要信息"""
-        if not self._info:
-            if self._mid:
-                self._info = (await query_by_mid([self._mid]))[0]
-            elif self._id:
-                self._info = (await query_by_id([self._id]))[0]
-        return self._info  # type: ignore
-
-    @property
-    async def mid(self) -> str:
+    async def get_mid(self) -> str:
         """获取歌曲 mid
 
         Returns:
-            mid
+            歌曲 mid
         """
-        if not self._mid:
-            self._mid = (await self.__get_info())["info"]["mid"]
-        return str(self._mid)
+        if not self.mid:
+            if self.id:
+                self.mid = (await query_song([self.id]))[0]["mid"]
+        return self.mid
 
-    @property
-    async def id(self) -> int:
+    async def get_id(self) -> int:
         """获取歌曲 id
 
         Returns:
-            id
+            歌曲 id
         """
-        if not self._id:
-            self._id = (await self.__get_info())["info"]["id"]
-        return int(self._id)  # type: ignore
-
-    def __repr__(self) -> str:
-        return f"Song(mid={self._mid}, id={self._id})"
-
-    def __str__(self) -> str:
-        if self._info:
-            return str(self._info)
-        return self.__repr__()
-
-    async def __prepare_param(self, is_mid: bool = False, is_id: bool = False) -> dict:
-        """准备请求参数
-
-        Args:
-            is_mid: 是否强制使用 mid. Defaults to False
-            is_id:  是否强制使用 id. Defaults to False
-
-        Returns:
-            请求参数
-        """
-        if is_mid:
-            return {"songmid": await self.mid}
-        if is_id:
-            return {"songid": await self.id}
-        if self._mid:
-            return {"songmid": self._mid}
-        if self._id:
-            return {"songid": self._id}
-        return {}
+        if not self.id:
+            if self.mid:
+                self.id = (await query_song([self.mid]))[0]["id"]
+        return self.id
 
     async def get_info(self) -> dict:
-        """获取歌曲基本信息
+        """获取歌曲信息
 
         Returns:
-            基本信息
+            歌曲信息
         """
-        return (await self.__get_info())["info"]
-
-    async def get_singer(self) -> "Singer":
-        """获取歌曲歌手
-
-        Returns:
-            歌手
-        """
-        from .singer import Singer
-
-        return Singer((await self.__get_info())["singer"]["mid"])
-
-    async def get_album(self) -> "Album":
-        """获取歌曲专辑
-
-        Returns:
-            专辑
-        """
-        from .album import Album
-
-        return Album((await self.__get_info())["album"]["mid"])
+        if not self._info:
+            if self.mid:
+                self._info = (await query_song([self.mid]))[0]
+            else:
+                self._info = (await query_song([self.id]))[0]
+        return self._info
 
     async def get_detail(self) -> dict:
         """获取歌曲详细信息
@@ -218,12 +135,7 @@ class Song:
         Returns:
             详细信息
         """
-        param = await self.__prepare_param()
-        if "songmid" in param:
-            param["song_mid"] = param.pop("songmid")
-        if "songid" in param:
-            param["song_id"] = param.pop("songid")
-        return await Api(**API["detail"]).update_params(**param).result
+        return await Api(**API["detail"]).update_params(song_mid=self.mid, song_id=self.id).result
 
     async def get_similar_song(self) -> list[dict]:
         """获取歌曲相似歌曲
@@ -231,9 +143,7 @@ class Song:
         Returns:
             歌曲信息
         """
-        param = await self.__prepare_param(is_id=True)
-        res = await Api(**API["similar"]).update_params(**param).result
-        return [parse_song_info(song["track"]) for song in res["vecSong"]]
+        return (await Api(**API["similar"]).update_params(songid=await self.get_id()).result)["vecSong"]
 
     async def get_labels(self) -> list[dict]:
         """获取歌曲标签
@@ -241,8 +151,7 @@ class Song:
         Returns:
             标签信息
         """
-        param = await self.__prepare_param(is_id=True)
-        return (await Api(**API["labels"]).update_params(**param).result)["labels"]
+        return (await Api(**API["labels"]).update_params(songid=await self.get_id()).result)["labels"]
 
     async def get_related_songlist(self) -> list[dict]:
         """获取歌曲相关歌单
@@ -250,8 +159,7 @@ class Song:
         Returns:
             歌单信息
         """
-        param = await self.__prepare_param(is_id=True)
-        return (await Api(**API["playlist"]).update_params(**param).result)["vecPlaylist"]
+        return (await Api(**API["playlist"]).update_params(songid=await self.get_id()).result)["vecPlaylist"]
 
     async def get_related_mv(self) -> list[dict]:
         """获取歌曲相关MV
@@ -259,8 +167,9 @@ class Song:
         Returns:
             MV信息
         """
-        param = await self.__prepare_param()
-        return (await Api(**API["mv"]).update_params(**param).result)["list"]
+        return (await Api(**API["mv"]).update_params(songid=str(await self.get_id()), songtype=1, lastvid=0).result)[
+            "list"
+        ]
 
     async def get_other_version(self) -> list[dict]:
         """获取歌曲其他版本
@@ -268,9 +177,7 @@ class Song:
         Returns:
             歌曲信息
         """
-        param = await self.__prepare_param()
-        res = await Api(**API["other"]).update_params(**param).result
-        return [parse_song_info(song) for song in res["versionList"]]
+        return (await Api(**API["other"]).update_params(songid=self.id, songmid=self.mid).result)["versionList"]
 
     async def get_sheet(self) -> list[dict]:
         """获取歌曲相关曲谱
@@ -278,9 +185,7 @@ class Song:
         Returns:
             曲谱信息
         """
-        param = await self.__prepare_param(is_mid=True)
-        param["scoreType"] = -1
-        return (await Api(**API["sheet"]).update_params(**param).result)["result"]
+        return (await Api(**API["sheet"]).update_params(songmid=await self.get_mid(), scoreType=-1).result)["result"]
 
     async def get_producer(self) -> list[dict]:
         """获取歌曲制作信息
@@ -288,15 +193,14 @@ class Song:
         Returns:
             人员信息
         """
-        param = await self.__prepare_param()
-        return (await Api(**API["producer"]).update_params(**param).result)["Lst"]
+        return (await Api(**API["producer"]).update_params(songid=self.id, songmid=self.mid).result)["Lst"]
 
     async def get_url(
         self,
         file_type: SongFileType = SongFileType.MP3_128,
         url_type: UrlType = UrlType.PLAY,
         credential: Optional[Credential] = None,
-    ) -> dict[str, str]:
+    ) -> str:
         """获取歌曲文件链接
 
         Args:
@@ -307,66 +211,33 @@ class Song:
         Returns:
             链接字典
         """
-        return await get_song_urls([await self.mid], file_type, url_type, credential)
-
-    async def get_file_size(self, file_type: Optional[SongFileType] = None) -> dict:
-        """获取歌曲文件大小
-
-        Args:
-            file_type:  指定文件类型. Defaults to None
-
-        Returns:
-            文件大小
-        """
-        size = (await self.__get_info())["file"]
-        if file_type:
-            name = file_type.name.lower()
-            size = {name: size[name]}
-        return size
+        return (await get_song_urls([await self.get_mid()], file_type, url_type, credential))[self.mid]
 
 
-async def query_by_id(id: list[int]) -> list[dict]:
-    """根据 id 获取歌曲信息
+async def query_song(value: Union[list[str], list[int]]) -> list[dict]:
+    """根据 id 或 mid 获取歌曲信息
 
     Args:
-        id: 歌曲 mid 列表
+        value: 歌曲 id 或 mid 列表
 
     Returns:
-            歌曲信息
+        歌曲信息
     """
+    if not value:
+        return []
+
     param = {
-        "ids": id,
-        "mids": [],
-        "types": [0 for _ in range(len(id))],
-        "modify_stamp": [0 for _ in range(len(id))],
+        "types": [0 for _ in range(len(value))],
+        "modify_stamp": [0 for _ in range(len(value))],
         "ctx": 0,
         "client": 1,
     }
+    if isinstance(value[0], int):
+        param["ids"] = value
+    else:
+        param["mids"] = value
     res = await Api(**API["query"]).update_params(**param).result
-    tracks = res["tracks"]
-    return [parse_song_info(song) for song in tracks]
-
-
-async def query_by_mid(mid: list[str]) -> list[dict]:
-    """根据 mid 获取歌曲信息
-
-    Args:
-        mid: 歌曲 mid 列表
-
-    Returns:
-            歌曲信息
-    """
-    param = {
-        "ids": [],
-        "mids": mid,
-        "types": [0 for _ in range(len(mid))],
-        "modify_stamp": [0 for _ in range(len(mid))],
-        "ctx": 0,
-        "client": 1,
-    }
-    res = await Api(**API["query"]).update_params(**param).result
-    tracks = res["tracks"]
-    return [parse_song_info(song) for song in tracks]
+    return res["tracks"]
 
 
 async def get_song_urls(
@@ -386,13 +257,11 @@ async def get_song_urls(
     Returns:
        链接字典
     """
-    if credential is None:
-        credential = Credential()
     # 分割 id,单次最大请求100
     mid_list = [mid[i : i + 100] for i in range(0, len(mid), 100)]
     # 选择文件域名
     domain = "https://isure.stream.qqmusic.qq.com/" if url_type == UrlType.PLAY else "https://dl.stream.qqmusic.qq.com/"
-    api = Api(**API[url_type.value], credential=credential)
+    api = Api(**API[url_type.value], credential=credential or Credential())
     urls = {}
 
     async def get_song_url(mid):

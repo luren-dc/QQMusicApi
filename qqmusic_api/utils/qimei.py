@@ -9,7 +9,7 @@ import time
 from dataclasses import dataclass
 from typing import Union
 
-import requests
+import httpx
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
@@ -275,7 +275,7 @@ class QIMEI:
         data, ts = QIMEI._generate_request_param(DeviceData.generate_random_payload(app_version))
         sign = calculate_md5("qimei_qq_androidpzAuCmaFAaFaHrdakPjLIEqKrGnSOOvH", ts)
         try:
-            res = requests.post(
+            res = httpx.post(
                 "https://api.tencentmusic.com/tme/trpc/proxy",
                 headers={
                     "Host": "api.tencentmusic.com",
@@ -288,8 +288,7 @@ class QIMEI:
                 },
                 json=data,
             )
-            qimei_data = str(res.json()["data"])
-            qimei = json.loads(qimei_data)
+            qimei = json.loads(res.json().get("data", "{}"))
             return QImeiResult(qimei["data"]["q16"], qimei["data"]["q36"])
         except Exception:
             return QImeiResult(
