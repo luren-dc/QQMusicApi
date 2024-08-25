@@ -20,7 +20,6 @@ API_URL = "https://u.y.qq.com/cgi-bin/musicu.fcg"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.54",
-    "Referer": "https://y.qq.com",
 }
 
 __session_pool: dict[asyncio.AbstractEventLoop, httpx.AsyncClient] = {}
@@ -51,6 +50,7 @@ def set_session(session: httpx.AsyncClient) -> None:
     __session_pool[loop] = session
 
 
+# TODO: 优化结构
 @dataclass
 class Api:
     """用于请求的 Api 类
@@ -213,9 +213,9 @@ class Api:
 
     async def request(self) -> Union[dict, str, None]:
         """向接口发送请求"""
+        self.__prepare_params_data()
         if self.module:
             self.__prepare_api_data()
-        self.__prepare_params_data()
         config = self.__prepare_request()
         session = get_session()
         try:

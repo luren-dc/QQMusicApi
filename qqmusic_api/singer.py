@@ -3,7 +3,6 @@
 from enum import Enum
 from typing import Literal, Optional
 
-from .song import Song
 from .utils.network import Api
 from .utils.utils import get_api
 
@@ -105,12 +104,9 @@ class TabType(Enum):
     SONG = ("song_sing", "SongTab")
     VIDEO = ("video", "VideoTab")
 
-    def __init__(self, tabID: str, tabName: str) -> None:
-        self.tabID = tabID
-        self.tabName = tabName
-
-
-SongType = Literal["song", "album", "composer", "lyricist", "producer", "arranger", "musician"]
+    def __init__(self, tab_id: str, tab_name: str) -> None:
+        self.tab_id = tab_id
+        self.tab_name = tab_name
 
 
 async def get_singer_list(
@@ -157,24 +153,6 @@ class Singer:
         self.mid = mid
         self._info: Optional[dict] = None
 
-    def __repr__(self) -> str:
-        return f"Singer(mid={self.mid})"
-
-    def __str__(self) -> str:
-        if self._info:
-            return str(self._info)
-        return f"Singer(mid={self.mid})"
-
-    async def __get_info(self) -> dict:
-        """获取歌手必要信息"""
-        if not self._info:
-            info = (await Api(**API["homepage"]).update_params(SingerMid=self.mid).result)["Info"]
-            self._info = {
-                "FansNum": info["FansNum"]["Num"],
-            }
-            self._info.update(info["Singer"])
-        return self._info
-
     async def get_info(self) -> dict:
         """获取歌手信息
 
@@ -182,19 +160,11 @@ class Singer:
             歌手信息
         """
         if not self._info:
-            self._info = await self.__get_info()
+            self._info = await Api(**API["homepage"]).update_params(SingerMid=self.mid).result
         return self._info
 
-    async def get_fans_num(self) -> int:
-        """获取歌手粉丝数
-
-        Returns:
-            粉丝数
-        """
-        return (await self.__get_info())["FansNum"]
-
     async def get_tab_detail(self, tab_type: TabType, page: int = 1, num: int = 100) -> dict:
-        """获取歌手 Tab 详细信息
+        """获取歌手主页 Tab 详细信息
 
         Args:
             tab_type: Tab 类型
@@ -209,13 +179,13 @@ class Singer:
             .update_params(
                 SingerMid=self.mid,
                 IsQueryTabDetail=1,
-                TabID=tab_type.tabID,
+                TabID=tab_type.tab_id,
                 PageNum=page - 1,
                 PageSize=num,
                 Order=0,
             )
             .result
-        )[tab_type.tabName]
+        )[tab_type.tab_name]
 
     async def get_wiki(self) -> dict:
         """获取歌手WiKi
@@ -225,7 +195,20 @@ class Singer:
         """
         return await self.get_tab_detail(TabType.WIKI)
 
-    async def get_song(self, type: SongType = "song", page: int = 1, num: int = 100) -> list[Song]:
+    async def get_song(
+        self,
+        type: Literal[
+            TabType.SONG,
+            TabType.ALBUM,
+            TabType.COMPOSER,
+            TabType.LYRICIST,
+            TabType.PRODUCER,
+            TabType.ARRANGER,
+            TabType.MUSICIAN,
+        ] = TabType.SONG,
+        page: int = 1,
+        num: int = 100,
+    ) -> list[dict]:
         """获取歌手歌曲
 
         Args:
@@ -234,8 +217,7 @@ class Singer:
             num:  返回数量. Defaluts to 100
 
         Returns:
-            `Song` 列表
+            歌曲信息列表
         """
-        tab_type = TabType[type.upper()]
-        data = await self.get_tab_detail(tab_type, page, num)
-        return Song.from_list(data["List"])
+        data = await self.get_tab_detail(type, page, num)
+        return data["List"]

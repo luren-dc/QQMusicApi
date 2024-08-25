@@ -1,7 +1,7 @@
 """凭据类，用于请求验证"""
 
-from dataclasses import asdict, dataclass, field
-from typing import Any
+from dataclasses import dataclass, field
+from typing import Union
 
 from qqmusic_api.exceptions import (
     CredentialNoMusicidException,
@@ -15,45 +15,78 @@ class Credential:
     """凭据类
 
     Attributes:
-        musicid: 音乐 ID
-        musickey: 音乐 Key
-        refresh_key: 刷新 Key
-        login_type: 登录类型
-        extra_fields: 额外字段
+        openid:        OpenID
+        refresh_token: RefreshToken
+        access_token:  AccessToken
+        expired_at:    到期时间
+        musicid:       QQMusicID
+        musickey:      QQMusicKey
+        unionid:       UnionID
+        str_musicid:   QQMusicID
+        refresh_key:   RefreshKey
+        login_type:    登录类型
+        extra_fields:  额外字段
     """
 
-    musicid: str = ""
+    openid: str = ""
+    refresh_token: str = ""
+    access_token: str = ""
+    expired_at: int = 0
+    musicid: int = 0
     musickey: str = ""
+    unionid: str = ""
+    str_musicid: str = ""
     refresh_key: str = ""
-    login_type: int = field(init=False)
-    extra_fields: dict[str, Any] = field(default_factory=dict)
+    encrypt_uin: str = ""
+    login_type: int = 0
+    extra_fields: dict[str, Union[str, int]] = field(default_factory=dict)
 
     def __post_init__(self):
-        self.login_type = 1 if "W_X" in self.musickey else 2
-
-    def get_dict(self) -> dict:
-        """返回 Credential 的字典表示，包括所有字段。"""
-        return {**asdict(self), **self.extra_fields}
+        if not self.login_type:
+            if self.musickey and self.musickey.startswith("W_X"):
+                self.login_type = 1
+            else:
+                self.login_type = 2
 
     def has_musicid(self) -> bool:
-        """是否提供 musicid"""
+        """是否提供 musicid
+
+        Returns:
+            是否提供
+        """
         return bool(self.musicid)
 
     def has_musickey(self) -> bool:
-        """是否提供 musickey"""
+        """是否提供 musickey
+
+        Returns:
+            是否提供
+        """
         return bool(self.musickey)
 
     def can_refresh(self) -> bool:
-        """是否能刷新 Credential"""
-        return bool(self.refresh_key)
+        """是否能刷新 Credential
+
+        Returns:
+            是否能刷新
+        """
+        return bool(self.musicid) and (bool(self.refresh_key) or bool(self.musickey))
 
     def raise_for_cannot_refresh(self):
-        """无法刷新 Credential 时抛出异常"""
+        """无法刷新 Credential 时抛出异常
+
+        Raises:
+            CredentialNoRefreshkeyException
+        """
         if not self.can_refresh():
             raise CredentialNoRefreshkeyException()
 
     def raise_for_no_musicid(self):
-        """没有提供 musicid 时抛出异常"""
+        """没有提供 musicid 时抛出异常
+
+        Raises:
+            CredentialNoMusicidException
+        """
         if not self.has_musicid():
             raise CredentialNoMusicidException()
 
@@ -67,9 +100,7 @@ class Credential:
         from ..login import refresh_cookies
 
         c = await refresh_cookies(self)
-        self.musicid = c.musicid
-        self.musickey = c.musickey
-        self.refresh_key = c.refresh_key
+        self.__dict__.update(c.__dict__)
 
     @classmethod
     def from_cookies(cls, cookies: dict) -> "Credential":
@@ -82,8 +113,19 @@ class Credential:
             凭据类实例
         """
         return cls(
+            openid=cookies.pop("openid", ""),
+            refresh_token=cookies.pop("refresh_token", ""),
+            access_token=cookies.pop("access_token", ""),
+            expired_at=cookies.pop("expired_at", 0),
             musicid=cookies.pop("musicid", ""),
             musickey=cookies.pop("musickey", ""),
+            unionid=cookies.pop("unionid", ""),
+            str_musicid=cookies.pop(
+                "str_musicid",
+                str(cookies.pop("musicid", "")),
+            ),
             refresh_key=cookies.pop("refresh_key", ""),
+            encrypt_uin=cookies.pop("encryptUin", ""),
+            login_type=cookies.pop("loginType", 0),
             extra_fields=cookies,
         )
