@@ -81,6 +81,17 @@
         },
         "comment": "获取歌曲制作团队"
     },
+    "evkey": {
+        "module": "music.vkey.GetEVkey",
+        "method": "CgiGetEVkey",
+        "params": {
+            "filename": "[f'{file_type.s}{_}{_}{file_type.e}' for _ in mid]",
+            "guid": "str 随机32位字符串",
+            "songmid": "list mid 列表",
+            "songtype": "[1 for _ in range(len(mid))]"
+        },
+        "comment": "获取加密文件链接"
+    },
     "play_url": {
         "module": "music.vkey.GetVkey",
         "method": "UrlGetVkey",
