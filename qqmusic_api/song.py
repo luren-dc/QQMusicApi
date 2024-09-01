@@ -3,7 +3,7 @@
 import asyncio
 import random
 from enum import Enum
-from typing import Literal, Optional, Union
+from typing import Optional, Union
 
 from .utils.credential import Credential
 from .utils.network import Api
@@ -53,7 +53,45 @@ class SongFileType(Enum):
         return self.__extension
 
 
-UrlType = Literal["play_url", "download_url"]
+class EncryptedSongFileType(Enum):
+    """加密歌曲文件类型
+
+    + NEW_0:   臻品母带2.0
+    + NEW_1:   臻品全景声
+    + NEW_2:   臻品音质2.0
+    + FLAC:    无损音频压缩格式
+    + OGG_192: OGG 格式，192kbps
+    + OGG_96:  OGG 格式，96kbps
+    + MP3_320: MP3 格式，320kbps
+    + MP3_128: MP3 格式，128kbps
+    + ACC_192: AAC 格式，192kbps
+    + ACC_96:  AAC 格式，96kbps
+    + ACC_48:  AAC 格式，48kbps
+    """
+
+    NEW_0 = ("AIM0", ".mflac2")
+    NEW_1 = ("Q0M0", ".mflac4")
+    NEW_2 = ("Q0M1", ".mflac3")
+    FLAC = ("F0M0", ".mflac0")
+    OGG_192 = ("O6M0", ".mgg1")
+    OGG_96 = ("O4M0", ".mgg0")
+    MP3_320 = ("M8M0", ".qmc0")
+    MP3_128 = ("M5M0", ".qmc3")
+    ACC_192 = ("C6M0", ".qmc2")
+    ACC_96 = ("C4M0", ".qmc6")
+    ACC_48 = ("C2M0", ".qmc8")
+
+    def __init__(self, start_code: str, extension: str):
+        self.__start_code = start_code
+        self.__extension = extension
+
+    @property
+    def s(self) -> str:  # noqa : D102
+        return self.__start_code
+
+    @property
+    def e(self) -> str:  # noqa: D102
+        return self.__extension
 
 
 class Song:
@@ -193,21 +231,19 @@ class Song:
 
     async def get_url(
         self,
-        file_type: SongFileType = SongFileType.MP3_128,
-        url_type: UrlType = "play_url",
+        file_type: Union[SongFileType, EncryptedSongFileType] = SongFileType.MP3_128,
         credential: Optional[Credential] = None,
     ) -> str:
         """获取歌曲文件链接
 
         Args:
             file_type:  歌曲文件类型. Defaults to SongFileType.MP3_128
-            url_type:   歌曲链接类型. Defaults to UrlType.PLAY
             credential: 账号凭证. Defaults to None
 
         Returns:
             链接字典
         """
-        return (await get_song_urls([await self.get_mid()], file_type, url_type, credential))[self.mid]
+        return (await get_song_urls([await self.get_mid()], file_type, credential))[self.mid][0]
 
 
 async def query_song(value: Union[list[str], list[int]]) -> list[dict]:
@@ -238,26 +274,27 @@ async def query_song(value: Union[list[str], list[int]]) -> list[dict]:
 
 async def get_song_urls(
     mid: list[str],
-    file_type: SongFileType = SongFileType.MP3_128,
-    url_type: UrlType = "play_url",
+    file_type: Union[SongFileType, EncryptedSongFileType] = SongFileType.MP3_128,
     credential: Optional[Credential] = None,
-) -> dict[str, str]:
+) -> dict[str, tuple[str, str]]:
     """获取歌曲文件链接
 
     Args:
         mid:        歌曲 mid
         file_type:  歌曲文件类型. Defaults to SongFileType.MP3_128
-        url_type:   歌曲链接类型. Defaults to UrlType.PLAY
         credential: Credential 类. Defaluts to None
 
     Returns:
-       链接字典
+       返回 {歌曲 mid: (歌曲文件链接, vkey 或者 ekey)}
+       ekey 用于解密加密文件
     """
+    encrypted = isinstance(file_type, EncryptedSongFileType)
     # 分割 id,单次最大请求100
     mid_list = [mid[i : i + 100] for i in range(0, len(mid), 100)]
     # 选择文件域名
-    domain = "https://isure.stream.qqmusic.qq.com/" if url_type == "play_url" else "https://dl.stream.qqmusic.qq.com/"
-    api = Api(**API[url_type], credential=credential or Credential())
+    domain = "https://isure.stream.qqmusic.qq.com/"
+    api_data = API["play_url"] if not encrypted else API["evkey"]
+    api = Api(**api_data, credential=credential or Credential())
     urls = {}
 
     async def get_song_url(mid):
@@ -274,7 +311,10 @@ async def get_song_urls(
         data = res["midurlinfo"]
         for info in data:
             song_url = domain + info["wifiurl"] if info["wifiurl"] else ""
-            urls[info["songmid"]] = song_url
+            if not encrypted:
+                urls[info["songmid"]] = (song_url, info["vkey"])
+            else:
+                urls[info["songmid"]] = (song_url, info["ekey"])
 
     await asyncio.gather(*[asyncio.create_task(get_song_url(mid)) for mid in mid_list])
     return urls
