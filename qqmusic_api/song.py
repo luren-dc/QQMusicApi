@@ -62,11 +62,6 @@ class EncryptedSongFileType(Enum):
     + FLAC:    无损音频压缩格式
     + OGG_192: OGG 格式，192kbps
     + OGG_96:  OGG 格式，96kbps
-    + MP3_320: MP3 格式，320kbps
-    + MP3_128: MP3 格式，128kbps
-    + ACC_192: AAC 格式，192kbps
-    + ACC_96:  AAC 格式，96kbps
-    + ACC_48:  AAC 格式，48kbps
     """
 
     NEW_0 = ("AIM0", ".mflac")
