@@ -3,7 +3,7 @@
 import asyncio
 import random
 from enum import Enum
-from typing import Optional, Union
+from typing import Optional, Union, overload
 
 from .utils.credential import Credential
 from .utils.network import Api
@@ -69,17 +69,12 @@ class EncryptedSongFileType(Enum):
     + ACC_48:  AAC 格式，48kbps
     """
 
-    NEW_0 = ("AIM0", ".mflac2")
-    NEW_1 = ("Q0M0", ".mflac4")
-    NEW_2 = ("Q0M1", ".mflac3")
-    FLAC = ("F0M0", ".mflac0")
-    OGG_192 = ("O6M0", ".mgg1")
-    OGG_96 = ("O4M0", ".mgg0")
-    MP3_320 = ("M8M0", ".qmc0")
-    MP3_128 = ("M5M0", ".qmc3")
-    ACC_192 = ("C6M0", ".qmc2")
-    ACC_96 = ("C4M0", ".qmc6")
-    ACC_48 = ("C2M0", ".qmc8")
+    NEW_0 = ("AIM0", ".mflac")
+    NEW_1 = ("Q0M0", ".mflac")
+    NEW_2 = ("Q0M1", ".mflac")
+    FLAC = ("F0M0", ".mflac")
+    OGG_192 = ("O6M0", ".mgg")
+    OGG_96 = ("O4M0", ".mgg")
 
     def __init__(self, start_code: str, extension: str):
         self.__start_code = start_code
@@ -272,11 +267,27 @@ async def query_song(value: Union[list[str], list[int]]) -> list[dict]:
     return res["tracks"]
 
 
+@overload
 async def get_song_urls(
     mid: list[str],
-    file_type: Union[SongFileType, EncryptedSongFileType] = SongFileType.MP3_128,
+    file_type: SongFileType,
+    credential: Optional[Credential],
+) -> dict[str, str]: ...
+
+
+@overload
+async def get_song_urls(
+    mid: list[str],
+    file_type: EncryptedSongFileType,
+    credential: Optional[Credential],
+) -> dict[str, tuple[str, str]]: ...
+
+
+async def get_song_urls(
+    mid: list[str],
+    file_type: Union[EncryptedSongFileType, SongFileType] = SongFileType.MP3_128,
     credential: Optional[Credential] = None,
-) -> dict[str, tuple[str, str]]:
+):
     """获取歌曲文件链接
 
     Args:
@@ -285,8 +296,8 @@ async def get_song_urls(
         credential: Credential 类. Defaluts to None
 
     Returns:
-       返回 {歌曲 mid: (歌曲文件链接, vkey 或者 ekey)}
-       ekey 用于解密加密文件
+        返回 mid 和 url 组成的字典
+        加密文件返回 ekey
     """
     encrypted = isinstance(file_type, EncryptedSongFileType)
     # 分割 id,单次最大请求100
@@ -312,7 +323,7 @@ async def get_song_urls(
         for info in data:
             song_url = domain + info["wifiurl"] if info["wifiurl"] else ""
             if not encrypted:
-                urls[info["songmid"]] = (song_url, info["vkey"])
+                urls[info["songmid"]] = song_url
             else:
                 urls[info["songmid"]] = (song_url, info["ekey"])
 
