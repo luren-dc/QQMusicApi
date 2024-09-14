@@ -1,0 +1,24 @@
+{
+    "info": {
+        "module": "music.musichallSong.PlayLyricInfo",
+        "method": "GetPlayLyricInfo",
+        "params": {
+            "ct": "int 11",
+            "cv": "int 13020508",
+            "lrc_t": "int 0",
+            "qrc_t": "int 0",
+            "roma": "int 1",
+            "roma_t": "int 0",
+            "trans": "int 1",
+            "trans_t": "int 0",
+            "type": "int 0",
+            "albumName": "str 专辑名字",
+            "crypt": "int 是否加密歌词",
+            "qrc": "int 是否返回 qrc",
+            "singerName": "str 歌手名字(取第一个)",
+            "songID": "int 歌曲 id",
+            "songName": "str 歌曲名字"
+        },
+        "comment": "获取歌曲歌词信息"
+    }
+}
