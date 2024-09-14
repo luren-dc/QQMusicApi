@@ -12,6 +12,14 @@ credential = Credential(musicid=MUSICID, musickey=MUSICKEY)
 # 会员歌曲需登录
 urls = asyncio.run(song.get_song_urls(mid=["003w2xz20QlUZt", "000Zu3Ah1jb4gl"], credential=credential))
 
+# 获取加密文件
+# 可在 https://um-react.netlify.app/ 解密
+# urls = asyncio.run(
+#     song.get_song_urls(
+#         mid=["003w2xz20QlUZt", "000Zu3Ah1jb4gl"], credential=credential, file_type=song.EncryptedSongFileType.FLAC
+#     )
+# )
+
 
 async def download_file(client, mid, url):
     try:

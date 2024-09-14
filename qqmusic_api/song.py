@@ -3,7 +3,7 @@
 import asyncio
 import random
 from enum import Enum
-from typing import Optional, Union, overload
+from typing import Optional, Union
 
 from .utils.credential import Credential
 from .utils.network import Api
@@ -19,6 +19,7 @@ class SongFileType(Enum):
     + NEW_1:   臻品全景声
     + NEW_2:   臻品音质2.0
     + FLAC:    无损音频压缩格式
+    + OGG_320: OGG 格式，320kbps，size_new[3]
     + OGG_192: OGG 格式，192kbps
     + OGG_96:  OGG 格式，96kbps
     + MP3_320: MP3 格式，320kbps
@@ -32,6 +33,7 @@ class SongFileType(Enum):
     NEW_1 = ("Q000", ".flac")
     NEW_2 = ("Q001", ".flac")
     FLAC = ("F000", ".flac")
+    OGG_320 = ("O800", ".ogg")
     OGG_192 = ("O600", ".ogg")
     OGG_96 = ("O400", ".ogg")
     MP3_320 = ("M800", ".mp3")
@@ -60,6 +62,7 @@ class EncryptedSongFileType(Enum):
     + NEW_1:   臻品全景声
     + NEW_2:   臻品音质2.0
     + FLAC:    无损音频压缩格式
+    + OGG_320: OGG 格式，320kbps，size_new[3]
     + OGG_192: OGG 格式，192kbps
     + OGG_96:  OGG 格式，96kbps
     """
@@ -68,6 +71,7 @@ class EncryptedSongFileType(Enum):
     NEW_1 = ("Q0M0", ".mflac")
     NEW_2 = ("Q0M1", ".mflac")
     FLAC = ("F0M0", ".mflac")
+    OGG_320 = ("O800", ".mgg")
     OGG_192 = ("O6M0", ".mgg")
     OGG_96 = ("O4M0", ".mgg")
 
@@ -98,9 +102,10 @@ class Song:
         mid: Optional[str] = None,
         id: Optional[int] = None,
     ):
-        """/// admonition | 注意
-        歌曲 mid 和 id，两者至少提供一个
-        ///
+        """初始化歌曲类
+
+        Note:
+            歌曲 mid 和 id，两者至少提供一个
 
         Args:
             mid: 歌曲 mid
@@ -262,33 +267,20 @@ async def query_song(value: Union[list[str], list[int]]) -> list[dict]:
     return res["tracks"]
 
 
-@overload
-async def get_song_urls(
-    mid: list[str],
-    file_type: SongFileType,
-    credential: Optional[Credential],
-) -> dict[str, str]: ...
-
-
-@overload
-async def get_song_urls(
-    mid: list[str],
-    file_type: EncryptedSongFileType,
-    credential: Optional[Credential],
-) -> dict[str, tuple[str, str]]: ...
-
-
 async def get_song_urls(
     mid: list[str],
     file_type: Union[EncryptedSongFileType, SongFileType] = SongFileType.MP3_128,
     credential: Optional[Credential] = None,
-):
+) -> Union[dict[str, str], dict[str, tuple[str, str]]]:
     """获取歌曲文件链接
 
     Args:
         mid:        歌曲 mid
         file_type:  歌曲文件类型. Defaults to SongFileType.MP3_128
         credential: Credential 类. Defaluts to None
+
+    Returns:
+        返回链接字典，加密歌曲返回 `ekey` 用于解密
     """
     encrypted = isinstance(file_type, EncryptedSongFileType)
     # 分割 id,单次最大请求100
@@ -324,6 +316,10 @@ async def get_song_urls(
 
 async def get_try_url(mid: str, vs: str) -> Optional[str]:
     """获取试听文件链接
+
+    Tips:
+        使用 `size_try` 字段判断是否存在试听文件
+        参数 `vs` 请传入歌曲信息 `vs` 字段第一个
 
     Args:
         mid: 歌曲 mid
