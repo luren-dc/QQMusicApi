@@ -289,10 +289,6 @@ async def get_song_urls(
         mid:        歌曲 mid
         file_type:  歌曲文件类型. Defaults to SongFileType.MP3_128
         credential: Credential 类. Defaluts to None
-
-    Returns:
-        返回 mid 和 url 组成的字典
-        加密文件返回 ekey
     """
     encrypted = isinstance(file_type, EncryptedSongFileType)
     # 分割 id,单次最大请求100
