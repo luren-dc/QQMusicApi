@@ -137,8 +137,8 @@ nav:
       - songlist 歌单: api/songlist.md
       - top 排行榜: api/top.md
       - utils:
-          - qimei 识别标识: api/utils/qimei.md
-          - utils 实用程序: api/utils/utils.md
+          - qimei 设备标识: api/utils/qimei.md
+          - utils 辅助函数: api/utils/utils.md
           - network 网络请求: api/utils/network.md
           - credential 凭据: api/utils/credential.md
           - sync 同步: api/utils/sync.md
