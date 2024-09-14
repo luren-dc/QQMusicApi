@@ -114,6 +114,7 @@ plugins:
             filters: ["!^_"]
             show_signature_annotations: true
             signature_crossrefs: true
+            merge_init_into_class: true
             docstring_section_style: spacy
             extensions:
               - griffe_inherited_docstrings
