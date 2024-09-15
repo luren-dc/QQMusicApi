@@ -1,0 +1,37 @@
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+    authors:
+      - octocat
+  categories:
+    - title: Features ✨
+      labels:
+        - feat
+    - title: Bug Fixes 🐛
+      labels:
+        - fix
+    - title: Performance Improvements 🚀
+      labels:
+        - perf
+    - title: Documentation 📚
+      labels:
+        - docs
+    - title: Styles 🎨
+      labels:
+        - style
+    - title: Refactor ♻️
+      labels:
+        - refactor
+    - title: Tests ✅
+      labels:
+        - test
+    - title: Build System 🛠
+      labels:
+        - build
+    - title: Continuous Integration 🔄
+      labels:
+        - ci
+    - title: Other Changes
+      labels:
+        - "*"
