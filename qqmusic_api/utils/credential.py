@@ -1,7 +1,7 @@
 """凭据类，用于请求验证"""
 
 from dataclasses import dataclass, field
-from typing import Union
+from typing import Any
 
 from qqmusic_api.exceptions import (
     CredentialNoMusicidException,
@@ -39,7 +39,7 @@ class Credential:
     refresh_key: str = ""
     encrypt_uin: str = ""
     login_type: int = 0
-    extra_fields: dict[str, Union[str, int]] = field(default_factory=dict)
+    extra_fields: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self):
         if not self.login_type:

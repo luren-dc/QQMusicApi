@@ -73,9 +73,15 @@ asyncio.run(main())
 
 ## 参考项目
 
-- [Rain120/qq-muisc-api](https://github.com/Rain120/qq-music-api)
-- [jsososo/QQMusicApi](https://github.com/jsososo/QQMusicApi)
-- [Nemo2011/bilibili-api](https://github.com/Nemo2011/bilibili-api/)
+### API
+[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?theme=radical&username=Rain120&repo=qq-music-api)](https://github.com/Rain120/qq-music-api)
+[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?theme=radical&username=jsososo&repo=QQMusicApi)](https://github.com/jsososo/QQMusicApi)
+
+### QRC 解密
+[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?theme=radical&username=chenmozhijin&repo=LDDC)](https://github.com/chenmozhijin/LDDC)
+
+### 项目架构
+[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?theme=radical&username=Nemo2011&repo=bilibili-api)](https://github.com/Nemo2011/bilibili-api)
 
 ## Licence
 
