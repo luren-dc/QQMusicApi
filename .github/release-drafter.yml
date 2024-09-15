@@ -1,0 +1,70 @@
+name-template: "v$RESOLVED_VERSION 🌈"
+tag-template: "v$RESOLVED_VERSION"
+exclude-labels:
+  - "skip-changelog"
+categories:
+  - title: "🚀 Features"
+    labels:
+      - "feature"
+  - title: "🐛 Bug Fixes"
+    labels:
+      - "fix"
+  - title: "📚 Documentation"
+    labels:
+      - "docs"
+  - title: "⚡ Performance"
+    labels:
+      - "pref"
+  - title: "🚜 Refactor"
+    labels:
+      - "refactor"
+  - title: "🧪 Testing"
+    labels:
+      - "test"
+change-template: "- $TITLE by @$AUTHOR (#$NUMBER)"
+change-title-escapes: '\<*_&' # You can add # and @ to disable mentions, and add ` to disable code blocks.
+version-resolver:
+  major:
+    labels:
+      - "major"
+  minor:
+    labels:
+      - "minor"
+  patch:
+    labels:
+      - "patch"
+  default: patch
+template: |
+  ## What's Changed in $RESOLVED_VERSION
+
+  $CHANGES
+
+autolabeler:
+  - label: "feature"
+    branch:
+      - '/feat\/.+/'
+    title:
+      - "/feat/i"
+  - label: "bug"
+    branch:
+      - '/fix\/.+/'
+    title:
+      - "/fix/i"
+  - label: "refactor"
+    branch:
+      - '/refactor\/.+/'
+    title:
+      - "/refactor/i"
+  - label: "perf"
+    branch:
+      - '/pref\/.+/'
+    title:
+      - "/pref/i"
+  - label: "docs"
+    title:
+      - "/doc/i"
+    branch:
+      - '/docs{0,1}\/.+/'
+  - label: "test"
+    files:
+      - "tests/**"

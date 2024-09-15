@@ -15,24 +15,26 @@ API = get_api("song")
 class SongFileType(Enum):
     """歌曲文件类型
 
-    + NEW_0:   臻品母带2.0
-    + NEW_1:   臻品全景声
-    + NEW_2:   臻品音质2.0
-    + FLAC:    无损音频压缩格式
-    + OGG_320: OGG 格式，320kbps，size_new[3]
-    + OGG_192: OGG 格式，192kbps
-    + OGG_96:  OGG 格式，96kbps
-    + MP3_320: MP3 格式，320kbps
-    + MP3_128: MP3 格式，128kbps
-    + ACC_192: AAC 格式，192kbps
-    + ACC_96:  AAC 格式，96kbps
-    + ACC_48:  AAC 格式，48kbps
+    + MASTER:   臻品母带2.0，24Bit 192kHz，size_new[0]
+    + ATMOS_2:  臻品全景声2.0，16Bit 44.1kHz，size_new[1]
+    + ATMOS_51: 臻品音质2.0，16Bit 44.1kHz，size_new[2]
+    + FLAC:     flac 格式，16Bit 44.1kHz～24Bit 48kHz，size_flac
+    + OGG_640:  ogg 格式，640kbps，size_new[5]
+    + OGG_320:  ogg 格式，320kbps，size_new[3]
+    + OGG_192:  ogg 格式，192kbps，size_192ogg
+    + OGG_96:   ogg 格式，96kbps，size_96ogg
+    + MP3_320:  mp3 格式，320kbps，size_320mp3
+    + MP3_128:  mp3 格式，128kbps，size_128mp3
+    + ACC_192:  m4a 格式，192kbps，size_192aac
+    + ACC_96:   m4a 格式，96kbps，size_96aac
+    + ACC_48:   m4a 格式，48kbps，size_48aac
     """
 
-    NEW_0 = ("AI00", ".flac")
-    NEW_1 = ("Q000", ".flac")
-    NEW_2 = ("Q001", ".flac")
+    Master = ("AI00", ".flac")
+    ATMOS_2 = ("Q000", ".flac")
+    ATMOS_51 = ("Q001", ".flac")
     FLAC = ("F000", ".flac")
+    OGG_640 = ("O801", ".ogg")
     OGG_320 = ("O800", ".ogg")
     OGG_192 = ("O600", ".ogg")
     OGG_96 = ("O400", ".ogg")
@@ -58,19 +60,21 @@ class SongFileType(Enum):
 class EncryptedSongFileType(Enum):
     """加密歌曲文件类型
 
-    + NEW_0:   臻品母带2.0
-    + NEW_1:   臻品全景声
-    + NEW_2:   臻品音质2.0
-    + FLAC:    无损音频压缩格式
-    + OGG_320: OGG 格式，320kbps，size_new[3]
-    + OGG_192: OGG 格式，192kbps
-    + OGG_96:  OGG 格式，96kbps
+    + MASTER:   臻品母带2.0，24Bit 192kHz，size_new[0]
+    + ATMOS_2:  臻品全景声2.0，16Bit 44.1kHz，size_new[1]
+    + ATMOS_51: 臻品音质2.0，16Bit 44.1kHz，size_new[2]
+    + FLAC:     flac 格式，16Bit 44.1kHz～24Bit 48kHz，size_flac
+    + OGG_640:  ogg 格式，640kbps，size_new[5]
+    + OGG_320:  ogg 格式，320kbps，size_new[3]
+    + OGG_192:  ogg 格式，192kbps，size_192ogg
+    + OGG_96:   ogg 格式，96kbps，size_96ogg
     """
 
-    NEW_0 = ("AIM0", ".mflac")
-    NEW_1 = ("Q0M0", ".mflac")
-    NEW_2 = ("Q0M1", ".mflac")
+    MASTER = ("AIM0", ".mflac")
+    ATMOS_2 = ("Q0M0", ".mflac")
+    ATMOS_51 = ("Q0M1", ".mflac")
     FLAC = ("F0M0", ".mflac")
+    OGG_640 = ("O801", ".mgg")
     OGG_320 = ("O800", ".mgg")
     OGG_192 = ("O6M0", ".mgg")
     OGG_96 = ("O4M0", ".mgg")
@@ -228,7 +232,7 @@ class Song:
         self,
         file_type: Union[SongFileType, EncryptedSongFileType] = SongFileType.MP3_128,
         credential: Optional[Credential] = None,
-    ) -> str:
+    ) -> Union[str, tuple[str, str]]:
         """获取歌曲文件链接
 
         Args:
@@ -238,7 +242,7 @@ class Song:
         Returns:
             链接字典
         """
-        return (await get_song_urls([await self.get_mid()], file_type, credential))[self.mid][0]
+        return (await get_song_urls([await self.get_mid()], file_type, credential))[self.mid]
 
 
 async def query_song(value: Union[list[str], list[int]]) -> list[dict]:
