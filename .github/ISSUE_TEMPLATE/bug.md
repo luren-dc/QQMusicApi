@@ -1,10 +1,9 @@
 ---
 name: 漏洞反馈
 about: 使用该模板进行漏洞反馈
-title: "[漏洞] {这里填写标题}"
-labels: 'bug'
-assignees: ''
-
+title: "[漏洞] 这里填写标题"
+labels: "bug"
+assignees: ""
 ---
 
 **Python 版本：** 3.x.y

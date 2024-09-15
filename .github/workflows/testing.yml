@@ -1,13 +1,11 @@
 name: Testing
 
 on:
-  push:
-    branches: [main, dev]
+  pull_request:
+    branches: [main]
     paths:
       - "tests/**"
       - "qqmusic_api/**"
-  pull_request:
-    branches: [main, dev]
 
 jobs:
   test:
