@@ -7,8 +7,8 @@ import asyncio
 
 from qqmusic_api import song
 
-song = song.Song(mid="0016aXcd24qSC")
-# song.Song(id=457240977)
+song = song.Song(mid="001CJxVG1yppB0")
+# song.Song(id=105648974)
 
 mid = asyncio.run(song.get_id())
 id = asyncio.run(song.get_mid())

@@ -25,9 +25,9 @@ async def get_lyric(
     Args:
         mid:   歌曲 mid
         id:    歌曲 id
-        qrc:   是否返回逐字歌词. Defaults to False
-        trans: 是否返回翻译歌词. Defaults to False
-        roma:  是否返回罗马歌词. Defaults to False
+        qrc:   是否返回逐字歌词
+        trans: 是否返回翻译歌词
+        roma:  是否返回罗马歌词
 
     Returns:
         {"lyric": 歌词或逐字歌词, "trans": 翻译歌词, "roma": 罗马歌词}
