@@ -212,9 +212,9 @@ class Singer:
         """获取歌手歌曲
 
         Args:
-            type: Tab 类型. Defaluts to TabType.SONG
-            page: 页码. Defaluts to 1
-            num:  返回数量. Defaluts to 100
+            type: Tab 类型
+            page: 页码
+            num:  返回数量
 
         Returns:
             歌曲信息列表

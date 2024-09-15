@@ -232,8 +232,8 @@ class Song:
         """获取歌曲文件链接
 
         Args:
-            file_type:  歌曲文件类型. Defaults to SongFileType.MP3_128
-            credential: 账号凭证. Defaults to None
+            file_type:  歌曲文件类型
+            credential: 账号凭证
 
         Returns:
             链接字典
@@ -276,8 +276,8 @@ async def get_song_urls(
 
     Args:
         mid:        歌曲 mid
-        file_type:  歌曲文件类型. Defaults to SongFileType.MP3_128
-        credential: Credential 类. Defaluts to None
+        file_type:  歌曲文件类型
+        credential: Credential 类
 
     Returns:
         返回链接字典，加密歌曲返回 `ekey` 用于解密

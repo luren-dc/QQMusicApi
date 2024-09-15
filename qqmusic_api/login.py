@@ -273,8 +273,8 @@ class QQLogin(QRCodeLogin):
         )
         location = res.headers.get("Location", "")
         code = re.findall(r"(?<=code=)(.+?)(?=&)", location)[0]
-        res = await Api(**API["QQ_login"]).update_params(code=code).update_extra_common(tmeLoginType="2").result
-        self.credential = Credential.from_cookies(res)
+        response = await Api(**API["QQ_login"]).update_params(code=code).update_extra_common(tmeLoginType="2").result
+        self.credential = Credential.from_cookies(response)
         return self.credential
 
 

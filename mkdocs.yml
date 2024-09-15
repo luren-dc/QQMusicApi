@@ -44,8 +44,8 @@ extra:
       link: https://github.com/luren-dc/QQMusicApi
 
 extra_css:
-  - assets/stylesheets/font.css
-  - assets/stylesheets/scheme.css
+  - css/font.css
+  - css/scheme.css
   - https://cdn.tonycrane.cc/jbmono/jetbrainsmono.css
   - https://cdn.tonycrane.cc/lxgw/lxgwscreen.css
   - https://fonts.loli.net/css2?family=Noto+Serif+SC&display=swap
@@ -137,12 +137,14 @@ nav:
       - song 歌曲: api/song.md
       - songlist 歌单: api/songlist.md
       - top 排行榜: api/top.md
+      - lyric 歌词: api/lyric.md
       - utils:
           - qimei 设备标识: api/utils/qimei.md
           - utils 辅助函数: api/utils/utils.md
           - network 网络请求: api/utils/network.md
           - credential 凭据: api/utils/credential.md
           - sync 同步: api/utils/sync.md
+          - tripledes TripleDES: api/utils/tripledes.md
       - exceptions: api/exceptions.md
   - 贡献指南: contributing.md
 

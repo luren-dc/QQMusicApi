@@ -85,8 +85,8 @@ async def general_search(
 
     Args:
         keyword:   关键词
-        page:      页码. Defaluts to 1
-        highlight: 是否高亮关键词. Defaluts to True
+        page:      页码
+        highlight: 是否高亮关键词
 
     Returns:
         包含直接结果，歌曲，歌手，专辑，歌单，mv等.
@@ -114,10 +114,10 @@ async def search_by_type(
 
     Args:
         keyword:     关键词
-        search_type: 搜索类型. Defaluts to SearchType.SONG
-        num:         返回数量. Defaluts to 10
-        page:        页码. Defaluts to 1
-        highlight:   是否高亮关键词. Defaluts to True
+        search_type: 搜索类型
+        num:         返回数量
+        page:        页码
+        highlight:   是否高亮关键词
 
     Returns:
         搜索结果

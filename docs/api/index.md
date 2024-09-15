@@ -73,6 +73,15 @@
     - 排行榜信息
     - 排行榜歌曲
 
+-   :fontawesome-solid-xmarks-lines: **[lyric]** - 歌词 API
+
+    ***
+
+    - lrc 歌词
+    - 逐字歌词
+    - 翻译歌词
+    - 罗马歌词
+
 </div>
 
   [album]: album.md
@@ -83,18 +92,19 @@
   [song]: song.md
   [songlist]: songlist.md
   [top]: top.md
+  [lyric]: lyric.md
 
 ## 辅助模块
 
 <div class="grid cards" markdown>
 
--   :octicons-verified-16: **[qimei]** - 识别标识
+-   :octicons-verified-16: **[qimei]** - 设备标识
 
     ***
 
     获取设备唯一标识
 
--   :material-tools: **[utils]** - 实用程序
+-   :material-tools: **[utils]** - 辅助函数
 
     ***
 
@@ -118,6 +128,12 @@
 
     同步执行异步代码函数(仅用于同步程序)
 
+-   :material-lock: **[tripledes]** - TripleDES
+
+    ***
+
+    QRC 解密模块
+
 </div>
 
   [qimei]: utils/qimei.md
@@ -125,3 +141,4 @@
   [network]: utils/network.md
   [credential]: utils/credential.md
   [sync]: utils/sync.md
+  [tripledes]: utils/tripledes.md
