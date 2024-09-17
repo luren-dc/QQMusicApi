@@ -56,17 +56,17 @@ class Api:
     """用于请求的 Api 类
 
     Attributes:
-        url: 请求地址. Defaults to API_URL
-        method: 请求方法
-        module: 请求模块. Defaults to ""
-        comment: 注释. Defaults to ""
-        verify: 是否验证凭据. Defaults to False
-        json_body: 是否使用 json 作为载荷. Defaults to False
-        data: 请求载荷. Defaults to {}
-        params: 请求参数. Defaults to {}
-        headers: 请求头. Defaults to {}
-        credential: 凭据. Defaults to Credential()
-        extra_common: 额外参数. Defaults to {}
+        url:          请求地址
+        method:       请求方法
+        module:       请求模块
+        comment:      注释
+        verify:       是否账号凭证
+        json_body:    是否使用 json 作为载荷
+        data:         请求载荷
+        params:       请求参数
+        headers:      请求头
+        credential:   凭据
+        extra_common: 额外参数
     """
 
     method: str

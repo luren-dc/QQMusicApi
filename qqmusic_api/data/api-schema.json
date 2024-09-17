@@ -1,0 +1,84 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "patternProperties": {
+        ".*": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string",
+                    "description": "请求地址"
+                },
+                "method": {
+                    "type": "string",
+                    "description": "请求方法"
+                },
+                "headers": {
+                    "type": "object",
+                    "description": "请求头"
+                },
+                "module": {
+                    "type": "string",
+                    "description": "QQ音乐请求模块，搭配 `method` 使用"
+                },
+                "json_body": {
+                    "type": "boolean",
+                    "description": "是否以 JSON 格式作为载荷"
+                },
+                "data": {
+                    "type": "object",
+                    "description": "请求数据"
+                },
+                "params": {
+                    "type": "object",
+                    "description": "请求参数"
+                },
+                "verify": {
+                    "type": "boolean",
+                    "description": "是否验证账号凭证"
+                },
+                "extra_common": {
+                    "type": "object",
+                    "description": "请求QQ音乐的额外公共参数"
+                },
+                "comment": {
+                    "type": "string",
+                    "description": "接口描述"
+                }
+            },
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "module": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "module"
+                        ]
+                    },
+                    "then": {
+                        "not": {
+                            "required": [
+                                "url",
+                                "json_body",
+                                "data"
+                            ]
+                        },
+                        "required": [
+                            "method",
+                            "params"
+                        ]
+                    },
+                    "else": {
+                        "required": [
+                            "url",
+                            "method"
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+}
