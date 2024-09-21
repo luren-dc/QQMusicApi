@@ -1,32 +1,27 @@
-"""代码来源: [bilibili-api](https://github.com/Nemo2011/bilibili-api)
+"""同步执行异步函数
 
-同步执行异步函数
+代码来源: https://github.com/Nemo2011/bilibili-api
 """
 
 import asyncio
 from collections.abc import Coroutine
-from typing import Any, TypeVar
-
-T = TypeVar("T")
-
-
-def __ensure_event_loop() -> None:
-    try:
-        asyncio.get_event_loop()
-
-    except Exception:
-        asyncio.set_event_loop(asyncio.new_event_loop())
+from concurrent.futures import ThreadPoolExecutor
+from typing import Any
 
 
-def sync(coroutine: Coroutine[Any, Any, T]) -> T:
+def sync(coroutine: Coroutine) -> Any:
     """同步执行异步函数
 
     Args:
-        coroutine (Coroutine): 异步函数
+        coroutine: 执行异步函数所创建的协程对象
 
     Returns:
-        该异步函数的返回值
+        该协程对象的返回值
     """
-    __ensure_event_loop()
-    loop = asyncio.get_event_loop()
-    return loop.run_until_complete(coroutine)
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(coroutine)
+    else:
+        with ThreadPoolExecutor() as executor:
+            return executor.submit(asyncio.run, coroutine).result()
