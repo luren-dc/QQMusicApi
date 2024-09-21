@@ -126,7 +126,7 @@
 
     ***
 
-    同步执行异步代码函数(仅用于同步程序)
+    同步执行异步代码函数
 
 -   :material-lock: **[tripledes]** - TripleDES
 

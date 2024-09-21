@@ -127,6 +127,7 @@ nav:
       - 登录: examples/login.md
       - 搜索: examples/search.md
       - 歌曲: examples/song.md
+      - 同步执行: examples/sync.md
   - API 文档:
       - api/index.md
       - album 专辑: api/album.md
