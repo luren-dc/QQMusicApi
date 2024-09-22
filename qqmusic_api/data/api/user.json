@@ -1,12 +1,18 @@
 {
+    "login_user_info": {
+        "module": "music.UserInfo.userInfoServer",
+        "method": "GetLoginUserInfo",
+        "verify": true,
+        "params": {},
+        "comment": "获取登录用户的信息"
+    },
     "homepage": {
         "module": "music.UnifiedHomepage.UnifiedHomepageSrv",
         "method": "IsQueryTabDetail",
         "verify": true,
         "params": {
             "uin": "str encrypt_uin",
-            "IsQueryTabDetail": "int 1",
-            "TabID": "str 6"
+            "IsQueryTabDetail": "int 1"
         },
         "comment": "获取用户主页信息(包含用户信息，音乐基因，乐库，用户歌单等信息)"
     },
@@ -88,7 +94,14 @@
         "params": {},
         "comment": "获取当前登录用户收藏专辑"
     },
-    "fav_songlist_by_uin": {
+    "fav_mv": {
+        "module": "music.mobileAsset.GetFav",
+        "method": "CgiGetOrderMV",
+        "verify": true,
+        "params": {},
+        "comment": "获取当前登录用户收藏MV"
+    },
+    "fav_songlist_by_euin": {
         "module": "music.musicasset.PlaylistFavRead",
         "method": "CgiGetPlaylistFavInfo",
         "params": {
@@ -98,7 +111,7 @@
         },
         "comment": "通过 encrypt_uin 获取收藏歌单"
     },
-    "fav_album_by_uin": {
+    "fav_album_by_euin": {
         "module": "music.musicasset.AlbumFavRead",
         "method": "CgiGetAlbumFavInfo",
         "params": {
@@ -108,7 +121,7 @@
         },
         "comment": "通过 encrypt_uin 获取收藏专辑"
     },
-    "fav_mv_by_uin": {
+    "fav_mv_by_euin": {
         "module": "music.musicasset.MVFavRead",
         "method": "getMyFavMV_v2",
         "verify": true,
@@ -118,5 +131,13 @@
             "pagesize": "int 返回页数"
         },
         "comment": "通过 encrypt_uin 获取收藏 MV"
+    },
+    "profile_report": {
+        "module": "music.recommend.UserProfileSettingSvr",
+        "method": "GetProfileReport",
+        "params": {
+            "VisitAccount": "str encrypt_uin"
+        },
+        "comment": "获取音乐基因数据"
     }
 }
