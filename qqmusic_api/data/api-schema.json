@@ -1,6 +1,12 @@
 {
-    "$schema": "https://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema",
     "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "format": "uri-reference"
+        }
+    },
     "patternProperties": {
         ".*": {
             "type": "object",
@@ -21,10 +27,6 @@
                     "type": "string",
                     "description": "QQ音乐请求模块，搭配 `method` 使用"
                 },
-                "json_body": {
-                    "type": "boolean",
-                    "description": "是否以 JSON 格式作为载荷"
-                },
                 "data": {
                     "type": "object",
                     "description": "请求数据"
@@ -33,9 +35,17 @@
                     "type": "object",
                     "description": "请求参数"
                 },
+                "json_body": {
+                    "type": "boolean",
+                    "description": "是否使用 json 作为载荷"
+                },
                 "verify": {
                     "type": "boolean",
                     "description": "是否验证账号凭证"
+                },
+                "ignore_code": {
+                    "type": "boolean",
+                    "description": "是否忽略返回值 code 检验直接返回"
                 },
                 "extra_common": {
                     "type": "object",
@@ -62,7 +72,6 @@
                         "not": {
                             "required": [
                                 "url",
-                                "json_body",
                                 "data"
                             ]
                         },

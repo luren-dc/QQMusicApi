@@ -8,7 +8,7 @@
         "comment": "获取热搜词"
     },
     "complete": {
-        "module": "tencent_music_soso_smartbox_cgi.SmartBoxCgi",
+        "module": "music.smartboxCgi.SmartBoxCgi",
         "method": "GetSmartBoxResult",
         "params": {
             "search_id": "int 随机生成",

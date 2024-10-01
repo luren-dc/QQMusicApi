@@ -6,7 +6,7 @@ from qqmusic_api.login import PhoneLogin, PhoneLoginEvents
 
 
 async def phone_login():
-    phone = int(input("请输入手机号码"))
+    phone = input("请输入手机号码")
     login = PhoneLogin(phone)
     while 1:
         state = await login.send_authcode()

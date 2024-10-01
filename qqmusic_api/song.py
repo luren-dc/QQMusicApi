@@ -199,7 +199,7 @@ class Song:
             .update_params(
                 songid=str(await self.get_id()),
                 songtype=1,
-                lastvid=0,
+                lastmvid=0,
             )
             .result
         )["list"]

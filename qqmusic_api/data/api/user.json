@@ -126,13 +126,13 @@
         "method": "getMyFavMV_v2",
         "verify": true,
         "params": {
-            "euin": "str encrypt_uin",
+            "encuin": "str encrypt_uin",
             "num": "int 返回数量",
             "pagesize": "int 返回页数"
         },
         "comment": "通过 encrypt_uin 获取收藏 MV"
     },
-    "profile_report": {
+    "music_report": {
         "module": "music.recommend.UserProfileSettingSvr",
         "method": "GetProfileReport",
         "params": {

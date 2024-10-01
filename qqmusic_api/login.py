@@ -16,7 +16,7 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override
 
-from .exceptions import LoginException, ResponseCodeException
+from .exceptions import LoginException
 from .utils.credential import Credential
 from .utils.network import Api
 from .utils.utils import get_api, hash33
@@ -420,15 +420,15 @@ class PhoneLogin(Login):
             "phoneNo": str(self.phone),
             "areaCode": "86",
         }
-        try:
-            await Api(**API["send_authcode"]).update_params(**params).result
+        res = await Api(**API["send_authcode"]).update_params(**params).result
+        code = res["code"]
+        if code == 20276:
+            self.auth_url = res["data"]["securityURL"]
+            return PhoneLoginEvents.CAPTCHA
+        elif code == 0:
             return PhoneLoginEvents.SEND
-        except ResponseCodeException as e:
-            if e.code == 20276:
-                self.auth_url = e.raw["securityURL"]  # type: ignore
-                return PhoneLoginEvents.CAPTCHA
-            else:
-                return PhoneLoginEvents.OTHER
+        else:
+            return PhoneLoginEvents.OTHER
 
     async def authorize(self, authcode: int) -> Credential:
         """登录鉴权
@@ -440,26 +440,22 @@ class PhoneLogin(Login):
             用户凭证
 
         Raises:
-            LoginException: 鉴权失败
+            LoginException: 验证码错误
         """
         if self.credential:
             return self.credential
         if not authcode:
             raise ValueError("authcode 为空")
         params = {"code": str(authcode), "phoneNo": self.phone, "loginMode": 1}
-        try:
-            res = (
-                await Api(**API["phone_login"])
-                .update_params(**params)
-                .update_extra_common(tmeLoginMethod="3", tmeLoginType="0")
-                .result
-            )
-        except ResponseCodeException as e:
-            if e.code == 20271:
-                raise LoginException("验证码过期或错误")
-            else:
-                raise LoginException("未知情况，请提交 issue")
-        self.credential = Credential.from_cookies(res)
+        res = (
+            await Api(**API["phone_login"])
+            .update_params(**params)
+            .update_extra_common(tmeLoginMethod="3", tmeLoginType="0")
+            .result
+        )
+        if res["code"] == 20271:
+            raise LoginException("验证码错误")
+        self.credential = Credential.from_cookies(res["data"])
         return self.credential
 
 
