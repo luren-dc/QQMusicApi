@@ -20,7 +20,7 @@
         "params": {
             "strAppid": "wx48db31d50e334801",
             "code": "str 鉴权码",
-            "str_musicid": "str",
+            "musicid": "int",
             "musickey": "str",
             "refresh_key": "str",
             "refresh_token": "str",

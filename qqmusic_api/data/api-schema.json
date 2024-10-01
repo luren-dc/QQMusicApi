@@ -43,6 +43,15 @@
                     "type": "boolean",
                     "description": "是否验证账号凭证"
                 },
+                "platform": {
+                    "type": "string",
+                    "description": "API 来源",
+                    "enum": [
+                        "mobile",
+                        "desktop",
+                        "web"
+                    ]
+                },
                 "ignore_code": {
                     "type": "boolean",
                     "description": "是否忽略返回值 code 检验直接返回"

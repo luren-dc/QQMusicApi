@@ -4,7 +4,7 @@ import asyncio
 import atexit
 import json
 from dataclasses import dataclass, field
-from typing import Any, Optional, Union
+from typing import Any, Literal, Optional, Union
 
 import httpx
 from typing_extensions import Self
@@ -89,6 +89,7 @@ class Api:
     headers: dict = field(default_factory=dict)
     json_body: bool = field(default=False)
     verify: bool = field(default=False)
+    platform: Literal["mobile", "desktop", "web"] = field(default="mobile")
     ignore_code: bool = field(default=False)
     extra_common: dict = field(default_factory=dict)
     credential: Credential = field(default_factory=Credential)

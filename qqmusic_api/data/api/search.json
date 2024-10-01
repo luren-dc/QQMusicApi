@@ -21,10 +21,11 @@
     "quick_search": {
         "url": "https://c.y.qq.com/splcloud/fcgi-bin/smartbox_new.fcg",
         "method": "GET",
+        "platform": "web",
         "params": {
             "key": "str 搜索词"
         },
-        "comment": "桌面端快速搜索"
+        "comment": "快速搜索"
     },
     "general_search": {
         "module": "music.adaptor.SearchAdaptor",
@@ -43,6 +44,7 @@
     "desktop_search_by_type": {
         "module": "music.search.SearchCgiService",
         "method": "DoSearchForQQMusicDesktop",
+        "platform": "desktop",
         "params": {
             "search_id": "int 随机生成",
             "search_type": "int 搜索类型",

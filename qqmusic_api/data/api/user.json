@@ -6,6 +6,22 @@
         "params": {},
         "comment": "获取登录用户的信息"
     },
+    "profile": {
+        "url": "https://c6.y.qq.com/rsc/fcgi-bin/fcg_get_profile_homepage.fcg",
+        "method": "GET",
+        "verify": true,
+        "platform": "web",
+        "headers": {
+            "referer": "https://y.qq.com/"
+        },
+        "params": {
+            "ct": "int 20",
+            "cv": "int 4747474",
+            "cid": "int 205360838",
+            "userid": "int musicid"
+        },
+        "comment": "通过 musicid 获取用户主页"
+    },
     "homepage": {
         "module": "music.UnifiedHomepage.UnifiedHomepageSrv",
         "method": "IsQueryTabDetail",
@@ -29,6 +45,7 @@
     "songlist": {
         "url": "https://c6.y.qq.com/rsc/fcgi-bin/fcg_user_created_diss",
         "method": "GET",
+        "platform": "web",
         "headers": {
             "referer": "https://y.qq.com/"
         },
@@ -42,6 +59,7 @@
     "songlist_by_uin": {
         "module": "music.musicasset.PlaylistBaseRead",
         "method": "GetPlaylistByUin",
+        "platform": "desktop",
         "params": {
             "uin": "str uin"
         },
@@ -124,6 +142,7 @@
     "fav_mv_by_euin": {
         "module": "music.musicasset.MVFavRead",
         "method": "getMyFavMV_v2",
+        "platform": "desktop",
         "verify": true,
         "params": {
             "encuin": "str encrypt_uin",
