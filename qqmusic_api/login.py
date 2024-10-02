@@ -463,6 +463,24 @@ class PhoneLogin(Login):
         return self.credential
 
 
+async def check_expired(credential: Credential) -> bool:
+    """检查凭据是否过期
+
+    Args:
+        credential: 用户凭证
+
+    Returns:
+        是否过期
+    """
+    from .exceptions import ResponseCodeException
+
+    try:
+        await Api(**API["check_expired"], credential=credential).result
+        return False
+    except ResponseCodeException:
+        return True
+
+
 async def refresh_cookies(credential: Credential) -> Credential:
     """刷新 Cookies
 
