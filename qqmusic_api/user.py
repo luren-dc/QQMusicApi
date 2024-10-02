@@ -135,14 +135,60 @@ class User:
         Returns:
             收藏 MV 列表
         """
-        return (
+        result = (
             await Api(**API["fav_mv_by_euin"], credential=self.credential)
             .update_params(encuin=self.euin, pagesize=num, num=page - 1)
             .result
         )
+        return {"hasmore": result["hasmore"], "total": result["total"], "list": result["mvlist"]}
 
-    async def get_follow_user(self): ...
+    async def get_follow_user(self, num: int = 10, page: int = 1) -> dict:
+        """获取关注用户
 
-    async def get_follow_singer(self): ...
+        Args:
+            num:  数量
+            page: 页码
 
-    async def get_follow_fans(self): ...
+        Returns:
+            关注用户信息
+        """
+        result = (
+            await Api(**API["follow_user"], credential=self.credential)
+            .update_params(HostUin=self.euin, From=num * (page - 1), Size=num)
+            .result
+        )
+        return {"total": result["Total"], "list": result["List"]}
+
+    async def get_follow_singer(self, num: int = 10, page: int = 1) -> dict:
+        """获取关注歌手
+
+        Args:
+            num:  数量
+            page: 页码
+
+        Returns:
+            关注歌手信息
+        """
+        result = (
+            await Api(**API["follow_singer"], credential=self.credential)
+            .update_params(HostUin=self.euin, From=num * (page - 1), Size=num)
+            .result
+        )
+        return {"total": result["Total"], "list": result["List"]}
+
+    async def get_fans(self, num: int = 10, page: int = 1) -> dict:
+        """获取粉丝
+
+        Args:
+            num:  数量
+            page: 页码
+
+        Returns:
+            粉丝信息
+        """
+        result = (
+            await Api(**API["fans"], credential=self.credential)
+            .update_params(HostUin=self.euin, From=num * (page - 1), Size=num)
+            .result
+        )
+        return {"total": result["Total"], "list": result["List"]}
