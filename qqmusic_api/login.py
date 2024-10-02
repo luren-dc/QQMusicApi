@@ -83,7 +83,7 @@ class QRCodeLogin(Login):
         self._state: Optional[QrCodeLoginEvents] = None
         self._qrcode_data: Optional[bytes] = None
         self._session = httpx.AsyncClient(
-            timeout=20,
+            timeout=40,
             headers={
                 "User-Agent": "Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/116.0.1938.54",
             },
