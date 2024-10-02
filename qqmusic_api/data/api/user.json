@@ -1,11 +1,4 @@
 {
-    "login_user_info": {
-        "module": "music.UserInfo.userInfoServer",
-        "method": "GetLoginUserInfo",
-        "verify": true,
-        "params": {},
-        "comment": "获取登录用户的信息"
-    },
     "profile": {
         "url": "https://c6.y.qq.com/rsc/fcgi-bin/fcg_get_profile_homepage.fcg",
         "method": "GET",
@@ -18,16 +11,16 @@
             "ct": "int 20",
             "cv": "int 4747474",
             "cid": "int 205360838",
-            "userid": "int musicid"
+            "userid": "str musicid or euin"
         },
-        "comment": "通过 musicid 获取用户主页"
+        "comment": "获取用户主页"
     },
     "homepage": {
         "module": "music.UnifiedHomepage.UnifiedHomepageSrv",
-        "method": "IsQueryTabDetail",
+        "method": "GetHomepageHeader",
         "verify": true,
         "params": {
-            "uin": "str encrypt_uin",
+            "uin": "str musicid or euin",
             "IsQueryTabDetail": "int 1"
         },
         "comment": "获取用户主页信息(包含用户信息，音乐基因，乐库，用户歌单等信息)"
@@ -42,7 +35,7 @@
         },
         "comment": "获取好友列表"
     },
-    "songlist": {
+    "songlist_by_euin": {
         "url": "https://c6.y.qq.com/rsc/fcgi-bin/fcg_user_created_diss",
         "method": "GET",
         "platform": "web",
@@ -98,21 +91,21 @@
         },
         "comment": "获取粉丝列表"
     },
-    "fav_songlist": {
+    "fav_songlist_self": {
         "module": "music.mobileAsset.GetFav",
         "method": "CgiGetOrderDiss",
         "verify": true,
         "params": {},
         "comment": "获取当前登录用户收藏歌单"
     },
-    "fav_album": {
+    "fav_album_self": {
         "module": "music.mobileAsset.GetFav",
         "method": "CgiGetOrderAlbum",
         "verify": true,
         "params": {},
         "comment": "获取当前登录用户收藏专辑"
     },
-    "fav_mv": {
+    "fav_mv_self": {
         "module": "music.mobileAsset.GetFav",
         "method": "CgiGetOrderMV",
         "verify": true,
@@ -138,6 +131,16 @@
             "size": "int 返回数量"
         },
         "comment": "通过 encrypt_uin 获取收藏专辑"
+    },
+    "fav_mv": {
+        "module": "music.musicasset.MVFavRead",
+        "method": "getMyFavMV",
+        "params": {
+            "uin": "str musicid or euin",
+            "support": "int 1",
+            "req_icon_type": "int 1"
+        },
+        "comment": "获取收藏 MV"
     },
     "fav_mv_by_euin": {
         "module": "music.musicasset.MVFavRead",

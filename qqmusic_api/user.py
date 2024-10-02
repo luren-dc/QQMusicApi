@@ -1,6 +1,6 @@
 """用户相关 API"""
 
-from typing import Optional
+from typing import Literal
 
 from .utils.credential import Credential
 from .utils.network import Api
@@ -9,27 +9,28 @@ from .utils.utils import get_api
 API = get_api("user")
 
 
-async def get_login_user_info(credential: Credential) -> dict:
-    """获取登录用户信息
+async def get_created_songlist(musicid: int) -> list[dict]:
+    """通过 musicid 获取用户创建的歌单
 
     Args:
-        credential: 用户凭证
+        musicid: musicid
 
     Returns:
-        用户信息
+        歌单列表
     """
-    return (await Api(**API["login_user_info"], credential=credential).result)["info"]
+    result = await Api(**API["songlist_by_uin"]).update_params(uin=str(musicid)).result
+    return result["v_playlist"]
 
 
 async def get_euin(musicid: int, credential: Credential) -> str:
     """通过 musicid 获取 euin
 
     Args:
-        musicid:    QQ音乐 musicid
+        musicid:    musicid
         credential: 用户凭证
 
     Returns:
-        QQ音乐 encrypt_uin
+        encrypt_uin
     """
     result = (
         await Api(**API["profile"], credential=credential)
@@ -45,24 +46,41 @@ class User:
     """用户类
 
     Attributes:
-        musicid:    QQ音乐 musicid
-        euin:       QQ音乐 encrypt_uin
+        euin:       encrypt_uin
         credential: 账号凭证
     """
 
-    def __init__(self, *, musicid: Optional[int], euin: Optional[str], credential: Credential):
+    def __init__(self, euin: str, credential: Credential):
         """初始化用户类
 
         Args:
-            musicid:    QQ音乐 musicid
-            euin:       QQ音乐 encrypt_uin
+            euin:       encrypt_uin
             credential: 账号凭证
         """
         credential.raise_for_no_musicid()
         credential.raise_for_no_musickey()
-        self.musicid = musicid or credential.musicid
-        self.euin = euin or credential.encrypt_uin
+
+        self.euin = euin
         self.credential = credential
+
+    async def get_homepage(self, type: Literal[0, 1] = 1):
+        """获取主页信息
+
+        Args:
+            type: 主页类型
+
+        Returns:
+            主页信息
+        """
+        if type:
+            result = (
+                await Api(**API["profile"], credential=self.credential)
+                .update_params(ct=20, cv=4747474, cid=205360838, userid=self.euin)
+                .result
+            )
+        else:
+            result = await Api(**API["homepage"]).update_params(IsQueryTabDetail=1, uin=self.euin).result
+        return result
 
     async def get_created_songlist(self) -> list[dict]:
         """获取创建的歌单
@@ -70,11 +88,17 @@ class User:
         Returns:
             歌单列表
         """
-        result = await Api(**API["songlist_by_uin"]).update_params(uin=str(self.musicid)).result
-        return result["v_playlist"]
+        result = await Api(**API["songlist_by_euin"]).update_params(hostuin=self.euin, sin=0, size=1000).result
+        data = result["data"]["disslist"]
+        data.pop(0)
+        return data
 
-    async def get_fav_songlist(self, num: int = 10, page: int = 1):
+    async def get_fav_songlist(self, num: int = 10, page: int = 1) -> dict:
         """获取收藏歌单
+
+        Args:
+            num:  数量
+            page: 页码
 
         Returns:
             收藏歌单列表
@@ -85,8 +109,12 @@ class User:
             .result
         )
 
-    async def get_fav_album(self, num: int = 10, page: int = 1):
+    async def get_fav_album(self, num: int = 10, page: int = 1) -> dict:
         """获取收藏专辑
+
+        Args:
+            num:  数量
+            page: 页码
 
         Returns:
             收藏专辑列表
@@ -97,8 +125,12 @@ class User:
             .result
         )
 
-    async def get_fav_mv(self, num: int = 10, page: int = 1):
+    async def get_fav_mv(self, num: int = 10, page: int = 1) -> dict:
         """获取收藏 MV
+
+        Args:
+            num:  数量
+            page: 页码
 
         Returns:
             收藏 MV 列表
@@ -108,3 +140,9 @@ class User:
             .update_params(encuin=self.euin, pagesize=num, num=page - 1)
             .result
         )
+
+    async def get_follow_user(self): ...
+
+    async def get_follow_singer(self): ...
+
+    async def get_follow_fans(self): ...
