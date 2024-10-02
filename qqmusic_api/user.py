@@ -192,3 +192,15 @@ class User:
             .result
         )
         return {"total": result["Total"], "list": result["List"]}
+
+    async def get_friend(self, num: int = 10, page: int = 1) -> dict:
+        """获取好友
+
+        Args:
+            num:  数量
+            page: 页码
+
+        Returns:
+            好友信息
+        """
+        return await Api(**API["friend"], credential=self.credential).update_params(Page=page - 1, PageSize=num).result

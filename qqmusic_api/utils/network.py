@@ -211,7 +211,7 @@ class Api:
 
         if self.module:
             common = self.data["comm"]
-            common["qq"] = self.credential.musicid
+            common["qq"] = str(self.credential.musicid)
             common["authst"] = self.credential.musickey
             common["tmeLoginType"] = str(self.credential.login_type)
         else:
