@@ -1,6 +1,7 @@
 """凭据类，用于请求验证"""
 
-from dataclasses import dataclass, field
+import json
+from dataclasses import asdict, dataclass, field
 from typing import Any
 
 from qqmusic_api.exceptions import (
@@ -101,6 +102,29 @@ class Credential:
 
         c = await refresh_cookies(self)
         self.__dict__.update(c.__dict__)
+
+    async def is_expired(self) -> bool:
+        """是否过期
+
+        Returns:
+            是否过期
+        """
+        from ..login import check_expired
+
+        return await check_expired(self)
+
+    def get_dict(self) -> dict:
+        """获取凭据字典"""
+        d = asdict(self)
+        d["loginType"] = d.pop("login_type")
+        d["encryptUin"] = d.pop("encrypt_uin")
+        return d
+
+    def get_json(self) -> str:
+        """获取凭据 JSON 字符串"""
+        data = self.get_dict()
+        data.update(data.pop("extra_fields"))
+        return json.dumps(data, indent=4, ensure_ascii=False)
 
     @classmethod
     def from_cookies(cls, cookies: dict) -> "Credential":

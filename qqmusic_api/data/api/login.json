@@ -59,5 +59,12 @@
             "tmeLoginType": "str 0"
         },
         "comment": "手机验证码鉴权"
+    },
+    "check_expired": {
+        "module": "music.UserInfo.userInfoServer",
+        "method": "GetLoginUserInfo",
+        "verify": true,
+        "params": {},
+        "comment": "获取登录用户的信息，用于检测凭证是否失效"
     }
 }
