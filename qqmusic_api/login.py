@@ -83,7 +83,7 @@ class QRCodeLogin(Login):
         self._state: Optional[QrCodeLoginEvents] = None
         self._qrcode_data: Optional[bytes] = None
         self._session = httpx.AsyncClient(
-            timeout=20,
+            timeout=40,
             headers={
                 "User-Agent": "Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/116.0.1938.54",
             },
@@ -461,6 +461,24 @@ class PhoneLogin(Login):
                 raise LoginException("未知情况，请提交 issue")
         self.credential = Credential.from_cookies(res)
         return self.credential
+
+
+async def check_expired(credential: Credential) -> bool:
+    """检查凭据是否过期
+
+    Args:
+        credential: 用户凭证
+
+    Returns:
+        是否过期
+    """
+    from .exceptions import ResponseCodeException
+
+    try:
+        await Api(**API["check_expired"], credential=credential).result
+        return False
+    except ResponseCodeException:
+        return True
 
 
 async def refresh_cookies(credential: Credential) -> Credential:
