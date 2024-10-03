@@ -7,11 +7,18 @@ musickey = ""
 credential = Credential(musicid=musicid, musickey=musickey)
 # --8<-- [end:import]
 
+# --8<-- [start:get_musicid]
+sync(user.get_musicid("owCFoecFNeoA7z**"))
+# --8<-- [end:get_musicid]
+
 # --8<-- [start:get_euin]
 sync(user.get_euin(2680888327))
 # --8<-- [end:get_euin]
 
 # --8<-- [start:user]
+u = user.User("owCFoecFNeoA7z**")
+
+# 部分 API 需要有效 `credential`，否则报错
 u = user.User("owCFoecFNeoA7z**", credential)
 
 # 获取主页信息

@@ -5,10 +5,10 @@
 groups = ["default", "docs", "linting", "mypy", "testing"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:7a522c74c06b4c6da75830e117b4be2172e7e64da9a1ea8303836f4c3a8531a8"
+content_hash = "sha256:f9ec50e67a152f317638dc19979f5221a3a33eef3f20bc31e96f6239118d5a7c"
 
 [[metadata.targets]]
-requires_python = "~=3.9"
+requires_python = ">=3.9,<3.13"
 
 [[package]]
 name = "anyio"
@@ -237,6 +237,17 @@ files = [
 ]
 
 [[package]]
+name = "docstring-inheritance"
+version = "2.2.1"
+requires_python = "<3.13,>=3.8"
+summary = "Avoid writing and maintaining duplicated docstrings."
+groups = ["docs"]
+files = [
+    {file = "docstring_inheritance-2.2.1-py3-none-any.whl", hash = "sha256:c0332a3ad0daf3de55b227366a67e57f1dccbb5ea3988b085be6e4583d180d19"},
+    {file = "docstring_inheritance-2.2.1.tar.gz", hash = "sha256:dbc50558411f30da98e2b50f2e2173e8ea414b5d947650c757c008a7aa3374d7"},
+]
+
+[[package]]
 name = "exceptiongroup"
 version = "1.2.2"
 requires_python = ">=3.7"
@@ -288,6 +299,21 @@ dependencies = [
 files = [
     {file = "griffe_inherited_docstrings-1.0.1-py3-none-any.whl", hash = "sha256:76854a4fc10acabe223cd5cbd42637e45cafb30dcaf36f120c4752fca99e48a8"},
     {file = "griffe_inherited_docstrings-1.0.1.tar.gz", hash = "sha256:c827ce1a571ada3fdc0f74be05ba31e40743cc909c9463fac60779a57d387e60"},
+]
+
+[[package]]
+name = "griffe-modernized-annotations"
+version = "1.0.8"
+requires_python = ">=3.8"
+summary = "A Griffe extension that modernizes type annotations by adopting PEP 585 and PEP 604"
+groups = ["docs"]
+dependencies = [
+    "griffe",
+    "typing-extensions",
+]
+files = [
+    {file = "griffe_modernized_annotations-1.0.8-py3-none-any.whl", hash = "sha256:d84b2d03d9c3127c2548f1eaa04dc3eba6cde34c0a2c4ae64f627908984e973d"},
+    {file = "griffe_modernized_annotations-1.0.8.tar.gz", hash = "sha256:f4cd757260d2ebdb96d361c8ab882015955225bc3edc4713073b5a81ddad75b0"},
 ]
 
 [[package]]

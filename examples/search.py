@@ -25,9 +25,5 @@ sync(
 # --8<-- [end:general_search]
 
 # --8<-- [start:quick_search]
-sync(
-    search.quick_search(
-        "周杰伦",
-    )
-)
+sync(search.quick_search("周杰伦"))
 # --8<-- [end:quick_search]

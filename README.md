@@ -74,14 +74,14 @@ asyncio.run(main())
 ## 参考项目
 
 ### API
-[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?theme=radical&username=Rain120&repo=qq-music-api)](https://github.com/Rain120/qq-music-api)
-[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?theme=radical&username=jsososo&repo=QQMusicApi)](https://github.com/jsososo/QQMusicApi)
+[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?username=Rain120&repo=qq-music-api)](https://github.com/Rain120/qq-music-api)
+[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?username=jsososo&repo=QQMusicApi)](https://github.com/jsososo/QQMusicApi)
 
 ### QRC 解密
-[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?theme=radical&username=chenmozhijin&repo=LDDC)](https://github.com/chenmozhijin/LDDC)
+[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?username=chenmozhijin&repo=LDDC)](https://github.com/chenmozhijin/LDDC)
 
 ### 项目架构
-[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?theme=radical&username=Nemo2011&repo=bilibili-api)](https://github.com/Nemo2011/bilibili-api)
+[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?username=Nemo2011&repo=bilibili-api)](https://github.com/Nemo2011/bilibili-api)
 
 ## Licence
 

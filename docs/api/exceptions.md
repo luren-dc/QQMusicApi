@@ -13,11 +13,6 @@
       show_root_full_path: false
       heading_level: 2
 
-::: exceptions.CredentialNoRefreshkeyException.CredentialNoRefreshkeyException
-    options:
-      show_root_full_path: false
-      heading_level: 2
-
 ::: exceptions.LoginException.LoginException
     options:
       show_root_full_path: false
