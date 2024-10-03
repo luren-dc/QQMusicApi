@@ -2,7 +2,7 @@
     <h1> QQMusicApi </h1>
     <p> Python QQ音乐 API 封装库 </p>
     <a href="https://www.python.org">
-        <img src="https://img.shields.io/badge/python-3.9+-blue" alt="Python">
+        <img src="https://img.shields.io/badge/python-3.9|3.10|3.11|3.12-blue" alt="Python">
     </a>
     <a href="https://github.com/astral-sh/ruff">
         <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff">

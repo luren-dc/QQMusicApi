@@ -16,7 +16,7 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override
 
-from .exceptions import LoginException
+from .exceptions import LoginException, ResponseCodeException
 from .utils.credential import Credential
 from .utils.network import Api
 from .utils.utils import get_api, hash33
@@ -480,6 +480,8 @@ async def check_expired(credential: Credential) -> bool:
 async def refresh_cookies(credential: Credential) -> Credential:
     """刷新 Cookies
 
+    刷新 cookies，刷新失败直接返回原始 credential,
+
     Note:
         需要 `refresh_key` 和 `refresh_token` 字段刷新无效 cookie
 
@@ -498,5 +500,10 @@ async def refresh_cookies(credential: Credential) -> Credential:
     }
 
     api = API["WX_login"] if credential.login_type == 1 else API["QQ_login"]
-    res = await Api(**api).update_params(**params).update_extra_common(tmeLoginType=str(credential.login_type)).result
+    try:
+        res = (
+            await Api(**api).update_params(**params).update_extra_common(tmeLoginType=str(credential.login_type)).result
+        )
+    except ResponseCodeException:
+        return credential
     return Credential.from_cookies(res)

@@ -59,6 +59,7 @@ markdown_extensions:
   - footnotes
   - md_in_html
   - markdown_callouts.github_callouts
+  - callouts
   - toc:
       slugify: !!python/object/apply:pymdownx.slugs.slugify {kwds: {case: lower}}
       permalink: ""
@@ -127,9 +128,9 @@ nav:
       - 登录: examples/login.md
       - 搜索: examples/search.md
       - 歌曲: examples/song.md
+      - 用户: examples/user.md
       - 同步执行: examples/sync.md
   - API 文档:
-      - api/index.md
       - album 专辑: api/album.md
       - login 登录: api/login.md
       - mv MV: api/mv.md
@@ -139,6 +140,7 @@ nav:
       - songlist 歌单: api/songlist.md
       - top 排行榜: api/top.md
       - lyric 歌词: api/lyric.md
+      - user 用户: api/user.md
       - utils:
           - qimei 设备标识: api/utils/qimei.md
           - utils 辅助函数: api/utils/utils.md
