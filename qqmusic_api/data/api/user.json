@@ -2,7 +2,6 @@
     "profile": {
         "url": "https://c6.y.qq.com/rsc/fcgi-bin/fcg_get_profile_homepage.fcg",
         "method": "GET",
-        "verify": true,
         "platform": "web",
         "headers": {
             "referer": "https://y.qq.com/"
@@ -13,17 +12,16 @@
             "cid": "int 205360838",
             "userid": "str musicid or euin"
         },
-        "comment": "获取用户主页"
+        "comment": "获取用户主页，根据 cookie 值不同，内容有差异"
     },
     "homepage": {
         "module": "music.UnifiedHomepage.UnifiedHomepageSrv",
         "method": "GetHomepageHeader",
-        "verify": true,
         "params": {
             "uin": "str musicid or euin",
             "IsQueryTabDetail": "int 1"
         },
-        "comment": "获取用户主页信息(包含用户信息，音乐基因，乐库，用户歌单等信息)"
+        "comment": "获取用户主页信息(包含用户信息，音乐基因，乐库，用户歌单等信息)，根据 cookie 值不同，内容有差异"
     },
     "friend": {
         "module": "music.homepage.Friendship",
@@ -135,6 +133,7 @@
     "fav_mv": {
         "module": "music.musicasset.MVFavRead",
         "method": "getMyFavMV",
+        "verify": true,
         "params": {
             "uin": "str musicid or euin",
             "support": "int 1",

@@ -1,7 +1,8 @@
 """用户相关 API"""
 
-from typing import Literal
+from typing import Optional
 
+from .exceptions import ResponseCodeException
 from .utils.credential import Credential
 from .utils.network import Api
 from .utils.utils import get_api
@@ -22,24 +23,48 @@ async def get_created_songlist(musicid: int) -> list[dict]:
     return result["v_playlist"]
 
 
-async def get_euin(musicid: int, credential: Credential) -> str:
+async def get_euin(musicid: int) -> str:
     """通过 musicid 获取 euin
 
     Args:
-        musicid:    musicid
-        credential: 用户凭证
+        musicid: 需要获取 euin 的 musicid
 
     Returns:
-        encrypt_uin
+        获取到的 encrypt_uin，为空表示获取失败
     """
-    result = (
-        await Api(**API["profile"], credential=credential)
-        .update_params(ct=20, cv=4747474, cid=205360838, userid=musicid)
-        .result
-    )
+    result = await Api(**API["profile"]).update_params(ct=20, cv=4747474, cid=205360838, userid=musicid).result
     if result["code"] != 0:
         return ""
     return result["data"]["creator"]["encrypt_uin"]
+
+
+async def get_musicid(euin: str) -> int:
+    """通过 euin 获取 musicid
+
+
+    Args:
+        euin: 需要获取 musicid 的 euin
+
+    Returns:
+        获取到的 musicid，0 表示获取失败
+    """
+    api = get_api("songlist")["detail"]
+    try:
+        result = (
+            await Api(**api)
+            .update_params(
+                disstid=0,
+                dirid=201,
+                song_num=1,
+                enc_host_uin=euin,
+            )
+            .result
+        )
+    except ResponseCodeException:
+        return 0
+    if result["code"] != 0:
+        return 0
+    return int(result["dirinfo"]["creator"]["musicid"])
 
 
 class User:
@@ -50,36 +75,30 @@ class User:
         credential: 账号凭证
     """
 
-    def __init__(self, euin: str, credential: Credential):
+    def __init__(self, euin: str, credential: Optional[Credential] = None):
         """初始化用户类
+
+        传入有效 credential 获取他人的信息会更完整但会留痕，且部分 API 不会验证
+        credential 是否有效，强制 credential 的 API 在 credential 失效时会报错
 
         Args:
             euin:       encrypt_uin
             credential: 账号凭证
         """
-        credential.raise_for_no_musicid()
-        credential.raise_for_no_musickey()
-
         self.euin = euin
-        self.credential = credential
+        self.credential = credential or Credential(musicid=1, musickey="None")
 
-    async def get_homepage(self, type: Literal[0, 1] = 1) -> dict:
+    async def get_homepage(self) -> dict:
         """获取主页信息
-
-        Args:
-            type: 主页类型
 
         Returns:
             主页信息
         """
-        if type:
-            result = (
-                await Api(**API["profile"], credential=self.credential)
-                .update_params(ct=20, cv=4747474, cid=205360838, userid=self.euin)
-                .result
-            )
-        else:
-            result = await Api(**API["homepage"]).update_params(IsQueryTabDetail=1, uin=self.euin).result
+        result = (
+            await Api(**API["homepage"], credential=self.credential)
+            .update_params(IsQueryTabDetail=1, uin=self.euin)
+            .result
+        )
         return result
 
     async def get_created_songlist(self) -> list[dict]:
@@ -88,7 +107,11 @@ class User:
         Returns:
             歌单列表
         """
-        result = await Api(**API["songlist_by_euin"]).update_params(hostuin=self.euin, sin=0, size=1000).result
+        result = (
+            await Api(**API["songlist_by_euin"], credential=self.credential)
+            .update_params(hostuin=self.euin, sin=0, size=1000)
+            .result
+        )
         data = result["data"]["disslist"]
         data.pop(0)
         return data
