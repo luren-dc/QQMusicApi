@@ -274,7 +274,7 @@ class QQLogin(QRCodeLogin):
         location = res.headers.get("Location", "")
         code = re.findall(r"(?<=code=)(.+?)(?=&)", location)[0]
         response = await Api(**API["QQ_login"]).update_params(code=code).update_extra_common(tmeLoginType="2").result
-        self.credential = Credential.from_cookies(response)
+        self.credential = Credential.from_cookies_dict(response)
         return self.credential
 
 
@@ -384,7 +384,7 @@ class WXLogin(QRCodeLogin):
             .update_extra_common(tmeLoginType="1")
             .result
         )
-        self.credential = Credential.from_cookies(res)
+        self.credential = Credential.from_cookies_dict(res)
         return self.credential
 
 
@@ -455,7 +455,7 @@ class PhoneLogin(Login):
         )
         if res["code"] == 20271:
             raise LoginException("验证码错误")
-        self.credential = Credential.from_cookies(res["data"])
+        self.credential = Credential.from_cookies_dict(res["data"])
         return self.credential
 
 
@@ -483,7 +483,7 @@ async def refresh_cookies(credential: Credential) -> Credential:
     刷新 cookies，刷新失败直接返回原始 credential,
 
     Note:
-        需要 `refresh_key` 和 `refresh_token` 字段刷新无效 cookie
+        刷新无效 cookie 需要 `refresh_key` 和 `refresh_token` 字段
 
     Args:
         credential: 用户凭证
@@ -491,7 +491,9 @@ async def refresh_cookies(credential: Credential) -> Credential:
     Returns:
         新的用户凭证
     """
-    credential.raise_for_cannot_refresh()
+    credential.raise_for_no_musicid()
+    credential.raise_for_no_musickey()
+
     params = {
         "refresh_key": credential.refresh_key,
         "refresh_token": credential.refresh_token,
@@ -506,4 +508,4 @@ async def refresh_cookies(credential: Credential) -> Credential:
         )
     except ResponseCodeException:
         return credential
-    return Credential.from_cookies(res)
+    return Credential.from_cookies_dict(res)

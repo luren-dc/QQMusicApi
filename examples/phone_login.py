@@ -14,6 +14,9 @@ async def phone_login():
             print("发送成功")
             break
         elif state == PhoneLoginEvents.CAPTCHA:
+            if login.auth_url is None:
+                print("获取滑块验证链接失败")
+                return
             print("需要滑块验证", login.auth_url)
             print("验证后回车")
             if sys.platform == "win32":

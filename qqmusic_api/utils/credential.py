@@ -4,11 +4,9 @@ import json
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
-from qqmusic_api.exceptions import (
-    CredentialNoMusicidException,
-    CredentialNoMusickeyException,
-    CredentialNoRefreshkeyException,
-)
+from typing_extensions import Self
+
+from qqmusic_api.exceptions import CredentialNoMusicidException, CredentialNoMusickeyException
 
 
 @dataclass
@@ -50,44 +48,15 @@ class Credential:
                 self.login_type = 2
 
     def has_musicid(self) -> bool:
-        """是否提供 musicid
-
-        Returns:
-            是否提供
-        """
+        """是否提供 musicid"""
         return bool(self.musicid)
 
     def has_musickey(self) -> bool:
-        """是否提供 musickey
-
-        Returns:
-            是否提供
-        """
+        """是否提供 musickey"""
         return bool(self.musickey)
 
-    def can_refresh(self) -> bool:
-        """是否能刷新 Credential
-
-        Returns:
-            是否能刷新
-        """
-        return bool(self.musicid) and bool(self.refresh_key) and bool(self.refresh_token) and bool(self.musickey)
-
-    def raise_for_cannot_refresh(self):
-        """无法刷新 Credential 时抛出异常
-
-        Raises:
-            CredentialNoRefreshkeyException
-        """
-        if not self.can_refresh():
-            raise CredentialNoRefreshkeyException()
-
     def raise_for_no_musicid(self):
-        """没有提供 musicid 时抛出异常
-
-        Raises:
-            CredentialNoMusicidException
-        """
+        """没有提供 musicid 时抛出异常"""
         if not self.has_musicid():
             raise CredentialNoMusicidException()
 
@@ -96,19 +65,30 @@ class Credential:
         if not self.has_musickey():
             raise CredentialNoMusickeyException()
 
-    async def refresh(self):
+    async def refresh(self) -> bool:
         """刷新 cookies
 
-        Note:
-            需要 `refresh_key` 和 `refresh_token` 字段刷新无效 cookie
+        Returns:
+            是否刷新成功
         """
         from ..login import refresh_cookies
 
         c = await refresh_cookies(self)
+        if c == self:
+            return False
         self.__dict__.update(c.__dict__)
+        return True
+
+    async def can_refresh(self) -> bool:
+        """是否可以刷新 credential"""
+        if not self.has_musicid() or not self.has_musickey():
+            return False
+        if await self.is_expired():
+            return bool(self.refresh_key) and bool(self.refresh_token)
+        return True
 
     async def is_expired(self) -> bool:
-        """是否过期
+        """判断 credential 是否过期
 
         Returns:
             是否过期
@@ -117,22 +97,22 @@ class Credential:
 
         return await check_expired(self)
 
-    def get_dict(self) -> dict:
+    def as_dict(self) -> dict:
         """获取凭据字典"""
         d = asdict(self)
         d["loginType"] = d.pop("login_type")
         d["encryptUin"] = d.pop("encrypt_uin")
         return d
 
-    def get_json(self) -> str:
+    def as_json(self) -> str:
         """获取凭据 JSON 字符串"""
-        data = self.get_dict()
+        data = self.as_dict()
         data.update(data.pop("extra_fields"))
         return json.dumps(data, indent=4, ensure_ascii=False)
 
     @classmethod
-    def from_cookies(cls, cookies: dict) -> "Credential":
-        """从 cookies 创建 Credential 实例
+    def from_cookies_dict(cls, cookies: dict[str, Any]) -> Self:
+        """从 cookies 字典创建 Credential 实例
 
         Args:
             cookies: Cookies 字典
@@ -145,7 +125,7 @@ class Credential:
             refresh_token=cookies.pop("refresh_token", ""),
             access_token=cookies.pop("access_token", ""),
             expired_at=cookies.pop("expired_at", 0),
-            musicid=cookies.pop("musicid", ""),
+            musicid=cookies.pop("musicid", 0),
             musickey=cookies.pop("musickey", ""),
             unionid=cookies.pop("unionid", ""),
             str_musicid=cookies.pop(
