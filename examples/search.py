@@ -1,5 +1,4 @@
 # --8<-- [start:import]
-
 from qqmusic_api import search, sync
 
 # --8<-- [end:import]

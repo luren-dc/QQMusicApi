@@ -112,29 +112,17 @@ class Api:
         return super().__setattr__(name, value)
 
     def update_params(self, **kwargs) -> Self:
-        """更新参数
-
-        Args:
-            kwargs: 参数
-        """
+        """更新参数"""
         self._update_field(self.params, self.original_params, kwargs, "params")
         return self
 
     def update_data(self, **kwargs) -> Self:
-        """更新数据
-
-        Args:
-            kwargs: 数据
-        """
+        """更新数据"""
         self._update_field(self.data, self.original_data, kwargs, "data")
         return self
 
     def update_extra_common(self, **kwargs) -> Self:
-        """更新额外参数
-
-        Args:
-            kwargs: 额外参数
-        """
+        """更新额外参数"""
         self._update_field(self.extra_common, self.extra_common, kwargs, "extra_common")
         return self
 

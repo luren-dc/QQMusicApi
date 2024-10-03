@@ -480,6 +480,9 @@ async def check_expired(credential: Credential) -> bool:
 async def refresh_cookies(credential: Credential) -> Credential:
     """刷新 Cookies
 
+    Note:
+        需要 `refresh_key` 和 `refresh_token` 字段刷新无效 cookie
+
     Args:
         credential: 用户凭证
 

@@ -13,13 +13,15 @@ class Songlist:
         id: 歌单 ID
     """
 
-    def __init__(self, id: int):
+    def __init__(self, id: int, dirid: int = 0):
         """初始化歌单类
 
         Args:
             id: 歌单 ID
+            dirid: 歌单 dirid
         """
         self.id = id
+        self.dirid = dirid
 
     async def get_detail(self) -> dict:
         """获取歌单详细信息
@@ -29,7 +31,7 @@ class Songlist:
         """
         param = {
             "disstid": self.id,
-            "dirid": 0,
+            "dirid": self.dirid,
             "tag": False,
             "song_num": 1,
             "userinfo": True,

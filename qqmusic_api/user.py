@@ -63,7 +63,7 @@ class User:
         self.euin = euin
         self.credential = credential
 
-    async def get_homepage(self, type: Literal[0, 1] = 1):
+    async def get_homepage(self, type: Literal[0, 1] = 1) -> dict:
         """获取主页信息
 
         Args:
@@ -92,6 +92,33 @@ class User:
         data = result["data"]["disslist"]
         data.pop(0)
         return data
+
+    async def get_fav_song(self, num: int = 10, page: int = 1) -> dict:
+        """获取收藏歌单
+
+        Args:
+            num:  数量
+            page: 页码
+
+        Returns:
+            收藏歌单列表
+        """
+        api = get_api("songlist")["detail"]
+        result = (
+            await Api(**api, credential=self.credential)
+            .update_params(
+                disstid=0,
+                dirid=201,
+                song_num=num,
+                song_begin=(page - 1) * num,
+                enc_host_uin=self.euin,
+                onlysonglist=1,
+            )
+            .result
+        )
+        total = result["total_song_num"]
+
+        return {"total": total, "hasmore": int(total > page * num), "list": result["songlist"]}
 
     async def get_fav_songlist(self, num: int = 10, page: int = 1) -> dict:
         """获取收藏歌单
@@ -195,6 +222,9 @@ class User:
 
     async def get_friend(self, num: int = 10, page: int = 1) -> dict:
         """获取好友
+
+        Note:
+            只根据传入的 credential 获取
 
         Args:
             num:  数量

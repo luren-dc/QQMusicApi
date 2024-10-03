@@ -71,7 +71,7 @@ class Credential:
         Returns:
             是否能刷新
         """
-        return bool(self.musicid) and (bool(self.refresh_key) or bool(self.musickey))
+        return bool(self.musicid) and bool(self.refresh_key) and bool(self.refresh_token) and bool(self.musickey)
 
     def raise_for_cannot_refresh(self):
         """无法刷新 Credential 时抛出异常
@@ -97,7 +97,11 @@ class Credential:
             raise CredentialNoMusickeyException()
 
     async def refresh(self):
-        """刷新 cookies"""
+        """刷新 cookies
+
+        Note:
+            需要 `refresh_key` 和 `refresh_token` 字段刷新无效 cookie
+        """
         from ..login import refresh_cookies
 
         c = await refresh_cookies(self)
