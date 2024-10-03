@@ -1,7 +1,7 @@
 name: Testing
 
 on:
-  pull_request:
+  pull_request_target:
     branches: [main]
     paths:
       - "tests/**"
@@ -9,6 +9,7 @@ on:
 
   schedule:
     - cron: "0 6 * * *"
+
 
 jobs:
   test:
@@ -24,5 +25,16 @@ jobs:
         run: |
           pdm sync -dG testing
       - name: Run tests
+        env:
+          MUSIC_ID: ${{ secrets.MUSIC_ID }}
+          MUSIC_KEY: ${{ secrets.MUSIC_KEY }}
+          MUSIC_REFRESH_KEY: ${{ secrets.MUSIC_REFRESH_KEY }}
+          MUSIC_REFRESH_TOKEN: ${{ secrets.MUSIC_REFRESH_TOKEN }}
         run: |
           pdm run pytest
+      - name: Update MUSIC_KEY
+        if: env.NEW_MUSIC_KEY != ''
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          gh secret set MUSIC_KEY -b $NEW_MUSIC_KEY
