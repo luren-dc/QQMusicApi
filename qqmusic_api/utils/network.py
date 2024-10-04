@@ -43,7 +43,10 @@ def get_session() -> httpx.AsyncClient:
     Returns:
         httpx.AsyncClient
     """
-    loop = asyncio.get_event_loop()
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
     if loop in _SESSION_POOL:
         return _SESSION_POOL[loop]
     else:
