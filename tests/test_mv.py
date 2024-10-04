@@ -2,7 +2,7 @@ import pytest
 
 from qqmusic_api.mv import get_mv_urls
 
-pytestmark = pytest.mark.asyncio(scope="session")
+pytestmark = pytest.mark.asyncio(loop_scope="session")
 
 
 async def test_get_detail(mv):

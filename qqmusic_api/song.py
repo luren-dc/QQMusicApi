@@ -3,7 +3,7 @@
 import asyncio
 import random
 from enum import Enum
-from typing import Optional, Union
+from typing import Optional, Union, overload
 
 from .utils.credential import Credential
 from .utils.network import Api
@@ -12,7 +12,25 @@ from .utils.utils import get_api
 API = get_api("song")
 
 
-class SongFileType(Enum):
+class BaseSongFileType(Enum):
+    """基础歌曲文件类型"""
+
+    def __init__(self, start_code: str, extension: str):
+        self.__start_code = start_code
+        self.__extension = extension
+
+    @property
+    def s(self) -> str:
+        """歌曲文件类型"""
+        return self.__start_code
+
+    @property
+    def e(self) -> str:
+        """歌曲文件扩展名"""
+        return self.__extension
+
+
+class SongFileType(BaseSongFileType):
     """歌曲文件类型
 
     + MASTER:   臻品母带2.0，24Bit 192kHz，size_new[0]
@@ -44,30 +62,18 @@ class SongFileType(Enum):
     ACC_96 = ("C400", ".m4a")
     ACC_48 = ("C200", ".m4a")
 
-    def __init__(self, start_code: str, extension: str):
-        self.__start_code = start_code
-        self.__extension = extension
 
-    @property
-    def s(self) -> str:  # noqa : D102
-        return self.__start_code
-
-    @property
-    def e(self) -> str:  # noqa: D102
-        return self.__extension
-
-
-class EncryptedSongFileType(Enum):
+class EncryptedSongFileType(BaseSongFileType):
     """加密歌曲文件类型
 
     + MASTER:   臻品母带2.0，24Bit 192kHz，size_new[0]
     + ATMOS_2:  臻品全景声2.0，16Bit 44.1kHz，size_new[1]
     + ATMOS_51: 臻品音质2.0，16Bit 44.1kHz，size_new[2]
-    + FLAC:     flac 格式，16Bit 44.1kHz～24Bit 48kHz，size_flac
-    + OGG_640:  ogg 格式，640kbps，size_new[5]
-    + OGG_320:  ogg 格式，320kbps，size_new[3]
-    + OGG_192:  ogg 格式，192kbps，size_192ogg
-    + OGG_96:   ogg 格式，96kbps，size_96ogg
+    + FLAC:     mflac 格式，16Bit 44.1kHz～24Bit 48kHz，size_flac
+    + OGG_640:  mgg 格式，640kbps，size_new[5]
+    + OGG_320:  mgg 格式，320kbps，size_new[3]
+    + OGG_192:  mgg 格式，192kbps，size_192ogg
+    + OGG_96:   mgg 格式，96kbps，size_96ogg
     """
 
     MASTER = ("AIM0", ".mflac")
@@ -79,17 +85,100 @@ class EncryptedSongFileType(Enum):
     OGG_192 = ("O6M0", ".mgg")
     OGG_96 = ("O4M0", ".mgg")
 
-    def __init__(self, start_code: str, extension: str):
-        self.__start_code = start_code
-        self.__extension = extension
 
-    @property
-    def s(self) -> str:  # noqa : D102
-        return self.__start_code
+@overload
+async def get_song_urls(
+    mid: list[str],
+    file_type: SongFileType = SongFileType.MP3_128,
+    credential: Optional[Credential] = None,
+) -> dict[str, str]: ...
 
-    @property
-    def e(self) -> str:  # noqa: D102
-        return self.__extension
+
+@overload
+async def get_song_urls(
+    mid: list[str],
+    file_type: EncryptedSongFileType,
+    credential: Optional[Credential] = None,
+) -> dict[str, tuple[str, str]]: ...
+
+
+async def get_song_urls(
+    mid: list[str],
+    file_type: Union[EncryptedSongFileType, SongFileType] = SongFileType.MP3_128,
+    credential: Optional[Credential] = None,
+) -> Union[dict[str, str], dict[str, tuple[str, str]]]:
+    """获取歌曲文件链接
+
+    Args:
+        mid:        歌曲 mid
+        file_type:  歌曲文件类型
+        credential: 账号凭证
+
+    Returns:
+        返回链接字典，加密歌曲返回 `ekey` 用于解密
+    """
+    encrypted = isinstance(file_type, EncryptedSongFileType)
+    # 分割 id,单次最大请求100
+    mid_list = [mid[i : i + 100] for i in range(0, len(mid), 100)]
+    # 选择文件域名
+    domain = "https://isure.stream.qqmusic.qq.com/"
+    api_data = API["play_url"] if not encrypted else API["evkey"]
+    api = Api(**api_data, credential=credential or Credential())
+    urls = {}
+
+    async def get_song_url(mid):
+        # 构造请求参数
+        file_name = [f"{file_type.s}{_}{_}{file_type.e}" for _ in mid]
+        param = {
+            "filename": file_name,
+            "guid": "".join(random.choices("abcdef1234567890", k=32)),
+            "songmid": mid,
+            "songtype": [1 for _ in range(len(mid))],
+        }
+
+        res = await api.update_params(**param).result
+        data = res["midurlinfo"]
+        for info in data:
+            song_url = domain + info["wifiurl"] if info["wifiurl"] else ""
+            if not encrypted:
+                urls[info["songmid"]] = song_url
+            else:
+                urls[info["songmid"]] = (song_url, info["ekey"])
+
+    await asyncio.gather(*[asyncio.create_task(get_song_url(mid)) for mid in mid_list])
+    return urls
+
+
+async def get_try_url(mid: str, vs: str) -> str:
+    """获取试听文件链接
+
+    Tips:
+        使用 `size_try` 字段判断是否存在试听文件
+        参数 `vs` 请传入歌曲信息 `vs` 字段第一个
+
+    Args:
+        mid: 歌曲 mid
+        vs:  歌曲 vs
+
+    Returns:
+        试听文件链接
+    """
+    res = await (
+        Api(**API["play_url"])
+        .update_params(
+            filename=[f"RS02{vs}.mp3"],
+            guid="".join(
+                random.choices("abedf1234567890", k=32),
+            ),
+            songmid=[mid],
+            songtype=[1],
+        )
+        .result
+    )
+    if url := res["midurlinfo"][0]["wifiurl"]:
+        return f"https://isure.stream.qqmusic.qq.com/{url}"
+    else:
+        return ""
 
 
 class Song:
@@ -228,6 +317,20 @@ class Song:
         """
         return (await Api(**API["producer"]).update_params(songid=self.id, songmid=self.mid).result)["Lst"]
 
+    @overload
+    async def get_url(
+        self,
+        file_type: SongFileType = SongFileType.MP3_128,
+        credential: Optional[Credential] = None,
+    ) -> str: ...
+
+    @overload
+    async def get_url(
+        self,
+        file_type: EncryptedSongFileType,
+        credential: Optional[Credential] = None,
+    ) -> tuple[str, str]: ...
+
     async def get_url(
         self,
         file_type: Union[SongFileType, EncryptedSongFileType] = SongFileType.MP3_128,
@@ -243,6 +346,17 @@ class Song:
             链接字典
         """
         return (await get_song_urls([await self.get_mid()], file_type, credential))[self.mid]
+
+    async def get_try_url(self) -> str:
+        """获取试听文件链接
+
+        Returns:
+            试听文件链接
+        """
+        vs = (await self.get_info())["vs"][0]
+        if not vs:
+            return ""
+        return await get_try_url(self.mid, vs)
 
 
 async def query_song(value: Union[list[str], list[int]]) -> list[dict]:
@@ -269,82 +383,3 @@ async def query_song(value: Union[list[str], list[int]]) -> list[dict]:
         param["mids"] = value
     res = await Api(**API["query"]).update_params(**param).result
     return res["tracks"]
-
-
-async def get_song_urls(
-    mid: list[str],
-    file_type: Union[EncryptedSongFileType, SongFileType] = SongFileType.MP3_128,
-    credential: Optional[Credential] = None,
-) -> Union[dict[str, str], dict[str, tuple[str, str]]]:
-    """获取歌曲文件链接
-
-    Args:
-        mid:        歌曲 mid
-        file_type:  歌曲文件类型
-        credential: 账号凭证
-
-    Returns:
-        返回链接字典，加密歌曲返回 `ekey` 用于解密
-    """
-    encrypted = isinstance(file_type, EncryptedSongFileType)
-    # 分割 id,单次最大请求100
-    mid_list = [mid[i : i + 100] for i in range(0, len(mid), 100)]
-    # 选择文件域名
-    domain = "https://isure.stream.qqmusic.qq.com/"
-    api_data = API["play_url"] if not encrypted else API["evkey"]
-    api = Api(**api_data, credential=credential or Credential())
-    urls = {}
-
-    async def get_song_url(mid):
-        # 构造请求参数
-        file_name = [f"{file_type.s}{_}{_}{file_type.e}" for _ in mid]
-        param = {
-            "filename": file_name,
-            "guid": "".join(random.choices("abcdef1234567890", k=32)),
-            "songmid": mid,
-            "songtype": [1 for _ in range(len(mid))],
-        }
-
-        res = await api.update_params(**param).result
-        data = res["midurlinfo"]
-        for info in data:
-            song_url = domain + info["wifiurl"] if info["wifiurl"] else ""
-            if not encrypted:
-                urls[info["songmid"]] = song_url
-            else:
-                urls[info["songmid"]] = (song_url, info["ekey"])
-
-    await asyncio.gather(*[asyncio.create_task(get_song_url(mid)) for mid in mid_list])
-    return urls
-
-
-async def get_try_url(mid: str, vs: str) -> Optional[str]:
-    """获取试听文件链接
-
-    Tips:
-        使用 `size_try` 字段判断是否存在试听文件
-        参数 `vs` 请传入歌曲信息 `vs` 字段第一个
-
-    Args:
-        mid: 歌曲 mid
-        vs:  歌曲 vs
-
-    Returns:
-        试听文件链接
-    """
-    res = await (
-        Api(**API["play_url"])
-        .update_params(
-            filename=[f"RS02{vs}.mp3"],
-            guid="".join(
-                random.choices("abedf1234567890", k=32),
-            ),
-            songmid=[mid],
-            songtype=[1],
-        )
-        .result
-    )
-    if url := res["midurlinfo"][0]["wifiurl"]:
-        return f"https://isure.stream.qqmusic.qq.com/{url}"
-    else:
-        return None

@@ -2,7 +2,7 @@ import pytest
 
 from qqmusic_api.lyric import get_lyric
 
-pytestmark = pytest.mark.asyncio(scope="session")
+pytestmark = pytest.mark.asyncio(loop_scope="session")
 
 
 async def test_get_lyric():

@@ -11,16 +11,23 @@ from qqmusic_api.singer import Singer
 from qqmusic_api.song import Song
 from qqmusic_api.songlist import Songlist
 from qqmusic_api.top import Top
-from qqmusic_api.user import User, get_euin
+from qqmusic_api.user import User
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture()
 async def credential():
     musicid = os.getenv("MUSIC_ID", 0)
     musickey = os.getenv("MUSIC_KEY", "")
+    music_euin = os.getenv("MUSIC_EUIN", "")
     refresh_key = os.getenv("MUSIC_REFRESH_KEY", "")
     refresh_token = os.getenv("MUSIC_REFRESH_TOKEN", "")
-    c = Credential(musicid=int(musicid), musickey=musickey, refresh_key=refresh_key, refresh_token=refresh_token)
+    c = Credential(
+        musicid=int(musicid),
+        musickey=musickey,
+        refresh_key=refresh_key,
+        refresh_token=refresh_token,
+        encrypt_uin=music_euin,
+    )
     if not c.has_musicid() or not c.has_musickey():
         pytest.skip("未设置 MUSIC_ID 或 MUSIC_KEY")
 
@@ -72,6 +79,6 @@ def top():
     return Top(62)
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture()
 async def user(credential):
-    return User(await get_euin(credential.musicid), credential)
+    return User(credential.encrypt_uin, credential)
