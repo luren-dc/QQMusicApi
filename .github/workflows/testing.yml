@@ -1,7 +1,7 @@
 name: Testing
 
 on:
-  pull_request:
+  push:
     branches:
       - "main"
 
@@ -30,7 +30,6 @@ jobs:
         run: |
           pdm run pytest
       - name: Update MUSIC_KEY
-        if: ${{ env.NEW_MUSIC_KEY != "" && github.event_name != "pull_request" }}
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
