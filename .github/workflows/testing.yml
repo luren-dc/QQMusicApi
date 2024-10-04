@@ -8,7 +8,6 @@ on:
   schedule:
     - cron: "0 6 * * *"
 
-
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -31,7 +30,7 @@ jobs:
         run: |
           pdm run pytest
       - name: Update MUSIC_KEY
-        if: env.NEW_MUSIC_KEY != ""
+        if: ${{ env.NEW_MUSIC_KEY != "" && github.event_name != "pull_request" }}
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
