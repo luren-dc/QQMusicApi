@@ -9,7 +9,7 @@ from typing import Any, Literal, Optional, Union
 import httpx
 from typing_extensions import Self
 
-from ..exceptions import ResponseCodeException
+from ..exceptions import ResponseCodeError
 from .credential import Credential
 from .qimei import QIMEI
 
@@ -194,8 +194,7 @@ class Api:
     def _prepare_credential(self) -> None:
         """准备账号凭据"""
         if self.verify:
-            self.credential.raise_for_no_musicid()
-            self.credential.raise_for_no_musickey()
+            self.credential.raise_for_invalid()
 
         if not self.credential.has_musicid() or not self.credential.has_musickey():
             return
@@ -268,11 +267,7 @@ class Api:
                     if self.ignore_code:
                         return request_data
                     if request_data["code"] != 0:
-                        raise ResponseCodeException(
-                            request_data["code"],
-                            json.dumps(self.data, ensure_ascii=False),
-                            request_data,
-                        )
+                        raise ResponseCodeError(request_data["code"], self.data, request_data)
                     return request_data["data"]
                 except KeyError:
                     return request_data

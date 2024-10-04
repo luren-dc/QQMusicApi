@@ -2,7 +2,7 @@
 
 from typing import Optional
 
-from .exceptions import ResponseCodeException
+from .exceptions import ResponseCodeError
 from .utils.credential import Credential
 from .utils.network import Api
 from .utils.utils import get_api
@@ -60,7 +60,7 @@ async def get_musicid(euin: str) -> int:
             )
             .result
         )
-    except ResponseCodeException:
+    except ResponseCodeError:
         return 0
     if result["code"] != 0:
         return 0
