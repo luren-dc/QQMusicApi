@@ -67,6 +67,18 @@ async def get_musicid(euin: str) -> int:
     return int(result["dirinfo"]["creator"]["musicid"])
 
 
+async def get_vip_info(credential: Credential) -> dict:
+    """获取 VIP 信息
+
+    Args:
+        credential: 账号凭据
+
+    Returns:
+        VIP 相关信息
+    """
+    return await Api(**API["vip_info"], credential=credential).result
+
+
 class User:
     """用户类
 

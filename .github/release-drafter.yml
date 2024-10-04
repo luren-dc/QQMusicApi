@@ -61,6 +61,9 @@ autolabeler:
     title:
       - "/pref/i"
   - label: "docs"
+    files:
+      - "docs/**"
+      - "examples/**"
     title:
       - "/doc/i"
     branch:

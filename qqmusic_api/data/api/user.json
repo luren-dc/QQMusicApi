@@ -14,6 +14,13 @@
         },
         "comment": "获取用户主页，根据 cookie 值不同，内容有差异"
     },
+    "vip_info": {
+        "module": "VipLogin.VipLoginInter",
+        "method": "vip_login_base",
+        "verify": true,
+        "params": {},
+        "comment": "获取当前登录账号的 vip 信息"
+    },
     "homepage": {
         "module": "music.UnifiedHomepage.UnifiedHomepageSrv",
         "method": "GetHomepageHeader",
@@ -153,7 +160,7 @@
         },
         "comment": "通过 encrypt_uin 获取收藏 MV"
     },
-    "music_report": {
+    "gene_report": {
         "module": "music.recommend.UserProfileSettingSvr",
         "method": "GetProfileReport",
         "params": {
