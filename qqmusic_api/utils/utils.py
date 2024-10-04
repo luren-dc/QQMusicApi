@@ -28,6 +28,15 @@ def get_api(field: str) -> dict:
         return {}
 
 
+def get_guid() -> str:
+    """随机 guid
+
+    Returns:
+        随机 guid
+    """
+    return "".join(random.choices("abcdef1234567890", k=32))
+
+
 def hash33(s: str, h: int = 0) -> int:
     """hash33
 

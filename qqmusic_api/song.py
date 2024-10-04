@@ -1,13 +1,12 @@
 """歌曲相关 API"""
 
 import asyncio
-import random
 from enum import Enum
 from typing import Optional, Union, overload
 
 from .utils.credential import Credential
 from .utils.network import Api
-from .utils.utils import get_api
+from .utils.utils import get_api, get_guid
 
 API = get_api("song")
 
@@ -161,7 +160,7 @@ async def get_song_urls(
         file_name = [f"{file_type.s}{_}{_}{file_type.e}" for _ in mid]
         param = {
             "filename": file_name,
-            "guid": "".join(random.choices("abcdef1234567890", k=32)),
+            "guid": get_guid(),
             "songmid": mid,
             "songtype": [1 for _ in range(len(mid))],
         }
@@ -197,9 +196,7 @@ async def get_try_url(mid: str, vs: str) -> str:
         Api(**API["play_url"])
         .update_params(
             filename=[f"RS02{vs}.mp3"],
-            guid="".join(
-                random.choices("abedf1234567890", k=32),
-            ),
+            guid=get_guid(),
             songmid=[mid],
             songtype=[1],
         )
