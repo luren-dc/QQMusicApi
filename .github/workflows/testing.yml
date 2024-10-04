@@ -25,6 +25,7 @@ jobs:
         env:
           MUSIC_ID: ${{ secrets.MUSIC_ID }}
           MUSIC_KEY: ${{ secrets.MUSIC_KEY }}
+          MUSIC_EUIN: ${{ secrets.MUSIC_EUIN }}
           MUSIC_REFRESH_KEY: ${{ secrets.MUSIC_REFRESH_KEY }}
           MUSIC_REFRESH_TOKEN: ${{ secrets.MUSIC_REFRESH_TOKEN }}
         run: |
