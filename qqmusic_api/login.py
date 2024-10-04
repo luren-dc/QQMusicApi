@@ -24,6 +24,58 @@ from .utils.utils import get_api, hash33
 API = get_api("login")
 
 
+async def check_expired(credential: Credential) -> bool:
+    """检查凭据是否过期
+
+    Args:
+        credential: 用户凭证
+
+    Returns:
+        是否过期
+    """
+    from .exceptions import ResponseCodeException
+
+    try:
+        await Api(**API["check_expired"], credential=credential).result
+        return False
+    except ResponseCodeException:
+        return True
+
+
+async def refresh_cookies(credential: Credential) -> Credential:
+    """刷新 Cookies
+
+    刷新 cookies，刷新失败直接返回原始 credential,
+
+    Note:
+        刷新无效 cookie 需要 `refresh_key` 和 `refresh_token` 字段
+
+    Args:
+        credential: 用户凭证
+
+    Returns:
+        新的用户凭证
+    """
+    credential.raise_for_no_musicid()
+    credential.raise_for_no_musickey()
+
+    params = {
+        "refresh_key": credential.refresh_key,
+        "refresh_token": credential.refresh_token,
+        "musickey": credential.musickey,
+        "musicid": credential.musicid,
+    }
+
+    api = API["WX_login"] if credential.login_type == 1 else API["QQ_login"]
+    try:
+        res = (
+            await Api(**api).update_params(**params).update_extra_common(tmeLoginType=str(credential.login_type)).result
+        )
+    except ResponseCodeException:
+        return credential
+    return Credential.from_cookies_dict(res)
+
+
 class QrCodeLoginEvents(Enum):
     """二维码登录状态
 
@@ -457,55 +509,3 @@ class PhoneLogin(Login):
             raise LoginException("验证码错误")
         self.credential = Credential.from_cookies_dict(res["data"])
         return self.credential
-
-
-async def check_expired(credential: Credential) -> bool:
-    """检查凭据是否过期
-
-    Args:
-        credential: 用户凭证
-
-    Returns:
-        是否过期
-    """
-    from .exceptions import ResponseCodeException
-
-    try:
-        await Api(**API["check_expired"], credential=credential).result
-        return False
-    except ResponseCodeException:
-        return True
-
-
-async def refresh_cookies(credential: Credential) -> Credential:
-    """刷新 Cookies
-
-    刷新 cookies，刷新失败直接返回原始 credential,
-
-    Note:
-        刷新无效 cookie 需要 `refresh_key` 和 `refresh_token` 字段
-
-    Args:
-        credential: 用户凭证
-
-    Returns:
-        新的用户凭证
-    """
-    credential.raise_for_no_musicid()
-    credential.raise_for_no_musickey()
-
-    params = {
-        "refresh_key": credential.refresh_key,
-        "refresh_token": credential.refresh_token,
-        "musickey": credential.musickey,
-        "musicid": credential.musicid,
-    }
-
-    api = API["WX_login"] if credential.login_type == 1 else API["QQ_login"]
-    try:
-        res = (
-            await Api(**api).update_params(**params).update_extra_common(tmeLoginType=str(credential.login_type)).result
-        )
-    except ResponseCodeException:
-        return credential
-    return Credential.from_cookies_dict(res)
