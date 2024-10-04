@@ -269,3 +269,11 @@ class User:
             好友信息
         """
         return await Api(**API["friend"], credential=self.credential).update_params(Page=page - 1, PageSize=num).result
+
+    async def get_gene(self) -> dict:
+        """获取音乐基因数据
+
+        Returns:
+            音乐基因数据
+        """
+        return await Api(**API["music_gene"], credential=self.credential).update_params(VisitAccount=self.euin).result

@@ -1,7 +1,7 @@
 name: Testing
 
 on:
-  pull_request_target:
+  pull_request:
     branches: [main]
     paths:
       - "tests/**"
@@ -33,7 +33,7 @@ jobs:
         run: |
           pdm run pytest
       - name: Update MUSIC_KEY
-        if: env.NEW_MUSIC_KEY != ''
+        if: env.NEW_MUSIC_KEY != ""
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |

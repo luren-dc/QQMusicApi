@@ -64,6 +64,7 @@ autolabeler:
     files:
       - "docs/**"
       - "examples/**"
+      - "mkdocs.yml"
     title:
       - "/doc/i"
     branch:

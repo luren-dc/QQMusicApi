@@ -160,7 +160,7 @@
         },
         "comment": "通过 encrypt_uin 获取收藏 MV"
     },
-    "gene_report": {
+    "music_gene": {
         "module": "music.recommend.UserProfileSettingSvr",
         "method": "GetProfileReport",
         "params": {

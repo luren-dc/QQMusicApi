@@ -1,6 +1,6 @@
 import pytest
 
-from qqmusic_api.user import get_created_songlist, get_euin, get_musicid
+from qqmusic_api.user import get_created_songlist, get_euin, get_musicid, get_vip_info
 
 pytestmark = pytest.mark.asyncio(scope="session")
 
@@ -11,6 +11,10 @@ async def test_get_euin(credential):
 
 async def test_get_musicid(credential):
     assert await get_musicid(credential.encrypt_uin)
+
+
+async def test_get_vip_info(credential):
+    assert await get_vip_info(credential)
 
 
 async def test_get_created_songlist(credential):
@@ -55,3 +59,7 @@ async def test_get_friend(user):
 
 async def test_get_fans(user):
     assert await user.get_fans()
+
+
+async def test_get_gene(user):
+    assert await user.get_gene()
