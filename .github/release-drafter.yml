@@ -61,14 +61,12 @@ autolabeler:
     title:
       - "/pref/i"
   - label: "docs"
-    files:
-      - "docs/**"
-      - "examples/**"
-      - "mkdocs.yml"
     title:
       - "/doc/i"
     branch:
       - '/docs{0,1}\/.+/'
   - label: "test"
-    files:
-      - "tests/**"
+    title:
+      - "/test/i"
+    branch:
+      - '/test{0,1}\/.+/'
