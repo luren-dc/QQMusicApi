@@ -2,7 +2,7 @@ import pytest
 
 from qqmusic_api.user import get_created_songlist, get_euin, get_musicid, get_vip_info
 
-pytestmark = pytest.mark.asyncio(scope="session")
+pytestmark = pytest.mark.asyncio(loop_scope="session")
 
 
 async def test_get_euin(credential):

@@ -14,7 +14,7 @@ from qqmusic_api.top import Top
 from qqmusic_api.user import User
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture()
 async def credential():
     musicid = os.getenv("MUSIC_ID", 0)
     musickey = os.getenv("MUSIC_KEY", "")
@@ -79,6 +79,6 @@ def top():
     return Top(62)
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture()
 async def user(credential):
     return User(credential.encrypt_uin, credential)
