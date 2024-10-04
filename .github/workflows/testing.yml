@@ -2,10 +2,8 @@ name: Testing
 
 on:
   pull_request:
-    branches: [main]
-    paths:
-      - "tests/**"
-      - "qqmusic_api/**"
+    branches:
+      - "main"
 
   schedule:
     - cron: "0 6 * * *"
