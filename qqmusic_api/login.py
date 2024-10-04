@@ -274,7 +274,7 @@ class QQLogin(QRCodeLogin):
         location = res.headers.get("Location", "")
         code = re.findall(r"(?<=code=)(.+?)(?=&)", location)[0]
         response = await Api(**API["QQ_login"]).update_params(code=code).update_extra_common(tmeLoginType="2").result
-        self.credential = Credential.from_cookies(response)
+        self.credential = Credential.from_cookies_dict(response)
         return self.credential
 
 
@@ -384,7 +384,7 @@ class WXLogin(QRCodeLogin):
             .update_extra_common(tmeLoginType="1")
             .result
         )
-        self.credential = Credential.from_cookies(res)
+        self.credential = Credential.from_cookies_dict(res)
         return self.credential
 
 
@@ -420,15 +420,15 @@ class PhoneLogin(Login):
             "phoneNo": str(self.phone),
             "areaCode": "86",
         }
-        try:
-            await Api(**API["send_authcode"]).update_params(**params).result
+        res = await Api(**API["send_authcode"]).update_params(**params).result
+        code = res["code"]
+        if code == 20276:
+            self.auth_url = res["data"]["securityURL"]
+            return PhoneLoginEvents.CAPTCHA
+        elif code == 0:
             return PhoneLoginEvents.SEND
-        except ResponseCodeException as e:
-            if e.code == 20276:
-                self.auth_url = e.raw["securityURL"]  # type: ignore
-                return PhoneLoginEvents.CAPTCHA
-            else:
-                return PhoneLoginEvents.OTHER
+        else:
+            return PhoneLoginEvents.OTHER
 
     async def authorize(self, authcode: int) -> Credential:
         """登录鉴权
@@ -440,26 +440,22 @@ class PhoneLogin(Login):
             用户凭证
 
         Raises:
-            LoginException: 鉴权失败
+            LoginException: 验证码错误
         """
         if self.credential:
             return self.credential
         if not authcode:
             raise ValueError("authcode 为空")
         params = {"code": str(authcode), "phoneNo": self.phone, "loginMode": 1}
-        try:
-            res = (
-                await Api(**API["phone_login"])
-                .update_params(**params)
-                .update_extra_common(tmeLoginMethod="3", tmeLoginType="0")
-                .result
-            )
-        except ResponseCodeException as e:
-            if e.code == 20271:
-                raise LoginException("验证码过期或错误")
-            else:
-                raise LoginException("未知情况，请提交 issue")
-        self.credential = Credential.from_cookies(res)
+        res = (
+            await Api(**API["phone_login"])
+            .update_params(**params)
+            .update_extra_common(tmeLoginMethod="3", tmeLoginType="0")
+            .result
+        )
+        if res["code"] == 20271:
+            raise LoginException("验证码错误")
+        self.credential = Credential.from_cookies_dict(res["data"])
         return self.credential
 
 
@@ -484,13 +480,20 @@ async def check_expired(credential: Credential) -> bool:
 async def refresh_cookies(credential: Credential) -> Credential:
     """刷新 Cookies
 
+    刷新 cookies，刷新失败直接返回原始 credential,
+
+    Note:
+        刷新无效 cookie 需要 `refresh_key` 和 `refresh_token` 字段
+
     Args:
         credential: 用户凭证
 
     Returns:
         新的用户凭证
     """
-    credential.raise_for_cannot_refresh()
+    credential.raise_for_no_musicid()
+    credential.raise_for_no_musickey()
+
     params = {
         "refresh_key": credential.refresh_key,
         "refresh_token": credential.refresh_token,
@@ -499,5 +502,10 @@ async def refresh_cookies(credential: Credential) -> Credential:
     }
 
     api = API["WX_login"] if credential.login_type == 1 else API["QQ_login"]
-    res = await Api(**api).update_params(**params).update_extra_common(tmeLoginType=str(credential.login_type)).result
-    return Credential.from_cookies(res)
+    try:
+        res = (
+            await Api(**api).update_params(**params).update_extra_common(tmeLoginType=str(credential.login_type)).result
+        )
+    except ResponseCodeException:
+        return credential
+    return Credential.from_cookies_dict(res)

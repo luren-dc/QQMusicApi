@@ -1,0 +1,102 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string",
+            "format": "uri-reference"
+        }
+    },
+    "patternProperties": {
+        ".*": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string",
+                    "description": "请求地址"
+                },
+                "method": {
+                    "type": "string",
+                    "description": "请求方法"
+                },
+                "headers": {
+                    "type": "object",
+                    "description": "请求头"
+                },
+                "module": {
+                    "type": "string",
+                    "description": "QQ音乐请求模块，搭配 `method` 使用"
+                },
+                "data": {
+                    "type": "object",
+                    "description": "请求数据"
+                },
+                "params": {
+                    "type": "object",
+                    "description": "请求参数"
+                },
+                "json_body": {
+                    "type": "boolean",
+                    "description": "是否使用 json 作为载荷"
+                },
+                "verify": {
+                    "type": "boolean",
+                    "description": "是否验证账号凭证"
+                },
+                "platform": {
+                    "type": "string",
+                    "description": "API 来源",
+                    "enum": [
+                        "mobile",
+                        "desktop",
+                        "web"
+                    ]
+                },
+                "ignore_code": {
+                    "type": "boolean",
+                    "description": "是否忽略返回值 code 检验直接返回"
+                },
+                "extra_common": {
+                    "type": "object",
+                    "description": "请求QQ音乐的额外公共参数"
+                },
+                "comment": {
+                    "type": "string",
+                    "description": "接口描述"
+                }
+            },
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "module": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "module"
+                        ]
+                    },
+                    "then": {
+                        "not": {
+                            "required": [
+                                "url",
+                                "data"
+                            ]
+                        },
+                        "required": [
+                            "method",
+                            "params"
+                        ]
+                    },
+                    "else": {
+                        "required": [
+                            "url",
+                            "method"
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+}

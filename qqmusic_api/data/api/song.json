@@ -68,7 +68,8 @@
         "module": "music.mir.SheetMusicSvr",
         "method": "GetMoreSheetMusic",
         "params": {
-            "songmid": "str 歌曲 mid"
+            "songmid": "str 歌曲 mid",
+            "scoreType": "int -1"
         },
         "comment": "获取相关曲谱"
     },

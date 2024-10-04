@@ -33,8 +33,8 @@ class Album:
         """
         if mid is None and id is None:
             raise ValueError("mid or id must be provided")
-        self.mid = mid
-        self.id = id
+        self.mid = mid or ""
+        self.id = id or 0
         self._info: Optional[dict] = None
 
     async def get_mid(self) -> str:
@@ -43,7 +43,9 @@ class Album:
         Returns:
             专辑 mid
         """
-        return (await self.get_detail())["basicInfo"]["albumMid"]
+        if not self.mid:
+            self.mid = (await self.get_detail())["basicInfo"]["albumMid"]
+        return self.mid
 
     async def get_id(self) -> int:
         """获取专辑 id
@@ -51,7 +53,9 @@ class Album:
         Returns:
             专辑 id
         """
-        return (await self.get_detail())["basicInfo"]["albumID"]
+        if not self.id:
+            self.id = (await self.get_detail())["basicInfo"]["albumID"]
+        return self.id
 
     async def get_detail(self) -> dict:
         """获取专辑详细信息

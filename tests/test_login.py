@@ -3,7 +3,7 @@ import pytest
 from qqmusic_api.exceptions import LoginException
 from qqmusic_api.login import PhoneLogin, PhoneLoginEvents, QQLogin, QrCodeLoginEvents, WXLogin
 
-pytestmark = pytest.mark.asyncio(scope="package")
+pytestmark = pytest.mark.asyncio(scope="session")
 
 
 async def test_qq_login():

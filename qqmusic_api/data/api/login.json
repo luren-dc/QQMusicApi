@@ -6,7 +6,8 @@
             "code": "str 鉴权码",
             "musicid": "int",
             "musickey": "str",
-            "refresh_key": "str"
+            "refresh_key": "str",
+            "refresh_token": "str"
         },
         "extra_common": {
             "tmeLoginType": "str 2"
@@ -19,9 +20,10 @@
         "params": {
             "strAppid": "wx48db31d50e334801",
             "code": "str 鉴权码",
-            "str_musicid": "str",
+            "musicid": "int",
             "musickey": "str",
             "refresh_key": "str",
+            "refresh_token": "str",
             "loginMode": "int 2"
         },
         "extra_common": {
@@ -32,6 +34,7 @@
     "send_authcode": {
         "module": "music.login.LoginServer",
         "method": "SendPhoneAuthCode",
+        "ignore_code": true,
         "params": {
             "tmeAppid": "qqmusic",
             "phoneNo": "str 手机号",
@@ -45,13 +48,15 @@
     "phone_login": {
         "module": "music.login.LoginServer",
         "method": "Login",
+        "ignore_code": true,
         "params": {
             "code": "str 验证码",
             "phoneNo": "str 手机号",
             "loginMode": "int 1"
         },
         "extra_common": {
-            "tmeLoginMethod": "str 3"
+            "tmeLoginMethod": "str 3",
+            "tmeLoginType": "str 0"
         },
         "comment": "手机验证码鉴权"
     },

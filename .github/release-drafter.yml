@@ -35,7 +35,7 @@ version-resolver:
       - "patch"
   default: patch
 template: |
-  ## What's Changed in $RESOLVED_VERSION
+  ## What's Changed
 
   $CHANGES
 
@@ -61,6 +61,10 @@ autolabeler:
     title:
       - "/pref/i"
   - label: "docs"
+    files:
+      - "docs/**"
+      - "examples/**"
+      - "mkdocs.yml"
     title:
       - "/doc/i"
     branch:

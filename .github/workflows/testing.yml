@@ -1,29 +1,36 @@
 name: Testing
 
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - "tests/**"
-      - "qqmusic_api/**"
+  push:
+    branches:
+      - "main"
+
+  schedule:
+    - cron: "0 6 * * *"
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
-
     steps:
       - uses: actions/checkout@v4
       - name: Setup PDM
         uses: pdm-project/setup-pdm@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.12"
           cache: true
       - name: Install dependencies
         run: |
           pdm sync -dG testing
       - name: Run tests
+        env:
+          MUSIC_ID: ${{ secrets.MUSIC_ID }}
+          MUSIC_KEY: ${{ secrets.MUSIC_KEY }}
+          MUSIC_REFRESH_KEY: ${{ secrets.MUSIC_REFRESH_KEY }}
+          MUSIC_REFRESH_TOKEN: ${{ secrets.MUSIC_REFRESH_TOKEN }}
         run: |
           pdm run pytest
+      - name: Update MUSIC_KEY
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          gh secret set MUSIC_KEY -b $NEW_MUSIC_KEY

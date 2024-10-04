@@ -30,7 +30,7 @@ class SongFileType(Enum):
     + ACC_48:   m4a 格式，48kbps，size_48aac
     """
 
-    Master = ("AI00", ".flac")
+    MASTER = ("AI00", ".flac")
     ATMOS_2 = ("Q000", ".flac")
     ATMOS_51 = ("Q001", ".flac")
     FLAC = ("F000", ".flac")
@@ -199,7 +199,7 @@ class Song:
             .update_params(
                 songid=str(await self.get_id()),
                 songtype=1,
-                lastvid=0,
+                lastmvid=0,
             )
             .result
         )["list"]
@@ -281,7 +281,7 @@ async def get_song_urls(
     Args:
         mid:        歌曲 mid
         file_type:  歌曲文件类型
-        credential: Credential 类
+        credential: 账号凭证
 
     Returns:
         返回链接字典，加密歌曲返回 `ekey` 用于解密

@@ -2,7 +2,7 @@
     <h1> QQMusicApi </h1>
     <p> Python QQ音乐 API 封装库 </p>
     <a href="https://www.python.org">
-        <img src="https://img.shields.io/badge/python-3.9+-blue" alt="Python">
+        <img src="https://img.shields.io/badge/python-3.9|3.10|3.11|3.12-blue" alt="Python">
     </a>
     <a href="https://github.com/astral-sh/ruff">
         <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff">
@@ -74,14 +74,14 @@ asyncio.run(main())
 ## 参考项目
 
 ### API
-[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?theme=radical&username=Rain120&repo=qq-music-api)](https://github.com/Rain120/qq-music-api)
-[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?theme=radical&username=jsososo&repo=QQMusicApi)](https://github.com/jsososo/QQMusicApi)
+[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?username=Rain120&repo=qq-music-api)](https://github.com/Rain120/qq-music-api)
+[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?username=jsososo&repo=QQMusicApi)](https://github.com/jsososo/QQMusicApi)
 
 ### QRC 解密
-[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?theme=radical&username=chenmozhijin&repo=LDDC)](https://github.com/chenmozhijin/LDDC)
+[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?username=chenmozhijin&repo=LDDC)](https://github.com/chenmozhijin/LDDC)
 
 ### 项目架构
-[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?theme=radical&username=Nemo2011&repo=bilibili-api)](https://github.com/Nemo2011/bilibili-api)
+[![Readme Card](https://github-readme-stats.vercel.app/api/pin/?username=Nemo2011&repo=bilibili-api)](https://github.com/Nemo2011/bilibili-api)
 
 ## Licence
 

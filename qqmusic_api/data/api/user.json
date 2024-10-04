@@ -1,0 +1,171 @@
+{
+    "profile": {
+        "url": "https://c6.y.qq.com/rsc/fcgi-bin/fcg_get_profile_homepage.fcg",
+        "method": "GET",
+        "platform": "web",
+        "headers": {
+            "referer": "https://y.qq.com/"
+        },
+        "params": {
+            "ct": "int 20",
+            "cv": "int 4747474",
+            "cid": "int 205360838",
+            "userid": "str musicid or euin"
+        },
+        "comment": "获取用户主页，根据 cookie 值不同，内容有差异"
+    },
+    "vip_info": {
+        "module": "VipLogin.VipLoginInter",
+        "method": "vip_login_base",
+        "verify": true,
+        "params": {},
+        "comment": "获取当前登录账号的 vip 信息"
+    },
+    "homepage": {
+        "module": "music.UnifiedHomepage.UnifiedHomepageSrv",
+        "method": "GetHomepageHeader",
+        "params": {
+            "uin": "str musicid or euin",
+            "IsQueryTabDetail": "int 1"
+        },
+        "comment": "获取用户主页信息(包含用户信息，音乐基因，乐库，用户歌单等信息)，根据 cookie 值不同，内容有差异"
+    },
+    "friend": {
+        "module": "music.homepage.Friendship",
+        "method": "GetFriendList",
+        "verify": true,
+        "params": {
+            "Page": "int 页数",
+            "PageSize": "int 每页数量"
+        },
+        "comment": "获取好友列表"
+    },
+    "songlist_by_euin": {
+        "url": "https://c6.y.qq.com/rsc/fcgi-bin/fcg_user_created_diss",
+        "method": "GET",
+        "platform": "web",
+        "headers": {
+            "referer": "https://y.qq.com/"
+        },
+        "params": {
+            "hostuin": "str encrypt_uin",
+            "sin": "int 页数",
+            "size": "int 每页返回数量"
+        },
+        "comment": "通过 encrypt_uin 获取用户歌单列表"
+    },
+    "songlist_by_uin": {
+        "module": "music.musicasset.PlaylistBaseRead",
+        "method": "GetPlaylistByUin",
+        "platform": "desktop",
+        "params": {
+            "uin": "str uin"
+        },
+        "comment": "通过 uin 获取用户歌单列表"
+    },
+    "follow_singer": {
+        "module": "music.concern.RelationList",
+        "method": "GetFollowSingerList",
+        "verify": true,
+        "params": {
+            "From": "int 起始序号",
+            "Size": "int 返回数量",
+            "HostUin": "str encrypt_uin"
+        },
+        "comment": "获取关注歌手列表"
+    },
+    "follow_user": {
+        "module": "music.concern.RelationList",
+        "method": "GetFollowUserList",
+        "verify": true,
+        "params": {
+            "From": "int 起始序号",
+            "Size": "int 返回数量",
+            "HostUin": "str encrypt_uin"
+        },
+        "comment": "获取关注用户列表"
+    },
+    "fans": {
+        "module": "music.concern.RelationList",
+        "method": "GetFansList",
+        "verify": true,
+        "params": {
+            "From": "int 起始序号",
+            "Size": "int 返回数量",
+            "HostUin": "str encrypt_uin"
+        },
+        "comment": "获取粉丝列表"
+    },
+    "fav_songlist_self": {
+        "module": "music.mobileAsset.GetFav",
+        "method": "CgiGetOrderDiss",
+        "verify": true,
+        "params": {},
+        "comment": "获取当前登录用户收藏歌单"
+    },
+    "fav_album_self": {
+        "module": "music.mobileAsset.GetFav",
+        "method": "CgiGetOrderAlbum",
+        "verify": true,
+        "params": {},
+        "comment": "获取当前登录用户收藏专辑"
+    },
+    "fav_mv_self": {
+        "module": "music.mobileAsset.GetFav",
+        "method": "CgiGetOrderMV",
+        "verify": true,
+        "params": {},
+        "comment": "获取当前登录用户收藏MV"
+    },
+    "fav_songlist_by_euin": {
+        "module": "music.musicasset.PlaylistFavRead",
+        "method": "CgiGetPlaylistFavInfo",
+        "params": {
+            "uin": "str encrypt_uin",
+            "offset": "int 偏移量",
+            "size": "int 返回数量"
+        },
+        "comment": "通过 encrypt_uin 获取收藏歌单"
+    },
+    "fav_album_by_euin": {
+        "module": "music.musicasset.AlbumFavRead",
+        "method": "CgiGetAlbumFavInfo",
+        "params": {
+            "euin": "str encrypt_uin",
+            "offset": "int 偏移量",
+            "size": "int 返回数量"
+        },
+        "comment": "通过 encrypt_uin 获取收藏专辑"
+    },
+    "fav_mv": {
+        "module": "music.musicasset.MVFavRead",
+        "method": "getMyFavMV",
+        "verify": true,
+        "params": {
+            "uin": "str musicid or euin",
+            "support": "int 1",
+            "req_icon_type": "int 1"
+        },
+        "comment": "获取收藏 MV"
+    },
+    "fav_mv_by_euin": {
+        "module": "music.musicasset.MVFavRead",
+        "method": "getMyFavMV_v2",
+        "platform": "desktop",
+        "verify": true,
+        "params": {
+            "encuin": "str encrypt_uin",
+            "num": "int 返回数量",
+            "pagesize": "int 返回页数"
+        },
+        "comment": "通过 encrypt_uin 获取收藏 MV"
+    },
+    "music_gene": {
+        "module": "music.recommend.UserProfileSettingSvr",
+        "method": "GetProfileReport",
+        "params": {
+            "VisitAccount": "str encrypt_uin"
+        },
+        "comment": "获取音乐基因数据"
+    }
+}

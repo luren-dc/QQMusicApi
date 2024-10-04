@@ -2,7 +2,7 @@ import pytest
 
 from qqmusic_api.song import get_song_urls, get_try_url, query_song
 
-pytestmark = pytest.mark.asyncio(scope="package")
+pytestmark = pytest.mark.asyncio(scope="session")
 
 
 async def test_query_song(song):

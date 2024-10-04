@@ -60,7 +60,8 @@ markdown_extensions:
   - md_in_html
   - markdown_callouts.github_callouts
   - toc:
-      slugify: !!python/object/apply:pymdownx.slugs.slugify {kwds: {case: lower}}
+      slugify:
+        !!python/object/apply:pymdownx.slugs.slugify { kwds: { case: lower } }
       permalink: ""
   - pymdownx.arithmatex:
       generic: true
@@ -77,7 +78,8 @@ markdown_extensions:
   - pymdownx.blocks.tab:
       alternate_style: True
       combine_header_slug: True
-      slugify: !!python/object/apply:pymdownx.slugs.slugify {kwds: {case: lower}}
+      slugify:
+        !!python/object/apply:pymdownx.slugs.slugify { kwds: { case: lower } }
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
@@ -103,11 +105,11 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
-          paths: [.,qqmusic_api]
+          paths: [., qqmusic_api]
           options:
             members_order: source
-            group_by_category: true
             separate_signature: true
+            group_by_category: false
             show_root_heading: true
             show_symbol_type_heading: true
             heading_level: 1
@@ -118,18 +120,21 @@ plugins:
             docstring_section_style: spacy
             extensions:
               - griffe_inherited_docstrings
+              - docstring_inheritance.griffe
+              - griffe_modernized_annotations
           import:
             - https://docs.python.org/3/objects.inv
 
 nav:
   - 主页: index.md
   - API 示例:
+      - 凭证（Cookie）: examples/credential.md
       - 登录: examples/login.md
       - 搜索: examples/search.md
       - 歌曲: examples/song.md
+      - 用户: examples/user.md
       - 同步执行: examples/sync.md
   - API 文档:
-      - api/index.md
       - album 专辑: api/album.md
       - login 登录: api/login.md
       - mv MV: api/mv.md
@@ -139,6 +144,7 @@ nav:
       - songlist 歌单: api/songlist.md
       - top 排行榜: api/top.md
       - lyric 歌词: api/lyric.md
+      - user 用户: api/user.md
       - utils:
           - qimei 设备标识: api/utils/qimei.md
           - utils 辅助函数: api/utils/utils.md
