@@ -1,7 +1,5 @@
 """API Exception"""
 
-from typing import Optional
-
 
 class ApiException(Exception):
     """API Exception 基类"""
@@ -10,23 +8,27 @@ class ApiException(Exception):
         super().__init__(message)
         self.message = message
 
+    def __str__(self) -> str:
+        return self.message
+
 
 class ResponseCodeError(ApiException):
-    """API 返回数据 code 错误"""
+    """API 返回响应的 code 不符合预期"""
 
-    def __init__(self, code: int, request_data: dict, raw: Optional[dict] = None) -> None:
-        """初始化 ResponseCodeError
-
-        Args:
-            code: 返回的 code
-            request_data: API 请求数据
-            raw: 原始返回数据
-        """
+    def __init__(
+        self,
+        code: int,
+        data: dict,
+        raw: dict,
+        message: str = "API 返回的响应 code 不符合预期",
+    ) -> None:
         self.code = code
-        self.request_data = request_data
+        self.data = data
         self.raw = raw
-        message = f"code: {code}, request_data: {request_data}"
-        super().__init__(message)
+        self.message = message
+
+    def __str__(self) -> str:
+        return f"[{self.code}] {self.message}"
 
 
 class CredentialInvalidError(ApiException):
@@ -34,6 +36,21 @@ class CredentialInvalidError(ApiException):
 
     def __init__(self, message: str = "凭证无效") -> None:
         super().__init__(message)
+
+
+class CredentialExpiredError(ResponseCodeError):
+    """Credential 过期"""
+
+    def __init__(
+        self,
+        data: dict,
+        raw: dict,
+        message: str = "凭证已过期",
+    ) -> None:
+        super().__init__(1000, data, raw, message)
+
+    def __str__(self) -> str:
+        return self.message
 
 
 class LoginError(ApiException):

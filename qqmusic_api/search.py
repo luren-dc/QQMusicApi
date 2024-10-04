@@ -73,7 +73,7 @@ async def quick_search(keyword: str) -> dict:
         包含专辑，歌手，歌曲的简略信息
     """
     res = await Api(**API["quick_search"]).update_params(key=keyword).result
-    return res["data"]
+    return res
 
 
 async def general_search(

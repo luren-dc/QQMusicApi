@@ -9,7 +9,7 @@ from typing import Any, Literal, Optional, Union
 import httpx
 from typing_extensions import Self
 
-from ..exceptions import ResponseCodeError
+from ..exceptions import CredentialExpiredError, ResponseCodeError
 from .credential import Credential
 from .qimei import QIMEI
 
@@ -240,7 +240,7 @@ class Api:
         resp.raise_for_status()
         return resp
 
-    def __process_response(self, resp: httpx.Response) -> Union[None, str, dict]:
+    def _process_response(self, resp: httpx.Response) -> Union[None, str, dict]:
         """处理响应"""
         content_length = resp.headers.get("Content-Length")
         if content_length and int(content_length) == 0:
@@ -252,7 +252,7 @@ class Api:
 
     async def fetch(self) -> Union[None, str, dict]:
         """发起请求并处理响应"""
-        return self.__process_response(await self.request())
+        return self._process_response(await self.request())
 
     @property
     async def result(self) -> dict:
@@ -260,20 +260,35 @@ class Api:
         if self._result:
             return self._result
         resp = await self.fetch()
+
+        # 处理响应
         if isinstance(resp, dict):
+            # 判断是否为标准请求
             if self.module:
                 request_data = resp["request"]
-                try:
-                    if self.ignore_code:
-                        return request_data
-                    if request_data["code"] != 0:
-                        raise ResponseCodeError(request_data["code"], self.data, request_data)
-                    return request_data["data"]
-                except KeyError:
-                    return request_data
-            return resp
+                # 处理响应代码
+                self._result = self._process_response_code(request_data)
+            else:
+                if resp.get("code", None) is not None:
+                    self._result = self._process_response_code(resp)
+                else:
+                    self._result = dict(resp.get("data", resp))
         else:
-            return {"data": resp}
+            # 包装非 JSON 响应
+            self._result = {"data": resp}
+        return self._result
+
+    def _process_response_code(self, resp: dict) -> dict:
+        """处理响应代码"""
+        # 是否忽略响应代码
+        if self.ignore_code:
+            return resp
+        code = resp["code"]
+        if code == 1000:
+            raise CredentialExpiredError(self.data, resp)
+        elif code != 0:
+            raise ResponseCodeError(code, self.data, resp)
+        return resp.get("data", resp)
 
 
 @atexit.register

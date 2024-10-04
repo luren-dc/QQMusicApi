@@ -32,10 +32,11 @@ async def get_euin(musicid: int) -> str:
     Returns:
         获取到的 encrypt_uin，为空表示获取失败
     """
-    result = await Api(**API["profile"]).update_params(ct=20, cv=4747474, cid=205360838, userid=musicid).result
-    if result["code"] != 0:
+    try:
+        result = await Api(**API["profile"]).update_params(ct=20, cv=4747474, cid=205360838, userid=musicid).result
+    except ResponseCodeError:
         return ""
-    return result["data"]["creator"]["encrypt_uin"]
+    return result["creator"]["encrypt_uin"]
 
 
 async def get_musicid(euin: str) -> int:
@@ -124,7 +125,7 @@ class User:
             .update_params(hostuin=self.euin, sin=0, size=1000)
             .result
         )
-        data = result["data"]["disslist"]
+        data = result["disslist"]
         data.pop(0)
         return data
 
