@@ -31,13 +31,6 @@ class ResponseCodeError(ApiException):
         return f"[{self.code}] {self.message}"
 
 
-class CredentialInvalidError(ApiException):
-    """Credential 无效"""
-
-    def __init__(self, message: str = "凭证无效") -> None:
-        super().__init__(message)
-
-
 class CredentialExpiredError(ResponseCodeError):
     """Credential 过期"""
 
@@ -51,6 +44,13 @@ class CredentialExpiredError(ResponseCodeError):
 
     def __str__(self) -> str:
         return self.message
+
+
+class CredentialInvalidError(ApiException):
+    """Credential 无效"""
+
+    def __init__(self, message: str = "凭证无效") -> None:
+        super().__init__(message)
 
 
 class LoginError(ApiException):
