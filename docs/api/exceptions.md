@@ -5,11 +5,10 @@
 ## The Exception Hierarchy
 
 - ApiException
-  - ResponseCodeError
-    - CredentialExpiredError
-  - CredentialInvalidError
-  - LoginError
-
+    - ResponseCodeError
+        - CredentialExpiredError
+    - CredentialInvalidError
+    - LoginError
 ---
 
 ::: exceptions.api_exception
