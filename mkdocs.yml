@@ -145,6 +145,7 @@ nav:
       - top 排行榜: api/top.md
       - lyric 歌词: api/lyric.md
       - user 用户: api/user.md
+      - exceptions: api/exceptions.md
       - utils:
           - qimei 设备标识: api/utils/qimei.md
           - utils 辅助函数: api/utils/utils.md
@@ -152,7 +153,6 @@ nav:
           - credential 凭据: api/utils/credential.md
           - sync 同步: api/utils/sync.md
           - tripledes TripleDES: api/utils/tripledes.md
-      - exceptions: api/exceptions.md
   - 贡献指南: contributing.md
 
 watch:
