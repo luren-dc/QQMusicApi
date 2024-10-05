@@ -1,6 +1,6 @@
 import pytest
 
-from qqmusic_api.exceptions import LoginException
+from qqmusic_api.exceptions import LoginError
 from qqmusic_api.login import PhoneLogin, PhoneLoginEvents, QQLogin, QrCodeLoginEvents, WXLogin
 
 pytestmark = pytest.mark.asyncio(loop_scope="session")
@@ -26,5 +26,5 @@ async def test_phone_login():
     assert state in [PhoneLoginEvents.SEND, PhoneLoginEvents.CAPTCHA]
     try:
         await login.authorize(123456)
-    except LoginException:
+    except LoginError:
         pass

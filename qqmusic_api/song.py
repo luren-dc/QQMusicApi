@@ -1,15 +1,40 @@
 """歌曲相关 API"""
 
 import asyncio
-import random
 from enum import Enum
 from typing import Optional, Union, overload
 
 from .utils.credential import Credential
 from .utils.network import Api
-from .utils.utils import get_api
+from .utils.utils import get_api, get_guid
 
 API = get_api("song")
+
+
+async def query_song(value: Union[list[str], list[int]]) -> list[dict]:
+    """根据 id 或 mid 获取歌曲信息
+
+    Args:
+        value: 歌曲 id 或 mid 列表
+
+    Returns:
+        歌曲信息
+    """
+    if not value:
+        return []
+
+    param = {
+        "types": [0 for _ in range(len(value))],
+        "modify_stamp": [0 for _ in range(len(value))],
+        "ctx": 0,
+        "client": 1,
+    }
+    if isinstance(value[0], int):
+        param["ids"] = value
+    else:
+        param["mids"] = value
+    res = await Api(**API["query"]).update_params(**param).result
+    return res["tracks"]
 
 
 class BaseSongFileType(Enum):
@@ -109,13 +134,17 @@ async def get_song_urls(
 ) -> Union[dict[str, str], dict[str, tuple[str, str]]]:
     """获取歌曲文件链接
 
+    Tips:
+        `ekey` 用于解密加密歌曲
+
     Args:
         mid:        歌曲 mid
         file_type:  歌曲文件类型
         credential: 账号凭证
 
     Returns:
-        返回链接字典，加密歌曲返回 `ekey` 用于解密
+        SongFileType: `{mid: url}`
+        EncryptedSongFileType: `{mid: (url, ekey)}`
     """
     encrypted = isinstance(file_type, EncryptedSongFileType)
     # 分割 id,单次最大请求100
@@ -131,7 +160,7 @@ async def get_song_urls(
         file_name = [f"{file_type.s}{_}{_}{file_type.e}" for _ in mid]
         param = {
             "filename": file_name,
-            "guid": "".join(random.choices("abcdef1234567890", k=32)),
+            "guid": get_guid(),
             "songmid": mid,
             "songtype": [1 for _ in range(len(mid))],
         }
@@ -167,9 +196,7 @@ async def get_try_url(mid: str, vs: str) -> str:
         Api(**API["play_url"])
         .update_params(
             filename=[f"RS02{vs}.mp3"],
-            guid="".join(
-                random.choices("abedf1234567890", k=32),
-            ),
+            guid=get_guid(),
             songmid=[mid],
             songtype=[1],
         )
@@ -338,12 +365,16 @@ class Song:
     ) -> Union[str, tuple[str, str]]:
         """获取歌曲文件链接
 
+        Tips:
+            `ekey` 用于解密加密歌曲
+
         Args:
             file_type:  歌曲文件类型
             credential: 账号凭证
 
         Returns:
-            链接字典
+            SongFileType: 歌曲文件链接
+            EncryptedSongFileType: (加密文件链接, ekey)
         """
         return (await get_song_urls([await self.get_mid()], file_type, credential))[self.mid]
 
@@ -357,29 +388,3 @@ class Song:
         if not vs:
             return ""
         return await get_try_url(self.mid, vs)
-
-
-async def query_song(value: Union[list[str], list[int]]) -> list[dict]:
-    """根据 id 或 mid 获取歌曲信息
-
-    Args:
-        value: 歌曲 id 或 mid 列表
-
-    Returns:
-        歌曲信息
-    """
-    if not value:
-        return []
-
-    param = {
-        "types": [0 for _ in range(len(value))],
-        "modify_stamp": [0 for _ in range(len(value))],
-        "ctx": 0,
-        "client": 1,
-    }
-    if isinstance(value[0], int):
-        param["ids"] = value
-    else:
-        param["mids"] = value
-    res = await Api(**API["query"]).update_params(**param).result
-    return res["tracks"]

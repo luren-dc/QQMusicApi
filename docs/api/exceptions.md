@@ -1,24 +1,17 @@
-::: exceptions.ApiException.ApiException
-    options:
-      show_root_full_path: false
-      heading_level: 2
+# Exceptions
 
-::: exceptions.CredentialNoMusicidException.CredentialNoMusicidException
-    options:
-      show_root_full_path: false
-      heading_level: 2
+本页列出了使用时可能引发的异常。
 
-::: exceptions.CredentialNoMusickeyException.CredentialNoMusickeyException
-    options:
-      show_root_full_path: false
-      heading_level: 2
+## The Exception Hierarchy
 
-::: exceptions.LoginException.LoginException
-    options:
-      show_root_full_path: false
-      heading_level: 2
+- ApiException
+  - ResponseCodeError
+    - CredentialExpiredError
+  - CredentialInvalidError
+  - LoginError
 
-::: exceptions.ResponseCodeException.ResponseCodeException
+---
+
+::: exceptions.api_exception
     options:
-      show_root_full_path: false
       heading_level: 2

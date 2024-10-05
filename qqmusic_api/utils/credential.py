@@ -6,7 +6,7 @@ from typing import Any
 
 from typing_extensions import Self
 
-from qqmusic_api.exceptions import CredentialNoMusicidException, CredentialNoMusickeyException
+from ..exceptions import CredentialInvalidError
 
 
 @dataclass
@@ -55,15 +55,17 @@ class Credential:
         """是否提供 musickey"""
         return bool(self.musickey)
 
-    def raise_for_no_musicid(self):
-        """没有提供 musicid 时抛出异常"""
-        if not self.has_musicid():
-            raise CredentialNoMusicidException()
+    def raise_for_invalid(self) -> None:
+        """检查凭据是否有效
 
-    def raise_for_no_musickey(self):
-        """没有提供 musickey 时抛出异常"""
+        Raises:
+            CredentialInvalidError: 没有提供 musicid 或 musickey
+        """
+        if not self.has_musicid():
+            raise CredentialInvalidError("没有提供 musicid")
+
         if not self.has_musickey():
-            raise CredentialNoMusickeyException()
+            raise CredentialInvalidError("没有提供 musickey")
 
     async def refresh(self) -> bool:
         """刷新 cookies

@@ -16,7 +16,7 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import override
 
-from .exceptions import LoginException, ResponseCodeException
+from .exceptions import LoginError, ResponseCodeError
 from .utils.credential import Credential
 from .utils.network import Api
 from .utils.utils import get_api, hash33
@@ -33,12 +33,10 @@ async def check_expired(credential: Credential) -> bool:
     Returns:
         是否过期
     """
-    from .exceptions import ResponseCodeException
-
     try:
         await Api(**API["check_expired"], credential=credential).result
         return False
-    except ResponseCodeException:
+    except ResponseCodeError:
         return True
 
 
@@ -56,8 +54,7 @@ async def refresh_cookies(credential: Credential) -> Credential:
     Returns:
         新的用户凭证
     """
-    credential.raise_for_no_musicid()
-    credential.raise_for_no_musickey()
+    credential.raise_for_invalid()
 
     params = {
         "refresh_key": credential.refresh_key,
@@ -71,7 +68,7 @@ async def refresh_cookies(credential: Credential) -> Credential:
         res = (
             await Api(**api).update_params(**params).update_extra_common(tmeLoginType=str(credential.login_type)).result
         )
-    except ResponseCodeException:
+    except ResponseCodeError:
         return credential
     return Credential.from_cookies_dict(res)
 
@@ -239,7 +236,7 @@ class QQLogin(QRCodeLogin):
     @override
     async def get_qrcode_state(self):
         if not self._qrcode_data:
-            raise LoginException("请先获取二维码")
+            raise LoginError("未获取二维码")
         res = await self._session.get(
             "https://ssl.ptlogin2.qq.com/ptqrlogin",
             params={
@@ -291,7 +288,7 @@ class QQLogin(QRCodeLogin):
         if self.credential:
             return self.credential
         if self._state != QrCodeLoginEvents.DONE or self.auth_url is None:
-            raise LoginException("未完成二维码认证")
+            raise LoginError("未完成二维码认证")
         res = await self._session.get(self.auth_url, follow_redirects=True)
 
         skey = self._session.cookies["p_skey"]
@@ -375,7 +372,7 @@ class WXLogin(QRCodeLogin):
     @override
     async def get_qrcode_state(self):
         if not self._qrcode_data:
-            raise LoginException("请先获取二维码")
+            raise LoginError("未获取二维码")
 
         try:
             res = await self._session.get(
@@ -428,7 +425,7 @@ class WXLogin(QRCodeLogin):
         if self.credential:
             return self.credential
         if self._state != QrCodeLoginEvents.DONE:
-            raise LoginException("未完成二维码认证")
+            raise LoginError("未完成二维码认证")
         await self._session.get(self.auth_url, follow_redirects=False)  # type: ignore
         res = (
             await Api(**API["WX_login"])
@@ -506,6 +503,6 @@ class PhoneLogin(Login):
             .result
         )
         if res["code"] == 20271:
-            raise LoginException("验证码错误")
+            raise LoginError("验证码错误")
         self.credential = Credential.from_cookies_dict(res["data"])
         return self.credential

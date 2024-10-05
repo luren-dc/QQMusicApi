@@ -1,13 +1,9 @@
-from .ApiException import ApiException
-from .CredentialNoMusicidException import CredentialNoMusicidException
-from .CredentialNoMusickeyException import CredentialNoMusickeyException
-from .LoginException import LoginException
-from .ResponseCodeException import ResponseCodeException
+from .api_exception import *
 
 __all__ = [
     "ApiException",
-    "CredentialNoMusicidException",
-    "CredentialNoMusickeyException",
-    "LoginException",
-    "ResponseCodeException",
+    "CredentialInvalidError",
+    "CredentialExpiredError",
+    "LoginError",
+    "ResponseCodeError",
 ]
