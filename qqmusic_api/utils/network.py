@@ -50,7 +50,7 @@ def get_session() -> httpx.AsyncClient:
     if loop in _SESSION_POOL:
         return _SESSION_POOL[loop]
     else:
-        session = httpx.AsyncClient(timeout=20)
+        session = httpx.AsyncClient(timeout=20, verify=False)
         _SESSION_POOL[loop] = session
         return session
 
@@ -78,6 +78,7 @@ class Api:
         headers: 请求头
         json_body: 是否使用 json 作为载荷
         verify: 是否验证凭据
+        platform: API 来源
         ignore_code: 是否忽略返回值 code 检验直接返回
         extra_common: 额外参数
         credential: 账号凭据
@@ -108,6 +109,7 @@ class Api:
         self.extra_common = {k: None for k in self.extra_common}
         self._result: Optional[dict] = None
         self._session = get_session()
+        self._cookies = httpx.Cookies()
 
     def _setattr_(self, name: str, value: Any, /) -> None:
         if name != "_result" and hasattr(self, "_result"):
@@ -116,33 +118,28 @@ class Api:
 
     def update_params(self, **kwargs) -> Self:
         """更新参数"""
-        self._update_field(self.params, self.original_params, kwargs, "params")
+        self.params.update(kwargs)
         return self
 
     def update_data(self, **kwargs) -> Self:
         """更新数据"""
-        self._update_field(self.data, self.original_data, kwargs, "data")
+        self.data.update(kwargs)
         return self
 
     def update_extra_common(self, **kwargs) -> Self:
         """更新额外参数"""
-        self._update_field(self.extra_common, self.extra_common, kwargs, "extra_common")
+        self.extra_common.update(kwargs)
         return self
 
-    def _update_field(self, field: dict, original: dict, updates: dict, field_name: str) -> None:
-        """更新指定的字段
+    def update_headers(self, **kwargs) -> Self:
+        """更新请求头"""
+        self.headers.update(kwargs)
+        return self
 
-        Args:
-            field: 要更新的字段
-            original: 原始字段
-            updates: 更新内容
-            field_name: 字段名称
-        """
-        for key, value in updates.items():
-            if key in original:
-                field[key] = value
-            else:
-                raise KeyError(f"{key} not in {field_name}")
+    def update_cookies(self, cookies: httpx.Cookies) -> Self:
+        """更新 Cookies"""
+        self._cookies.update(cookies)
+        return self
 
     def _prepare_params_data(self) -> None:
         """准备请求参数"""
@@ -206,12 +203,12 @@ class Api:
             common["tmeLoginType"] = str(self.credential.login_type)
         else:
             cookies = {
-                "uin": self.credential.musicid,
+                "uin": str(self.credential.musicid),
                 "qqmusic_key": self.credential.musickey,
                 "qm_keyst": self.credential.musickey,
                 "tmeLoginType": str(self.credential.login_type),
             }
-            self.headers.update({"Cookie": "; ".join([f"{k}={v}" for k, v in cookies.items()])})
+            self._cookies.update(cookies)
 
     def _prepare_request(self) -> dict:
         """准备请求"""
@@ -226,6 +223,7 @@ class Api:
             "method": self.method,
             "params": self.params,
             "headers": self.headers,
+            "cookies": self._cookies,
         }
         if self.json_body:
             config["json"] = self.data
@@ -237,7 +235,9 @@ class Api:
         """发起请求"""
         config = self._prepare_request()
         resp = await self._session.request(**config)
-        resp.raise_for_status()
+        if not self.ignore_code:
+            resp.raise_for_status()
+        self._session.cookies.clear()
         return resp
 
     def _process_response(self, resp: httpx.Response) -> Union[None, str, dict]:
