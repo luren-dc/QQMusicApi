@@ -55,10 +55,11 @@ async def get_lyric(
     lyric = qrc_decrypt(res["lyric"])
 
     if lyric and qrc:
-        tree = ET.fromstring(lyric)
         try:
-            lyric = tree.find(".//Lyric_0").attrib.get("LyricContent", "")  # type: ignore
-        except AttributeError:
+            root = ET.fromstring(lyric)
+            lyric_info = root[1]
+            lyric = lyric_info[0].attrib.get("LyricContent", lyric)
+        except Exception:
             pass
 
     return {

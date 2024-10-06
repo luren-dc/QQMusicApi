@@ -6,10 +6,12 @@
 import asyncio
 from collections.abc import Coroutine
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any
+from typing import Any, TypeVar
+
+T = TypeVar("T")
 
 
-def sync(coroutine: Coroutine) -> Any:
+def sync(coroutine: Coroutine[Any, Any, T]) -> T:
     """同步执行异步函数
 
     Args:

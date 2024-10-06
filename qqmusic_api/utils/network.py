@@ -103,9 +103,9 @@ class Api:
             self.method = self.method.upper()
         self.original_params = self.params.copy()
         self.original_data = self.data.copy()
-        self.data = {k: "" for k in self.data}
-        self.params = {k: "" for k in self.params}
-        self.extra_common = {k: "" for k in self.extra_common}
+        self.data = {k: None for k in self.data}
+        self.params = {k: None for k in self.params}
+        self.extra_common = {k: None for k in self.extra_common}
         self._result: Optional[dict] = None
         self._session = get_session()
 
@@ -150,12 +150,12 @@ class Api:
         for key, value in self.params.items():
             if isinstance(value, bool):
                 new_params[key] = int(value)
-            elif value is not None and value != "":
+            elif value is not None:
                 new_params[key] = value
         for key, value in self.data.items():
             if isinstance(value, bool):
                 new_data[key] = int(value)
-            elif value is not None and value != "":
+            elif value is not None:
                 new_data[key] = value
         self.params, self.data = new_params, new_data
 

@@ -248,7 +248,7 @@ class QQLogin(QRCodeLogin):
                 "g": "1",
                 "from_ui": "1",
                 "ptlang": "2052",
-                "action": f"0-0-{int(time.time() * 1000)}",
+                "action": f"0-0-{time.time() * 1000}",
                 "js_ver": "20102616",
                 "js_type": "1",
                 "login_sig": self._sig,
