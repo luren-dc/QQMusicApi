@@ -4,8 +4,8 @@ import json
 import os
 import random
 import time
+import zlib
 from typing import Union
-from zlib import decompress
 
 from .tripledes import DECRYPT, tripledes_crypt, tripledes_key_setup
 
@@ -95,9 +95,9 @@ def qrc_decrypt(encrypted_qrc: Union[str, bytearray, bytes]) -> str:
         # 分块解密数据
         # 以 8 字节为单位迭代 encrypted_qrc
         for i in range(0, len(encrypted_qrc), 8):
-            data += tripledes_crypt(encrypted_qrc[i:], schedule)
+            data += tripledes_crypt(encrypted_qrc[i : i + 8], schedule)
 
-        decrypted_qrc = decompress(data).decode("utf-8")
+        decrypted_qrc = zlib.decompress(data).decode("utf-8")
         return decrypted_qrc
 
     except Exception as e:
