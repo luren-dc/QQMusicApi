@@ -50,7 +50,7 @@ def get_session() -> httpx.AsyncClient:
     if loop in _SESSION_POOL:
         return _SESSION_POOL[loop]
     else:
-        session = httpx.AsyncClient(verify=False)
+        session = httpx.AsyncClient(timeout=10, verify=False)
         _SESSION_POOL[loop] = session
         return session
 

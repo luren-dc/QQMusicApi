@@ -160,7 +160,7 @@
             "params": {
                 "tmeAppid": "qqmusic",
                 "phoneNo": "str 手机号",
-                "areaCode": "int 地区码(86)"
+                "areaCode": "str 国家码(86)"
             },
             "extra_common": {
                 "tmeLoginMethod": "str 3"
@@ -174,6 +174,7 @@
             "params": {
                 "code": "str 验证码",
                 "phoneNo": "str 手机号",
+                "areaCode": "str 国家码(86)",
                 "loginMode": "int 1"
             },
             "extra_common": {

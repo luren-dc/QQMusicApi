@@ -95,11 +95,13 @@ class PhoneLoginEvents(Enum):
 
     + SEND:    发送成功
     + CAPTCHA: 需要滑块验证
+    + FREQUENCY: 频繁操作
     + OTHER:   未知情况
     """
 
     SEND = auto()
     CAPTCHA = auto()
+    FREQUENCY = auto()
     OTHER = auto()
 
 
@@ -359,10 +361,7 @@ class WXLogin:
                 raise LoginError("[WXLogin] 获取 code 失败")
             return event_map[wx_errcode], wx_code
 
-        if wx_errcode in event_map:
-            return event_map[wx_errcode], ""
-
-        raise LoginError(f"[WXLogin] 未知二维码状态 {wx_errcode}")
+        return event_map.get(wx_errcode, QrCodeLoginEvents.OTHER), ""
 
     @staticmethod
     async def authorize(code: str) -> Credential:
@@ -391,3 +390,75 @@ class WXLogin:
             raise LoginError("[WXLogin] 无法重复鉴权")
         else:
             raise LoginError("[WXLogin] 未知原因导致鉴权失败")
+
+
+class PhoneLogin:
+    """手机号登录"""
+
+    @staticmethod
+    async def send_authcode(phone: int, country_code: int = 86) -> tuple[PhoneLoginEvents, str]:
+        """发送验证码
+
+        Args:
+            phone: 手机号
+            country_code: 国家码
+
+        Returns:
+            发送验证码状态，发送失败返回错误信息或验证链接
+        """
+        res = (
+            await Api(**API["phone"]["send_authcode"])
+            .update_params(
+                **{
+                    "tmeAppid": "qqmusic",
+                    "phoneNo": str(phone),
+                    "areaCode": str(country_code),
+                }
+            )
+            .result
+        )
+
+        code = res["code"]
+        if code == 20276:
+            return PhoneLoginEvents.CAPTCHA, res["data"]["securityURL"]
+        elif code == 100001:
+            return PhoneLoginEvents.FREQUENCY, ""
+        elif code == 0:
+            return PhoneLoginEvents.SEND, ""
+        else:
+            return PhoneLoginEvents.OTHER, res["data"]["errMsg"]
+
+    @staticmethod
+    async def authorize(phone: int, auth_code: int, country_code: int = 86) -> Credential:
+        """验证码鉴权
+
+        只能鉴权一次，无法重复鉴权
+
+        Args:
+            phone: 手机号
+            auth_code: 验证码
+            country_code: 国家码
+
+        Returns:
+            登录凭证
+
+        Raises:
+            LoginError: 鉴权失败
+        """
+        res = (
+            await Api(**API["phone"]["login"])
+            .update_params(
+                code=str(auth_code),
+                phoneNo=str(phone),
+                areaCode=str(country_code),
+                loginMode=1,
+            )
+            .update_extra_common(tmeLoginMethod="3", tmeLoginType="0")
+            .result
+        )
+        if res["code"] == 20271:
+            raise LoginError("[PhoneLogin] 验证码错误或已鉴权")
+        elif res["code"] == 0:
+            return Credential.from_cookies_dict(res["data"])
+        else:
+            raise LoginError("[PhoneLogin] 未知原因导致鉴权失败")
