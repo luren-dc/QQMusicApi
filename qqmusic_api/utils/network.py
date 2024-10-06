@@ -50,7 +50,7 @@ def get_session() -> httpx.AsyncClient:
     if loop in _SESSION_POOL:
         return _SESSION_POOL[loop]
     else:
-        session = httpx.AsyncClient(timeout=20, verify=False)
+        session = httpx.AsyncClient(verify=False)
         _SESSION_POOL[loop] = session
         return session
 
@@ -102,6 +102,8 @@ class Api:
     def __post_init__(self):
         if not self.module:
             self.method = self.method.upper()
+        if not self.headers:
+            self.headers = HEADERS
         self.original_params = self.params.copy()
         self.original_data = self.data.copy()
         self.data = {k: None for k in self.data}
@@ -215,8 +217,6 @@ class Api:
         self._prepare_params_data()
         self._prepare_api_data()
         self._prepare_credential()
-
-        self.headers.update(HEADERS)
 
         config = {
             "url": self.url,

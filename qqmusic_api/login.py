@@ -143,7 +143,7 @@ class QQLogin:
             (二维码状态, 二维码状态信息) 验证成功返回QQ号、QQ昵称、sigx(用于鉴权)
 
         Raises:
-            LoginException: 无效 qrsig
+            LoginException: 获取失败
         """
         try:
             res = (
@@ -283,3 +283,110 @@ class QQLogin:
             raise LoginError("[QQLogin] 无法重复鉴权")
         else:
             raise LoginError("[QQLogin] 未知原因导致鉴权失败")
+
+
+class WXLogin:
+    """微信登录"""
+
+    @staticmethod
+    async def get_qrcode() -> tuple[str, bytes]:
+        """获取二维码数据
+
+        Returns:
+            (qrsig,二维码二进制数据)
+        """
+        res = (
+            await Api(**API["wx"]["get_qrcode"])
+            .update_params(
+                **{
+                    "appid": "wx48db31d50e334801",
+                    "redirect_uri": "https://y.qq.com/portal/wx_redirect.html?login_type=2&surl=https://y.qq.com/",
+                    "response_type": "code",
+                    "scope": "snsapi_login",
+                    "state": "STATE",
+                    "href": "https://y.qq.com/mediastyle/music_v17/src/css/popup_wechat.css#wechat_redirect",
+                }
+            )
+            .request()
+        )
+        uuid = re.findall(r"uuid=(.+?)\"", res.text)[0]
+        if not uuid:
+            raise LoginError("[WXLogin] 获取 uuid 失败")
+        qrcode_data = (
+            await Api(
+                url=f"https://open.weixin.qq.com/connect/qrcode/{uuid}",
+            )
+            .update_headers(Referer=str(res.url))
+            .request()
+        ).read()
+        return uuid, qrcode_data
+
+    @staticmethod
+    async def check_qrcode_state(uuid: str) -> tuple[QrCodeLoginEvents, str]:
+        """检测二维码状态
+
+        Args:
+            uuid: 二维码 uuid
+
+        Returns:
+            (二维码状态, 二维码状态信息) 验证成功返回code(用于鉴权)
+
+        Raises:
+            LoginException: 获取失败
+        """
+        try:
+            res = (
+                await Api(**API["wx"]["check_qrcode_state"])
+                .update_params(uuid=uuid, _=str(int(time.time()) * 1000))
+                .request()
+            )
+        except httpx.TimeoutException:
+            return QrCodeLoginEvents.SCAN, ""
+
+        match = re.search(r"window\.wx_errcode=(\d+);window\.wx_code=\'([^\']*)\'", res.text)
+        if not match:
+            raise LoginError("[WXLogin] 获取二维码状态失败")
+        # 获取 wx_errcode 的值
+        wx_errcode = match.group(1)
+        # 获取 wx_code 的值
+        wx_code = match.group(2)
+        if wx_errcode == "408":
+            return QrCodeLoginEvents.SCAN, ""
+        elif wx_errcode == "404":
+            return QrCodeLoginEvents.CONF, ""
+        elif wx_errcode == "403":
+            return QrCodeLoginEvents.REFUSE, ""
+        elif wx_errcode == "405":
+            if not wx_code:
+                raise LoginError("[WXLogin] 获取 code 失败")
+            return QrCodeLoginEvents.DONE, wx_code
+        else:
+            raise LoginError(f"[WXLogin] 未知二维码状态 {wx_errcode}")
+
+    @staticmethod
+    async def authorize(code: str) -> Credential:
+        """登录鉴权
+
+        只能鉴权一次，无法重复鉴权
+
+        Args:
+            code: 登录 code
+
+        Returns:
+            登录凭证
+
+        Raises:
+            LoginError: 鉴权失败
+        """
+        response = (
+            await Api(**API["wx"]["login"])
+            .update_params(strAppid="wx48db31d50e334801", code=code)
+            .update_extra_common(tmeLoginType="1")
+            .result
+        )
+        if response["code"] == 0:
+            return Credential.from_cookies_dict(response["data"])
+        elif response["code"] == 1000:
+            raise LoginError("[WXLogin] 无法重复鉴权")
+        else:
+            raise LoginError("[WXLogin] 未知原因导致鉴权失败")

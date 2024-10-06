@@ -110,9 +110,33 @@
         }
     },
     "wx": {
+        "get_qrcode": {
+            "url": "https://open.weixin.qq.com/connect/qrconnect",
+            "params": {
+                "appid": "wx48db31d50e334801",
+                "redirect_uri": "https://y.qq.com/portal/wx_redirect.html?login_type=2&surl=https://y.qq.com/",
+                "response_type": "code",
+                "scope": "snsapi_login",
+                "state": "STATE",
+                "href": "https://y.qq.com/mediastyle/music_v17/src/css/popup_wechat.css#wechat_redirect"
+            },
+            "comment": "获取二维码二进制数据和 uuid"
+        },
+        "check_qrcode_state": {
+            "url": "https://lp.open.weixin.qq.com/connect/l/qrconnect",
+            "params": {
+                "uuid": "str uuid",
+                "_": "str 毫秒级时间戳"
+            },
+            "headers": {
+                "Referer": "https://open.weixin.qq.com/"
+            },
+            "comment": "获取二维码状态"
+        },
         "login": {
             "module": "music.login.LoginServer",
             "method": "Login",
+            "ignore_code": true,
             "params": {
                 "strAppid": "wx48db31d50e334801",
                 "code": "str 鉴权码",
