@@ -9,6 +9,7 @@ categories:
   - title: "🐛 Bug Fixes"
     labels:
       - "fix"
+      - "bug"
   - title: "📚 Documentation"
     labels:
       - "docs"
