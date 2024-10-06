@@ -180,24 +180,21 @@ class QQLogin:
             raise LoginError("[QQLogin] 获取二维码状态失败")
         data = [p.strip("'") for p in match.group(1).split(",")]
         code = data[0]
-        if "0" == code:
+        event_map = {
+            "68": QrCodeLoginEvents.REFUSE,
+            "67": QrCodeLoginEvents.CONF,
+            "66": QrCodeLoginEvents.SCAN,
+            "65": QrCodeLoginEvents.TIMEOUT,
+        }
+
+        if code == "0":
             return QrCodeLoginEvents.DONE, {
                 "uin": int(re.findall(r"&uin=(.+?)&service", data[2])[0]),
                 "nick": data[-2],
                 "sigx": re.findall(r"&ptsigx=(.+?)&s_url", data[2])[0],
             }
-        elif "68" == code:
-            return QrCodeLoginEvents.REFUSE, {}
-        elif "67" == code:
-            return QrCodeLoginEvents.CONF, {}
-        elif "66" == code:
-            return QrCodeLoginEvents.SCAN, {}
-        elif "65" == code:
-            return QrCodeLoginEvents.TIMEOUT, {}
-        elif "67" == code:
-            return QrCodeLoginEvents.CONF, {}
-        else:
-            return QrCodeLoginEvents.OTHER, {}
+
+        return event_map.get(code, QrCodeLoginEvents.OTHER), {}
 
     @staticmethod
     async def authorize(uin: int, sigx: str) -> Credential:
@@ -350,18 +347,22 @@ class WXLogin:
         wx_errcode = match.group(1)
         # 获取 wx_code 的值
         wx_code = match.group(2)
-        if wx_errcode == "408":
-            return QrCodeLoginEvents.SCAN, ""
-        elif wx_errcode == "404":
-            return QrCodeLoginEvents.CONF, ""
-        elif wx_errcode == "403":
-            return QrCodeLoginEvents.REFUSE, ""
-        elif wx_errcode == "405":
+        event_map = {
+            "408": QrCodeLoginEvents.SCAN,
+            "404": QrCodeLoginEvents.CONF,
+            "403": QrCodeLoginEvents.REFUSE,
+            "405": QrCodeLoginEvents.DONE,
+        }
+
+        if wx_errcode == "405":
             if not wx_code:
                 raise LoginError("[WXLogin] 获取 code 失败")
-            return QrCodeLoginEvents.DONE, wx_code
-        else:
-            raise LoginError(f"[WXLogin] 未知二维码状态 {wx_errcode}")
+            return event_map[wx_errcode], wx_code
+
+        if wx_errcode in event_map:
+            return event_map[wx_errcode], ""
+
+        raise LoginError(f"[WXLogin] 未知二维码状态 {wx_errcode}")
 
     @staticmethod
     async def authorize(code: str) -> Credential:
