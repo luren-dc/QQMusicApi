@@ -2,17 +2,11 @@
 
 import random
 import re
-import sys
 import time
 import uuid
 from enum import Enum, auto
 
 import httpx
-
-if sys.version_info >= (3, 12):
-    pass
-else:
-    pass
 
 from .exceptions import LoginError, ResponseCodeError
 from .utils.credential import Credential
@@ -105,8 +99,8 @@ class PhoneLoginEvents(Enum):
     OTHER = auto()
 
 
-class QQLogin:
-    """QQ登录"""
+class QQLoginApi:
+    """QQ登录 API"""
 
     @staticmethod
     async def get_qrcode() -> tuple[str, bytes]:
@@ -134,7 +128,7 @@ class QQLogin:
         )
         qrsig = res.cookies.get("qrsig")
         if not qrsig:
-            raise LoginError("[QQLogin] 获取二维码失败")
+            raise LoginError("[QQLoginApi] 获取二维码失败")
         return qrsig, res.read()
 
     @staticmethod
@@ -174,12 +168,12 @@ class QQLogin:
                 .request()
             )
         except httpx.HTTPStatusError:
-            raise LoginError("[QQLogin] 无效 qrsig")
+            raise LoginError("[QQLoginApi] 无效 qrsig")
 
         match = re.search(r"ptuiCB\((.*?)\)", res.text)
 
         if not match:
-            raise LoginError("[QQLogin] 获取二维码状态失败")
+            raise LoginError("[QQLoginApi] 获取二维码状态失败")
         data = [p.strip("'") for p in match.group(1).split(",")]
         code = data[0]
         event_map = {
@@ -244,7 +238,7 @@ class QQLogin:
         p_skey = res.cookies.get("p_skey")
 
         if not p_skey:
-            raise LoginError("[QQLogin] 获取 p_skey 失败")
+            raise LoginError("[QQLoginApi] 获取 p_skey 失败")
         res = await (
             Api(**API["qq"]["authorize"])
             .update_data(
@@ -272,20 +266,20 @@ class QQLogin:
         try:
             code = re.findall(r"(?<=code=)(.+?)(?=&)", location)[0]
         except IndexError:
-            raise LoginError("[QQLogin] 获取 code 失败")
+            raise LoginError("[QQLoginApi] 获取 code 失败")
 
         response = await Api(**API["qq"]["login"]).update_params(code=code).update_extra_common(tmeLoginType="2").result
 
         if response["code"] == 0:
             return Credential.from_cookies_dict(response["data"])
         elif response["code"] == 1000:
-            raise LoginError("[QQLogin] 无法重复鉴权")
+            raise LoginError("[QQLoginApi] 无法重复鉴权")
         else:
-            raise LoginError("[QQLogin] 未知原因导致鉴权失败")
+            raise LoginError("[QQLoginApi] 未知原因导致鉴权失败")
 
 
-class WXLogin:
-    """微信登录"""
+class WXLoginApi:
+    """微信登录 API"""
 
     @staticmethod
     async def get_qrcode() -> tuple[str, bytes]:
@@ -310,7 +304,7 @@ class WXLogin:
         )
         uuid = re.findall(r"uuid=(.+?)\"", res.text)[0]
         if not uuid:
-            raise LoginError("[WXLogin] 获取 uuid 失败")
+            raise LoginError("[WXLoginApi] 获取 uuid 失败")
         qrcode_data = (
             await Api(
                 url=f"https://open.weixin.qq.com/connect/qrcode/{uuid}",
@@ -344,7 +338,7 @@ class WXLogin:
 
         match = re.search(r"window\.wx_errcode=(\d+);window\.wx_code=\'([^\']*)\'", res.text)
         if not match:
-            raise LoginError("[WXLogin] 获取二维码状态失败")
+            raise LoginError("[WXLoginApi] 获取二维码状态失败")
         # 获取 wx_errcode 的值
         wx_errcode = match.group(1)
         # 获取 wx_code 的值
@@ -358,7 +352,7 @@ class WXLogin:
 
         if wx_errcode == "405":
             if not wx_code:
-                raise LoginError("[WXLogin] 获取 code 失败")
+                raise LoginError("[WXLoginApi] 获取 code 失败")
             return event_map[wx_errcode], wx_code
 
         return event_map.get(wx_errcode, QrCodeLoginEvents.OTHER), ""
@@ -387,13 +381,13 @@ class WXLogin:
         if response["code"] == 0:
             return Credential.from_cookies_dict(response["data"])
         elif response["code"] == 1000:
-            raise LoginError("[WXLogin] 无法重复鉴权")
+            raise LoginError("[WXLoginApi] 无法重复鉴权")
         else:
-            raise LoginError("[WXLogin] 未知原因导致鉴权失败")
+            raise LoginError("[WXLoginApi] 未知原因导致鉴权失败")
 
 
-class PhoneLogin:
-    """手机号登录"""
+class PhoneLoginApi:
+    """手机号登录 API"""
 
     @staticmethod
     async def send_authcode(phone: int, country_code: int = 86) -> tuple[PhoneLoginEvents, str]:
@@ -457,8 +451,8 @@ class PhoneLogin:
             .result
         )
         if res["code"] == 20271:
-            raise LoginError("[PhoneLogin] 验证码错误或已鉴权")
+            raise LoginError("[PhoneLoginApi] 验证码错误或已鉴权")
         elif res["code"] == 0:
             return Credential.from_cookies_dict(res["data"])
         else:
-            raise LoginError("[PhoneLogin] 未知原因导致鉴权失败")
+            raise LoginError("[PhoneLoginApi] 未知原因导致鉴权失败")
