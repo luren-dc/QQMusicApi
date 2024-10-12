@@ -105,7 +105,7 @@ class QQLoginApi:
         """获取二维码数据
 
         Returns:
-            (qrsig,二维码二进制数据)
+            (qrsig,二维码二进制数据(PNG格式))
         """
         res = (
             await Api(**API["qq"]["get_qrcode"])
@@ -132,6 +132,9 @@ class QQLoginApi:
     @staticmethod
     async def check_qrcode_state(qrsig: str) -> tuple[QrCodeLoginEvents, Optional[Credential]]:
         """检测二维码状态
+
+        Args:
+            qrsig: 二维码 qrsig
 
         Returns:
             (二维码状态, 扫码成功获取的用户凭证)
@@ -268,7 +271,7 @@ class WXLoginApi:
         """获取二维码数据
 
         Returns:
-            (qrsig,二维码二进制数据)
+            (qrsig,二维码二进制数据(JEPG格式))
         """
         res = (
             await Api(**API["wx"]["get_qrcode"])

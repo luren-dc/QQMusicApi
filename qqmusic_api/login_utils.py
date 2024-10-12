@@ -42,7 +42,7 @@ class QRCodeLogin(Login):
         """获取二维码
 
         Returns:
-            二维码二进制数据
+            二维码二进制数据(QQ:PNG格式,WX:JEPG格式)
         """
 
     @abstractmethod
