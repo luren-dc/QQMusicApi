@@ -140,6 +140,8 @@ class QQLoginApi:
             LoginException: 获取失败
         """
         try:
+            cookie = httpx.Cookies()
+            cookie.set("qrsig", qrsig)
             res = (
                 await Api(**API["qq"]["check_qrcode_state"])
                 .update_params(
@@ -162,7 +164,7 @@ class QQLoginApi:
                         "has_onekey": "1",
                     }
                 )
-                .update_headers(Cookie=f"qrsig={qrsig}")
+                .update_cookies(cookie)
                 .request()
             )
         except httpx.HTTPStatusError:

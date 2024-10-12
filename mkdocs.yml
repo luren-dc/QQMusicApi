@@ -137,6 +137,7 @@ nav:
   - API 文档:
       - album 专辑: api/album.md
       - login 登录: api/login.md
+      - login_utils 登录工具: api/login_utils.md
       - mv MV: api/mv.md
       - search 搜索: api/search.md
       - singer 歌手: api/singer.md

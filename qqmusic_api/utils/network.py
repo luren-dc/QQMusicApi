@@ -50,7 +50,7 @@ def get_session() -> httpx.AsyncClient:
     if loop in _SESSION_POOL:
         return _SESSION_POOL[loop]
     else:
-        session = httpx.AsyncClient(timeout=10, verify=False)
+        session = httpx.AsyncClient(timeout=20)
         _SESSION_POOL[loop] = session
         return session
 
@@ -218,12 +218,13 @@ class Api:
         self._prepare_api_data()
         self._prepare_credential()
 
+        self.headers.update({"Cookie": "; ".join([f"{k}={v}" for k, v in self._cookies.items()])})
+
         config = {
             "url": self.url,
             "method": self.method,
             "params": self.params,
             "headers": self.headers,
-            "cookies": self._cookies,
         }
         if self.json_body:
             config["json"] = self.data
