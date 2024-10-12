@@ -1,30 +1,28 @@
 import pytest
 
 from qqmusic_api.exceptions import LoginError
-from qqmusic_api.login import PhoneLogin, PhoneLoginEvents, QQLogin, QrCodeLoginEvents, WXLogin
+from qqmusic_api.login import PhoneLoginApi, PhoneLoginEvents, QQLoginApi, QrCodeLoginEvents, WXLoginApi
 
 pytestmark = pytest.mark.asyncio(loop_scope="session")
 
 
 async def test_qq_login():
-    async with QQLogin() as login:
-        await login.get_qrcode()
-        state = await login.get_qrcode_state()
-        assert state in [QrCodeLoginEvents.SCAN]
+    qrsig, _ = await QQLoginApi.get_qrcode()
+    state, _ = await QQLoginApi.check_qrcode_state(qrsig)
+    assert state in [QrCodeLoginEvents.SCAN]
 
 
 async def test_wx_login():
-    async with WXLogin() as login:
-        await login.get_qrcode()
-        state = await login.get_qrcode_state()
-        assert state in [QrCodeLoginEvents.SCAN]
+    uuid, _ = await WXLoginApi.get_qrcode()
+    state, _ = await WXLoginApi.check_qrcode_state(uuid)
+    assert state in [QrCodeLoginEvents.SCAN]
 
 
 async def test_phone_login():
-    login = PhoneLogin("17380269540")  # 号码为随机生成，仅用于测试
-    state = await login.send_authcode()
+    phone = 17380269540
+    state, _ = await PhoneLoginApi.send_authcode(phone)  # 号码为随机生成，仅用于测试
     assert state in [PhoneLoginEvents.SEND, PhoneLoginEvents.CAPTCHA]
     try:
-        await login.authorize(123456)
+        await PhoneLoginApi.authorize(phone, 123456)
     except LoginError:
         pass

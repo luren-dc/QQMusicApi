@@ -56,14 +56,11 @@ async def refresh_cookies(credential: Credential) -> Credential:
         "musicid": credential.musicid,
     }
 
-    api = API["WX_login"] if credential.login_type == 1 else API["QQ_login"]
-    try:
-        res = (
-            await Api(**api).update_params(**params).update_extra_common(tmeLoginType=str(credential.login_type)).result
-        )
-    except ResponseCodeError:
+    api = API["wx"]["login"] if credential.login_type == 1 else API["wx"]["login"]
+    res = await Api(**api).update_params(**params).update_extra_common(tmeLoginType=str(credential.login_type)).result
+    if res["code"] != 0:
         return credential
-    return Credential.from_cookies_dict(res)
+    return Credential.from_cookies_dict(res["data"])
 
 
 class QrCodeLoginEvents(Enum):
