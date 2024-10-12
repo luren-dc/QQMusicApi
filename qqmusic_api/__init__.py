@@ -1,4 +1,4 @@
-from . import album, login, lyric, mv, search, singer, song, songlist, top, user
+from . import album, login, login_utils, lyric, mv, search, singer, song, songlist, top, user
 from .utils.credential import Credential
 from .utils.network import get_session, set_session
 from .utils.sync import sync
@@ -10,6 +10,7 @@ __all__ = [
     "Credential",
     "get_session",
     "login",
+    "login_utils",
     "lyric",
     "mv",
     "search",
