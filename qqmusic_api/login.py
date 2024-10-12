@@ -5,6 +5,7 @@ import re
 import time
 import uuid
 from enum import Enum, auto
+from typing import Optional
 
 import httpx
 
@@ -132,11 +133,11 @@ class QQLoginApi:
         return qrsig, res.read()
 
     @staticmethod
-    async def check_qrcode_state(qrsig: str) -> tuple[QrCodeLoginEvents, dict]:
+    async def check_qrcode_state(qrsig: str) -> tuple[QrCodeLoginEvents, Optional[Credential]]:
         """检测二维码状态
 
         Returns:
-            (二维码状态, 二维码状态信息) 验证成功返回QQ号、QQ昵称、sigx(用于鉴权)
+            (二维码状态, 扫码成功获取的用户凭证)
 
         Raises:
             LoginException: 获取失败
@@ -184,98 +185,80 @@ class QQLoginApi:
         }
 
         if code == "0":
-            return QrCodeLoginEvents.DONE, {
-                "uin": int(re.findall(r"&uin=(.+?)&service", data[2])[0]),
-                "nick": data[-2],
-                "sigx": re.findall(r"&ptsigx=(.+?)&s_url", data[2])[0],
-            }
-
-        return event_map.get(code, QrCodeLoginEvents.OTHER), {}
-
-    @staticmethod
-    async def authorize(uin: int, sigx: str) -> Credential:
-        """登录鉴权
-
-        只能鉴权一次，无法重复鉴权
-
-        Args:
-            uin:  QQ号
-            sigx: 二维码扫码获得的sigx
-
-        Returns:
-            用户凭证
-
-        Raises:
-            LoginException: 鉴权失败
-        """
-        res = (
-            await Api(**API["qq"]["check_sig"])
-            .update_params(
-                **{
-                    "uin": str(uin),
-                    "pttype": "1",
-                    "service": "ptqrlogin",
-                    "nodirect": "0",
-                    "ptsigx": sigx,
-                    "s_url": "https://graph.qq.com/oauth2.0/login_jump",
-                    "ptlang": "2052",
-                    "ptredirect": "100",
-                    "aid": "716027609",
-                    "daid": "383",
-                    "j_later": "0",
-                    "low_login_hour": "0",
-                    "regmaster": "0",
-                    "pt_login_type": "3",
-                    "pt_aid": "0",
-                    "pt_aaid": "16",
-                    "pt_light": "0",
-                    "pt_3rd_aid": "100497308",
-                }
+            sigx = re.findall(r"&ptsigx=(.+?)&s_url", data[2])[0]
+            uin = re.findall(r"&uin=(.+?)&service", data[2])[0]
+            res = (
+                await Api(**API["qq"]["check_sig"])
+                .update_params(
+                    **{
+                        "uin": str(uin),
+                        "pttype": "1",
+                        "service": "ptqrlogin",
+                        "nodirect": "0",
+                        "ptsigx": sigx,
+                        "s_url": "https://graph.qq.com/oauth2.0/login_jump",
+                        "ptlang": "2052",
+                        "ptredirect": "100",
+                        "aid": "716027609",
+                        "daid": "383",
+                        "j_later": "0",
+                        "low_login_hour": "0",
+                        "regmaster": "0",
+                        "pt_login_type": "3",
+                        "pt_aid": "0",
+                        "pt_aaid": "16",
+                        "pt_light": "0",
+                        "pt_3rd_aid": "100497308",
+                    }
+                )
+                .request()
             )
-            .request()
-        )
 
-        p_skey = res.cookies.get("p_skey")
+            p_skey = res.cookies.get("p_skey")
 
-        if not p_skey:
-            raise LoginError("[QQLoginApi] 获取 p_skey 失败")
-        res = await (
-            Api(**API["qq"]["authorize"])
-            .update_data(
-                **{
-                    "response_type": "code",
-                    "client_id": "100497308",
-                    "redirect_uri": "https://y.qq.com/portal/wx_redirect.html?login_type=1&surl=https%3A%252F%252Fy.qq.com%252F",
-                    "scope": "get_user_info,get_app_friends",
-                    "state": "state",
-                    "switch": "",
-                    "from_ptlogin": "1",
-                    "src": "1",
-                    "update_auth": "1",
-                    "openapi": "1010_1030",
-                    "g_tk": hash33(p_skey, 5381),
-                    "auth_time": str(int(time.time()) * 1000),
-                    "ui": str(uuid.uuid4()),
-                },
+            if not p_skey:
+                raise LoginError("[QQLoginApi] 获取 p_skey 失败")
+            res = await (
+                Api(**API["qq"]["authorize"])
+                .update_data(
+                    **{
+                        "response_type": "code",
+                        "client_id": "100497308",
+                        "redirect_uri": "https://y.qq.com/portal/wx_redirect.html?login_type=1&surl=https%3A%252F%252Fy.qq.com%252F",
+                        "scope": "get_user_info,get_app_friends",
+                        "state": "state",
+                        "switch": "",
+                        "from_ptlogin": "1",
+                        "src": "1",
+                        "update_auth": "1",
+                        "openapi": "1010_1030",
+                        "g_tk": hash33(p_skey, 5381),
+                        "auth_time": str(int(time.time()) * 1000),
+                        "ui": str(uuid.uuid4()),
+                    },
+                )
+                .update_cookies(res.cookies)
+                .request()
             )
-            .update_cookies(res.cookies)
-            .request()
-        )
 
-        location = res.headers.get("Location", "")
-        try:
-            code = re.findall(r"(?<=code=)(.+?)(?=&)", location)[0]
-        except IndexError:
-            raise LoginError("[QQLoginApi] 获取 code 失败")
+            location = res.headers.get("Location", "")
+            try:
+                code = re.findall(r"(?<=code=)(.+?)(?=&)", location)[0]
+            except IndexError:
+                raise LoginError("[QQLoginApi] 获取 code 失败")
 
-        response = await Api(**API["qq"]["login"]).update_params(code=code).update_extra_common(tmeLoginType="2").result
+            response = (
+                await Api(**API["qq"]["login"]).update_params(code=code).update_extra_common(tmeLoginType="2").result
+            )
 
-        if response["code"] == 0:
-            return Credential.from_cookies_dict(response["data"])
-        elif response["code"] == 1000:
-            raise LoginError("[QQLoginApi] 无法重复鉴权")
-        else:
-            raise LoginError("[QQLoginApi] 未知原因导致鉴权失败")
+            if response["code"] == 0:
+                return QrCodeLoginEvents.DONE, Credential.from_cookies_dict(response["data"])
+            elif response["code"] == 1000:
+                raise LoginError("[QQLoginApi] 无法重复鉴权")
+            else:
+                raise LoginError("[QQLoginApi] 未知原因导致鉴权失败")
+
+        return event_map.get(code, QrCodeLoginEvents.OTHER), None
 
 
 class WXLoginApi:
@@ -315,7 +298,7 @@ class WXLoginApi:
         return uuid, qrcode_data
 
     @staticmethod
-    async def check_qrcode_state(uuid: str) -> tuple[QrCodeLoginEvents, str]:
+    async def check_qrcode_state(uuid: str) -> tuple[QrCodeLoginEvents, Optional[Credential]]:
         """检测二维码状态
 
         Args:
@@ -334,7 +317,7 @@ class WXLoginApi:
                 .request()
             )
         except httpx.TimeoutException:
-            return QrCodeLoginEvents.SCAN, ""
+            return QrCodeLoginEvents.SCAN, None
 
         match = re.search(r"window\.wx_errcode=(\d+);window\.wx_code=\'([^\']*)\'", res.text)
         if not match:
@@ -347,43 +330,26 @@ class WXLoginApi:
             "408": QrCodeLoginEvents.SCAN,
             "404": QrCodeLoginEvents.CONF,
             "403": QrCodeLoginEvents.REFUSE,
-            "405": QrCodeLoginEvents.DONE,
         }
 
         if wx_errcode == "405":
             if not wx_code:
                 raise LoginError("[WXLoginApi] 获取 code 失败")
-            return event_map[wx_errcode], wx_code
 
-        return event_map.get(wx_errcode, QrCodeLoginEvents.OTHER), ""
+            response = (
+                await Api(**API["wx"]["login"])
+                .update_params(strAppid="wx48db31d50e334801", code=wx_code)
+                .update_extra_common(tmeLoginType="1")
+                .result
+            )
+            if response["code"] == 0:
+                return QrCodeLoginEvents.DONE, Credential.from_cookies_dict(response["data"])
+            elif response["code"] == 1000:
+                raise LoginError("[WXLoginApi] 无法重复鉴权")
+            else:
+                raise LoginError("[WXLoginApi] 未知原因导致鉴权失败")
 
-    @staticmethod
-    async def authorize(code: str) -> Credential:
-        """登录鉴权
-
-        只能鉴权一次，无法重复鉴权
-
-        Args:
-            code: 登录 code
-
-        Returns:
-            登录凭证
-
-        Raises:
-            LoginError: 鉴权失败
-        """
-        response = (
-            await Api(**API["wx"]["login"])
-            .update_params(strAppid="wx48db31d50e334801", code=code)
-            .update_extra_common(tmeLoginType="1")
-            .result
-        )
-        if response["code"] == 0:
-            return Credential.from_cookies_dict(response["data"])
-        elif response["code"] == 1000:
-            raise LoginError("[WXLoginApi] 无法重复鉴权")
-        else:
-            raise LoginError("[WXLoginApi] 未知原因导致鉴权失败")
+        return event_map.get(wx_errcode, QrCodeLoginEvents.OTHER), None
 
 
 class PhoneLoginApi:

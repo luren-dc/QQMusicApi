@@ -43,36 +43,20 @@ class QRCodeLogin(Login):
         """
 
     @abstractmethod
-    async def check_qrcode_state(self) -> QrCodeLoginEvents:
+    async def check_qrcode_state(self) -> tuple[QrCodeLoginEvents, Optional[Credential]]:
         """检测二维码状态
 
         Returns:
-            二维码状态
-        """
-
-    @abstractmethod
-    async def authorize(self) -> Credential:
-        """登录鉴权
-
-        Returns:
-            用户凭证
+            二维码状态，扫码成功返回凭证
         """
 
 
 class QQLogin(QRCodeLogin):
-    """QQ 登录
-
-    Attributes:
-        uin: QQ号
-        nick: 昵称
-    """
+    """QQ 登录"""
 
     def __init__(self) -> None:
         super().__init__()
         self._qrsig = ""
-        self._sigx = ""
-        self.uin = 0
-        self.nick = ""
 
     @override
     async def get_qrcode(self) -> bytes:
@@ -82,24 +66,13 @@ class QQLogin(QRCodeLogin):
         return self._qrcode_data
 
     @override
-    async def check_qrcode_state(self) -> QrCodeLoginEvents:
+    async def check_qrcode_state(self) -> tuple[QrCodeLoginEvents, Optional[Credential]]:
+        if self._state == QrCodeLoginEvents.DONE and self.credential:
+            return self._state, self.credential
         if not self._qrsig:
             raise LoginError("[QQLogin] 请先获取二维码")
-        self._state, data = await QQLoginApi.check_qrcode_state(self._qrsig)
-        if self._state == QrCodeLoginEvents.DONE:
-            self.uin = data["uin"]
-            self.nick = data["nick"]
-            self._sigx = data["sigx"]
-        return self._state
-
-    @override
-    async def authorize(self) -> Credential:
-        if not self._sigx:
-            raise LoginError("[QQLogin] 未确认登录")
-        if self.credential:
-            return self.credential
-        self.credential = await QQLoginApi.authorize(self.uin, self._sigx)
-        return self.credential
+        self._state, self.credential = await QQLoginApi.check_qrcode_state(self._qrsig)
+        return self._state, self.credential
 
 
 class WXLogin(QRCodeLogin):
@@ -118,20 +91,13 @@ class WXLogin(QRCodeLogin):
         return self._qrcode_data
 
     @override
-    async def check_qrcode_state(self) -> QrCodeLoginEvents:
+    async def check_qrcode_state(self) -> tuple[QrCodeLoginEvents, Optional[Credential]]:
+        if self._state == QrCodeLoginEvents.DONE and self.credential:
+            return self._state, self.credential
         if not self._uuid:
             raise LoginError("[WXLogin] 请先获取二维码")
-        self._state, self._code = await WXLoginApi.check_qrcode_state(self._uuid)
-        return self._state
-
-    @override
-    async def authorize(self) -> Credential:
-        if not self._code:
-            raise LoginError("[WXLogin] 未确认登录")
-        if self.credential:
-            return self.credential
-        self.credential = await WXLoginApi.authorize(self._code)
-        return self.credential
+        self._state, self.credential = await WXLoginApi.check_qrcode_state(self._uuid)
+        return self._state, self.credential
 
 
 class PhoneLogin(Login):
@@ -142,6 +108,17 @@ class PhoneLogin(Login):
         area_code: 国家码
         auth_url: 验证链接
         error_msg: 错误信息
+
+    Example:
+        >>> login = PhoneLogin(12345678901)
+        >>> await login.send_authcode()
+        # 获取滑块验证链接
+        >>> login.auth_url
+        # 验证后再次发送
+        >>> await login.send_authcode()
+        # 获取错误信息
+        >>> login.error_msg
+        >>> await login.authorize(123456)
     """
 
     def __init__(self, phone: int, area_code: int = 86) -> None:
