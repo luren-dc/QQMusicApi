@@ -1,6 +1,6 @@
 import asyncio
 
-from qqmusic_api.login import QQLogin, QRCodeLogin, QrCodeLoginEvents
+from qqmusic_api.login_utils import QQLogin, QRCodeLogin, QrCodeLoginEvents
 
 
 def show_qrcode(data: bytes):
@@ -28,7 +28,7 @@ async def qrcode_login(login: QRCodeLogin):
     print(login.__class__.__name__)
     show_qrcode(await login.get_qrcode())
     while True:
-        state = await login.get_qrcode_state()
+        state, credential = await login.check_qrcode_state()
         if state == QrCodeLoginEvents.REFUSE:
             print("拒绝登录")
             exit()
@@ -45,20 +45,9 @@ async def qrcode_login(login: QRCodeLogin):
 
         await asyncio.sleep(4)
 
-    credential = await login.authorize()
-
+    # 获取Credential
+    # login.credential
     print(credential)
 
 
-async def main():
-    logins = [
-        QQLogin(),
-        # WXLogin(),
-    ]
-
-    for login in logins:
-        await qrcode_login(login)
-        await login.close()
-
-
-asyncio.run(main())
+asyncio.run(qrcode_login(QQLogin()))

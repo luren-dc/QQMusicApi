@@ -1,4 +1,7 @@
-"""登录相关 Utils"""
+"""登录相关 Utils
+
+对登录Api的进一步封装
+"""
 
 import sys
 from abc import ABC, abstractmethod
@@ -108,17 +111,6 @@ class PhoneLogin(Login):
         area_code: 国家码
         auth_url: 验证链接
         error_msg: 错误信息
-
-    Example:
-        >>> login = PhoneLogin(12345678901)
-        >>> await login.send_authcode()
-        # 获取滑块验证链接
-        >>> login.auth_url
-        # 验证后再次发送
-        >>> await login.send_authcode()
-        # 获取错误信息
-        >>> login.error_msg
-        >>> await login.authorize(123456)
     """
 
     def __init__(self, phone: int, area_code: int = 86) -> None:
@@ -139,7 +131,11 @@ class PhoneLogin(Login):
         return self._state
 
     async def authorize(self, auth_code: int) -> Credential:
-        """验证码鉴权"""
+        """验证码鉴权
+
+        Args:
+            auth_code: 验证码
+        """
         if self.credential:
             return self.credential
         self.credential = await PhoneLoginApi.authorize(self.phone, auth_code, self.area_code)

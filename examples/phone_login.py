@@ -2,12 +2,12 @@ import asyncio
 import subprocess
 import sys
 
-from qqmusic_api.login import PhoneLogin, PhoneLoginEvents
+from qqmusic_api.login_utils import PhoneLogin, PhoneLoginEvents
 
 
 async def phone_login():
     phone = input("请输入手机号码")
-    login = PhoneLogin(phone)
+    login = PhoneLogin(int(phone))
     while 1:
         state = await login.send_authcode()
         if state == PhoneLoginEvents.SEND:
