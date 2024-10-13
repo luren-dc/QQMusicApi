@@ -27,7 +27,7 @@ class MV:
     async def get_detail(self) -> dict:
         """获取 MV 详细信息
 
-        Return:
+        Returns:
             视频信息
         """
         param = {
@@ -61,7 +61,7 @@ class MV:
     async def get_related_song(self) -> list[dict]:
         """获取 MV 相关歌曲
 
-        Return:
+        Returns:
             歌曲基本信息
         """
         param = {
@@ -74,7 +74,7 @@ class MV:
     async def get_url(self) -> dict:
         """获取 MV 播放链接
 
-        Return:
+        Returns:
             视频播放链接
         """
         return (await get_mv_urls([self.vid]))[self.vid]
@@ -86,7 +86,7 @@ async def get_mv_urls(vid: list[str]) -> dict:
     Args:
         vid: 视频 vid 列表
 
-    Return:
+    Returns:
         视频播放链接
     """
     param = {
