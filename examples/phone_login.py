@@ -27,7 +27,7 @@ async def phone_login():
                 subprocess.call(["xdg-open", login.auth_url])
             input("")
         else:
-            print("未知情况")
+            print("未知情况", login.error_msg)
             return
     code = int(input("请输入验证码"))
     credential = await login.authorize(code)
