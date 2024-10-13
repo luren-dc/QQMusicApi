@@ -25,6 +25,8 @@
 
 > [!WARNING]
 > 本仓库的所有内容仅供学习和参考之用，禁止用于商业用途
+>
+> All contents in this repo are for learning and reference only and are not allowed to be used for commercial purposes.
 
 **文档**: <a href="https://luren-dc.github.io/QQMusicApi" target="_blank">https://luren-dc.github.io/QQMusicApi</a>
 
