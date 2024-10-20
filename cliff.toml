@@ -5,6 +5,8 @@
 # template for the changelog header
 header = """
 # Changelog\n
+所有对该项目的重要更改都将记录在此文件中。\n
+---
 """
 # template for the changelog body
 # https://keats.github.io/tera/docs/#introduction
@@ -14,18 +16,32 @@ body = """
 {%- endmacro -%}
 
 {% if version -%}
-    ## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
+    {% if previous.version %}\
+        ## [[{{ version | trim_start_matches(pat="v") }}]({{ self::remote_url() }}/compare/{{ previous.version }}..{{ version }})] - {{ timestamp | date(format="%Y-%m-%d") }}
+    {% else %}\
+        ## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
+    {% endif %}\
+{% else %}
+    ## Latest Changes
 {% endif -%}
 
 {% for group, commits in commits | group_by(attribute="group") %}
-    ### {{ group | upper_first }}
+    ### {{ group | striptags | trim | upper_first }}
+    {% for commit in commits
+    | unique(attribute="message")
+    | filter(attribute="scope")
+    | sort(attribute="scope") %}
+        - **({{commit.scope}})**{% if commit.breaking %} [**breaking**]{% endif %} \
+            {{ commit.message }} - ([{{ commit.id | truncate(length=7, end="") }}]({{ self::remote_url() }}/commit/{{ commit.id }})) - {{ commit.author.name }} {% if commit.remote.pr_number %} - [#{{ commit.remote.pr_number }}]({{ self::remote_url() }}/pull/{{ commit.remote.pr_number }}) {%- endif %}
+    {%- endfor -%}
+    {% raw %}\n{% endraw %}\
     {%- for commit in commits | unique(attribute="message") %}
-        - [{{ commit.id | truncate(length=7, end="") }}]({{ self::remote_url() }}/commit/{{ commit.id }}): {{ commit.message | split(pat="\n") | first | upper_first | trim }}\
-            {% if commit.remote.username %} by @{{ commit.remote.username }}{%- endif -%}
-            {% if commit.remote.pr_number %} in \
-            [#{{ commit.remote.pr_number }}]({{ self::remote_url() }}/pull/{{ commit.remote.pr_number }}) \
-            {%- endif -%}
-    {% endfor %}
+        {%- if commit.scope -%}
+        {% else -%}
+            - {% if commit.breaking %} [**breaking**]{% endif %}\
+                {{ commit.message }} - ([{{ commit.id | truncate(length=7, end="") }}]({{ self::remote_url() }}/commit/{{ commit.id }})) - {{ commit.author.name }} {% if commit.remote.pr_number %} - [#{{ commit.remote.pr_number }}]({{ self::remote_url() }}/pull/{{ commit.remote.pr_number }}) {%- endif %}
+        {% endif -%}
+    {% endfor -%}
 {% endfor %}
 
 {%- if github.contributors | filter(attribute="is_first_time", value=true) | length != 0 %}
@@ -45,9 +61,6 @@ footer = """
 """
 # remove the leading and trailing whitespace from the templates
 trim = true
-
-[bump]
-features_always_bump_minor = false
 
 [git]
 # parse the commits based on https://www.conventionalcommits.org

@@ -155,6 +155,7 @@ nav:
           - sync 同步: api/utils/sync.md
           - tripledes TripleDES: api/utils/tripledes.md
   - 贡献指南: contributing.md
+  - Release Notes: release-notes.md
 
 watch:
   - qqmusic_api
