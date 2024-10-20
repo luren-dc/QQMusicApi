@@ -1,8 +1,10 @@
 name: Deploy docs site to Pages
 
 on:
-  release:
-    types: [published]
+  workflow_run:
+    workflows: ["Generate Changelog"]
+    types:
+      - completed
 
   workflow_dispatch:
 
