@@ -49,9 +49,13 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Setup PDM
+        uses: pdm-project/setup-pdm@v4
+        with:
+          python-version: 3.12
       - name: Get version
         run: |
-          echo PACKAGE_VERSION=`python -c 'from qqmusic_api import __version__; print(__version__)'` >> $GITHUB_ENV
+          echo PACKAGE_VERSION=`pdm show --version` >> $GITHUB_ENV
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
