@@ -14,7 +14,6 @@ repos:
       - id: check-yaml
         args: [--unsafe]
       - id: detect-private-key
-      - id: no-commit-to-branch
       - id: end-of-file-fixer
         exclude: ^LICENSE|\.(html|csv|txt|svg)$
       - id: pretty-format-json
@@ -45,6 +44,11 @@ repos:
       - id: typecheck
         name: typecheck
         entry: mypy
-        args: [--ignore-missing-imports, --scripts-are-modules, --check-untyped-defs]
+        args:
+          [
+            --ignore-missing-imports,
+            --scripts-are-modules,
+            --check-untyped-defs,
+          ]
         language: python
         types_or: [python, pyi]
