@@ -3,9 +3,6 @@ name: Generate Changelog
 on:
   release:
     types: [published]
-  push:
-    branches:
-      - "main"
 
 permissions:
   contents: write
