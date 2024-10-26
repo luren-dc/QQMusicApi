@@ -1,0 +1,21 @@
+name: Update dependencies
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+
+  workflow_dispatch:
+
+jobs:
+  update-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update dependencies
+        uses: pdm-project/update-deps-action@main
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          update-strategy: eager
+          commit-message: "build: Update pdm.lock"
+          pr-title: "build: Update dependencies"
