@@ -25,8 +25,8 @@ jobs:
       - name: Commit
         run: |
           git checkout main
-          git config user.name 'Luren'
-          git config user.email '68656403+luren-dc@users.noreply.github.com'
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           set +e docs/release-notes.md
           git add docs/release-notes.md
           git commit -m "chore(release-notes): Update release notes"
