@@ -234,7 +234,10 @@ class Api:
 
     async def request(self) -> httpx.Response:
         """发起请求"""
+        from .. import logger
+
         config = self._prepare_request()
+        logger.debug("发起请求: %s", config)
         resp = await self._session.request(**config)
         if not self.ignore_code:
             resp.raise_for_status()
