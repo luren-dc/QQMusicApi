@@ -4,6 +4,8 @@ on:
   release:
     types: [published]
 
+  workflow_dispatch:
+
 permissions:
   contents: write
 
@@ -14,6 +16,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GH_TOKEN }}
       - name: Generate release-notes
         id: git-cliff
         uses: orhun/git-cliff-action@v4
@@ -22,9 +25,9 @@ jobs:
       - name: Commit
         run: |
           git checkout main
-          git config user.name 'luren-dc'
+          git config user.name 'Luren'
           git config user.email '68656403+luren-dc@users.noreply.github.com'
           set +e docs/release-notes.md
           git add docs/release-notes.md
           git commit -m "chore(release-notes): Update release notes"
-          git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git main
+          git push https://${{ secrets.GH_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git main
