@@ -5,9 +5,12 @@ on:
     branches:
       - "main"
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   generate-release-body:
-    if: contains(github.event.head_commit.message, 'chore(release)')
     runs-on: ubuntu-latest
     outputs:
       release_body: ${{ steps.git-cliff.outputs.content }}
@@ -23,6 +26,7 @@ jobs:
 
   publish:
     runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, 'chore(release)')
     needs: [generate-release-body]
     environment: release
     permissions:
@@ -59,7 +63,7 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
-    needs: [generate-release-body,publish]
+    needs: [generate-release-body, publish]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -71,7 +75,33 @@ jobs:
         run: |
           echo PACKAGE_VERSION=`pdm show --version` >> $GITHUB_ENV
       - name: Release
-        uses: softprops/action-gh-release@v2
+        uses: ncipollo/release-action@v1
         with:
           body: ${{ needs.generate-release-body.outputs.release_body }}
-          tag_name: v${{ env.PACKAGE_VERSION }}
+          draft: false
+          updateOnlyUnreleased: true
+          tag: v${{ env.PACKAGE_VERSION }}
+          allowUpdates: true
+
+  draft-release:
+    runs-on: ubuntu-latest
+    needs: generate-release-body
+    if: ${{ !contains(github.event.head_commit.message, 'chore(release)') }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup PDM
+        uses: pdm-project/setup-pdm@v4
+        with:
+          python-version: 3.12
+      - name: Get version
+        run: |
+          echo PACKAGE_VERSION=`pdm show --version` >> $GITHUB_ENV
+      - name: Release
+        uses: ncipollo/release-action@v1
+        with:
+          body: ${{ needs.generate-release-body.outputs.release_body }}
+          draft: true
+          updateOnlyUnreleased: true
+          tag: v${{ env.PACKAGE_VERSION }}
+          allowUpdates: true

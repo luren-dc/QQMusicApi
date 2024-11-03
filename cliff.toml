@@ -22,7 +22,7 @@ body = """
         ## [{{ version | trim_start_matches(pat="v") }}] - {{ timestamp | date(format="%Y-%m-%d") }}
     {% endif %}\
 {% else %}
-    ## Latest Changes
+    ## What's Changed
 {% endif -%}
 
 {% for group, commits in commits | group_by(attribute="group") %}
