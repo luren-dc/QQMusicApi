@@ -3,12 +3,15 @@
 所有对该项目的重要更改都将记录在此文件中。
 
 ---
+## [[0.1.10](https://github.com/luren-dc/QQMusicApi/compare/v0.1.9..v0.1.10)] - 2024-11-09
 
-## Latest Changes
+### 功能更新
+
+- 支持 logging  - ([35e94ca](https://github.com/luren-dc/QQMusicApi/commit/35e94cad6574f11c23bf9bff9a2b9ed23e9882d5)) by [@luren-dc](https://github.com/luren-dc)  in [#73](https://github.com/luren-dc/QQMusicApi/pull/73)
 
 ### 构建配置
 
-- Update pdm.lock  - ([0f1369b](https://github.com/luren-dc/QQMusicApi/commit/0f1369b6da927e173e2bc1de5189b9c8d48f60c5)) by [@luren-dc](https://github.com/luren-dc)  in [#72](https://github.com/luren-dc/QQMusicApi/pull/72)
+- Update pdm.lock  - ([299299b](https://github.com/luren-dc/QQMusicApi/commit/299299b907ccdf3f5b9ac7052bd207e45bf24c0a)) by [@github-actions[bot]](https://github.com/github-actions[bot])  in [#74](https://github.com/luren-dc/QQMusicApi/pull/74)
 
 ## [[0.1.9](https://github.com/luren-dc/QQMusicApi/compare/v0.1.8..v0.1.9)] - 2024-10-26
 
