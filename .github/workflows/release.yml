@@ -10,8 +10,31 @@ permissions:
   packages: write
 
 jobs:
+  generate-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_TOKEN }}
+      - name: Generate release-notes
+        id: git-cliff
+        uses: orhun/git-cliff-action@v4
+        env:
+          OUTPUT: docs/release-notes.md
+      - name: Commit
+        run: |
+          git checkout main
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          set +e docs/release-notes.md
+          git add docs/release-notes.md
+          git commit -m "chore(release-notes): Update release notes"
+          git push https://${{ secrets.GH_TOKEN }}@github.com/${GITHUB_REPOSITORY}.git main
+
   generate-release-body:
     runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, 'chore(release)')
     outputs:
       release_body: ${{ steps.git-cliff.outputs.content }}
     steps:
@@ -26,7 +49,6 @@ jobs:
 
   publish:
     runs-on: ubuntu-latest
-    if: contains(github.event.head_commit.message, 'chore(release)')
     needs: [generate-release-body]
     environment: release
     permissions:
@@ -78,30 +100,6 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           body: ${{ needs.generate-release-body.outputs.release_body }}
-          draft: false
-          updateOnlyUnreleased: true
-          tag: v${{ env.PACKAGE_VERSION }}
-          allowUpdates: true
-
-  draft-release:
-    runs-on: ubuntu-latest
-    needs: generate-release-body
-    if: ${{ !contains(github.event.head_commit.message, 'chore(release)') }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup PDM
-        uses: pdm-project/setup-pdm@v4
-        with:
-          python-version: 3.12
-      - name: Get version
-        run: |
-          echo PACKAGE_VERSION=`pdm show --version` >> $GITHUB_ENV
-      - name: Release
-        uses: ncipollo/release-action@v1
-        with:
-          body: ${{ needs.generate-release-body.outputs.release_body }}
-          draft: true
           updateOnlyUnreleased: true
           tag: v${{ env.PACKAGE_VERSION }}
           allowUpdates: true
