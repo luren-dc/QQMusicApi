@@ -3,6 +3,13 @@
 所有对该项目的重要更改都将记录在此文件中。
 
 ---
+
+## What's Changed
+
+### Bug 修复
+
+- 单次获取歌曲链接过多报错 - ([e366f6d](https://github.com/luren-dc/QQMusicApi/commit/e366f6d842abe94be264bc3e9d62b663cb9afdcc)) by [@luren-dc](https://github.com/luren-dc) 
+
 ## [[0.1.10](https://github.com/luren-dc/QQMusicApi/compare/v0.1.9..v0.1.10)] - 2024-11-09
 
 ### 功能更新
