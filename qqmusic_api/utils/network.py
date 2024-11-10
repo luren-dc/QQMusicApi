@@ -186,7 +186,6 @@ class Api:
             },
         }
 
-        self.method = "POST"
         self.json_body = True
         self.params.clear()
 
@@ -222,7 +221,7 @@ class Api:
 
         config = {
             "url": self.url,
-            "method": self.method,
+            "method": self.method if not self.module else "POST",
             "params": self.params,
             "headers": self.headers,
         }
