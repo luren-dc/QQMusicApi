@@ -162,7 +162,7 @@ async def get_song_urls(
             "filename": file_name,
             "guid": get_guid(),
             "songmid": mid,
-            "songtype": [1 for _ in range(len(mid))],
+            "songtype": [0 for _ in range(len(mid))],
         }
 
         res = await api.update_params(**param).result

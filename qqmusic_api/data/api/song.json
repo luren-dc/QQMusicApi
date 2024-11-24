@@ -100,7 +100,7 @@
             "filename": "[f'{file_type.s}{_}{_}{file_type.e}' for _ in mid]",
             "guid": "str 随机32位字符串",
             "songmid": "list mid 列表",
-            "songtype": "[1 for _ in range(len(mid))]"
+            "songtype": "[0 for _ in range(len(mid))]"
         },
         "comment": "获取播放链接"
     },
@@ -111,7 +111,7 @@
             "filename": "[f'{file_type.s}{_}{_}{file_type.e}' for _ in mid]",
             "guid": "str 随机32位字符串",
             "songmid": "list mid 列表",
-            "songtype": "[1 for _ in range(len(mid))]"
+            "songtype": "[0 for _ in range(len(mid))]"
         },
         "comment": "获取下载链接"
     }

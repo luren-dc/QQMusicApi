@@ -1,10 +1,14 @@
 """凭据类，用于请求验证"""
 
 import json
+import sys
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
-from typing_extensions import Self
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
 
 from ..exceptions import CredentialInvalidError
 
@@ -139,3 +143,15 @@ class Credential:
             login_type=cookies.pop("loginType", 0),
             extra_fields=cookies,
         )
+
+    @classmethod
+    def from_cookies_str(cls, cookies: str) -> Self:
+        """从 cookies 字符串创建 Credential 实例
+
+        Args:
+            cookies: Cookies 字符串
+
+        Returns:
+            凭据类实例
+        """
+        return cls.from_cookies_dict(json.loads(cookies))
