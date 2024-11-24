@@ -14,6 +14,8 @@ T = TypeVar("T")
 def sync(coroutine: Coroutine[Any, Any, T]) -> T:
     """同步执行异步函数
 
+    请注意，每次执行都是新的 `Eventloop`
+
     Args:
         coroutine: 执行异步函数所创建的协程对象
 

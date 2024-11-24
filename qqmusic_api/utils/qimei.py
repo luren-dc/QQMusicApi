@@ -274,8 +274,6 @@ class QIMEI:
         """
         data, ts = QIMEI._generate_request_param(DeviceData.generate_random_payload(app_version))
         sign = calculate_md5("qimei_qq_androidpzAuCmaFAaFaHrdakPjLIEqKrGnSOOvH", ts)
-        from .. import logger
-
         try:
             res = httpx.post(
                 "https://api.tencentmusic.com/tme/trpc/proxy",
@@ -291,10 +289,8 @@ class QIMEI:
                 json=data,
             )
             qimei = json.loads(res.json().get("data", "{}"))
-            logger.debug("获取 Qimei 成功: %s", qimei)
             return QImeiResult(qimei["data"]["q16"], qimei["data"]["q36"])
         except Exception:
-            logger.exception("获取 Qimei 失败,使用默认值")
             return QImeiResult(
                 q16="fde9508748b00283b2723a9210001b617301",
                 q36="35f21e7473442374591e560510001c71730b",

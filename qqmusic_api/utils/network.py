@@ -1,7 +1,5 @@
 """网络请求"""
 
-import asyncio
-import atexit
 import json
 from dataclasses import dataclass, field
 from typing import Any, Literal, Optional, Union
@@ -11,59 +9,9 @@ from typing_extensions import Self
 
 from ..exceptions import CredentialExpiredError, ResponseCodeError
 from .credential import Credential
-from .qimei import QIMEI
+from .session import get_session
 
 QQMUSIC_API = "https://u.y.qq.com/cgi-bin/musicu.fcg"
-QQMUSIC_VERSION = "13.2.5.8"
-QQMUSIC_VERSION_CODE = 13020508
-QIMEI36 = None
-
-_SESSION_POOL: dict[asyncio.AbstractEventLoop, httpx.AsyncClient] = {}
-
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.54",
-}
-
-
-def get_qimei() -> str:
-    """获取 QIMEI
-
-    Returns:
-        QIMEI
-    """
-    global QIMEI36
-    if not QIMEI36:
-        QIMEI36 = QIMEI.get_qimei(QQMUSIC_VERSION).q36
-    return QIMEI36
-
-
-def get_session() -> httpx.AsyncClient:
-    """获取当前 EventLoop 的 Session,用于自定义请求
-
-    Returns:
-        httpx.AsyncClient
-    """
-    try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
-    if loop in _SESSION_POOL:
-        return _SESSION_POOL[loop]
-    else:
-        session = httpx.AsyncClient(timeout=20)
-        _SESSION_POOL[loop] = session
-        return session
-
-
-def set_session(session: httpx.AsyncClient) -> None:
-    """设置当前 EventLoop 的 Session
-
-    Args:
-        session: Session
-    """
-    loop = asyncio.get_event_loop()
-    _SESSION_POOL[loop] = session
-
 
 @dataclass
 class Api:
@@ -102,8 +50,6 @@ class Api:
     def __post_init__(self):
         if not self.module:
             self.method = self.method.upper()
-        if not self.headers:
-            self.headers = HEADERS
         self.original_params = self.params.copy()
         self.original_data = self.data.copy()
         self.data = {k: None for k in self.data}
@@ -112,6 +58,9 @@ class Api:
         self._result: Optional[dict] = None
         self._session = get_session()
         self._cookies = httpx.Cookies()
+
+        if not self.credential.has_musicid():
+            self.credential = self._session.credential
 
     def _setattr_(self, name: str, value: Any, /) -> None:
         if name != "_result" and hasattr(self, "_result"):
@@ -165,10 +114,10 @@ class Api:
 
         common_data = {
             "ct": "11",
-            "cv": QQMUSIC_VERSION_CODE,
-            "v": QQMUSIC_VERSION_CODE,
+            "cv": self._session.api_config["version_code"],
+            "v": self._session.api_config["version_code"],
             "tmeAppID": "qqmusic",
-            "QIMEI36": get_qimei(),
+            "QIMEI36": self._session.qimei,
             "uid": "3931641530",
             "format": "json",
             "inCharset": "utf-8",
@@ -233,10 +182,7 @@ class Api:
 
     async def request(self) -> httpx.Response:
         """发起请求"""
-        from .. import logger
-
         config = self._prepare_request()
-        logger.debug("发起请求: %s", config)
         resp = await self._session.request(**config)
         if not self.ignore_code:
             resp.raise_for_status()
@@ -292,22 +238,3 @@ class Api:
         elif code != 0:
             raise ResponseCodeError(code, self.data, resp)
         return resp.get("data", resp)
-
-
-@atexit.register
-def _clean() -> None:
-    """程序退出清理操作。"""
-    try:
-        loop = asyncio.get_event_loop()
-    except RuntimeError:
-        return
-
-    async def _clean_task():
-        s0 = _SESSION_POOL.get(loop, None)
-        if s0 is not None and not s0.is_closed:
-            await s0.aclose()
-
-    if not loop.is_closed():
-        loop.run_until_complete(_clean_task())
-    else:
-        asyncio.run(_clean_task())
