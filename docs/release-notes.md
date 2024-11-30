@@ -10,6 +10,10 @@
 
 - **(credential)** 从字符串创建 Credential - ([025cb30](https://github.com/luren-dc/QQMusicApi/commit/025cb3015fd60d56158aef8f0f3ea569cdae73ef)) by [@luren-dc](https://github.com/luren-dc) 
 
+### 构建配置
+
+- Update pdm.lock  - ([e977b5b](https://github.com/luren-dc/QQMusicApi/commit/e977b5b4765a731700470486438b364c889526f9)) by [@github-actions[bot]](https://github.com/github-actions[bot])  in [#76](https://github.com/luren-dc/QQMusicApi/pull/76)
+
 ## [[0.1.11](https://github.com/luren-dc/QQMusicApi/compare/v0.1.10..v0.1.11)] - 2024-11-10
 
 ### Bug 修复
