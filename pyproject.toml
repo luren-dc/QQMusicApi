@@ -5,9 +5,9 @@ authors = [
   { name = "Luren", email = "68656403+luren-dc@users.noreply.github.com" },
 ]
 dependencies = [
-    "cryptography<42.0.0,>=41.0.2",
-    "typing-extensions>=4.12.2",
-    "httpx>=0.27.0",
+  "cryptography<42.0.0,>=41.0.2",
+  "typing-extensions>=4.12.2",
+  "httpx>=0.27.0",
 ]
 requires-python = ">=3.9"
 readme = "README.md"
@@ -42,6 +42,11 @@ build-backend = "hatchling.build"
 [tool.uv]
 package = true
 
+[[tool.uv.index]]
+name = "tsinghua"
+url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple"
+default = true
+
 [tool.hatch.version]
 path = "qqmusic_api/__init__.py"
 
@@ -49,16 +54,7 @@ path = "qqmusic_api/__init__.py"
 packages = ["qqmusic_api"]
 
 [tool.hatch.build.targets.sdist]
-include = [
-  "/qqmusic_api",
-  "/tests",
-  "LISENCE",
-  "README.md",
-]
-
-[tool.hatch.build.sources]
-"docs/release-notes.md" = "CHANGELOG.md"
-
+include = ["/qqmusic_api", "/tests", "LISENCE", "README.md"]
 
 [dependency-groups]
 testing = [
@@ -67,20 +63,15 @@ testing = [
   "pytest-sugar<2.0.0,>=1.0.0",
 ]
 docs = [
-    "mkdocs-material>=9.5.29",
-    "mkdocstrings-python>=1.10.5",
-    "mkdocstrings>=0.25.1",
-    "mkdocs>=1.6.0",
-    "markdown-callouts>=0.4.0",
-    "griffe-inherited-docstrings>=1.0.0",
-    "docstring-inheritance>=2.2.1",
-    "griffe-modernized-annotations>=1.0.8",
+  "mkdocs-material>=9.5.29",
+  "mkdocstrings-python>=1.10.5",
+  "mkdocstrings>=0.25.1",
+  "mkdocs>=1.6.0",
+  "markdown-callouts>=0.4.0",
+  "griffe-inherited-docstrings>=1.0.0",
+  "docstring-inheritance>=2.2.1",
+  "griffe-modernized-annotations>=1.0.8",
 ]
-mypy = [
-    "mypy>=1.11.0",
-]
-linting = ["ruff>=0.5.4"]
-
 
 [tool.mypy]
 pretty = true
@@ -108,6 +99,7 @@ pydocstyle = { convention = "google" }
 "qqmusic_api/**/__init__.py" = ["F405", "F403", "D"]
 
 [tool.pytest.ini_options]
+addopts = "-rxXs"
 pythonpath = "./"
 testpaths = ["tests"]
 asyncio_mode = "auto"

@@ -1,11 +1,8 @@
-default_language_version:
-  python: python3.9
-
 default_install_hook_types: [pre-commit, commit-msg]
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: check-added-large-files
       - id: check-merge-conflict
@@ -23,32 +20,24 @@ repos:
         exclude: \.(html|svg)$
 
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v3.28.0
+    rev: v4.0.0
     hooks:
       - id: commitizen
 
-  - repo: local
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.1
     hooks:
-      - id: lint
-        name: lint
-        entry: ruff check --fix
-        language: python
-        types_or: [python, pyi]
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
 
-      - id: format
-        name: format
-        entry: ruff format
-        language: python
-        types_or: [python, pyi]
-
-      - id: typecheck
-        name: typecheck
-        entry: mypy
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+      - id: mypy
         args:
           [
             --ignore-missing-imports,
             --scripts-are-modules,
             --check-untyped-defs,
           ]
-        language: python
-        types_or: [python, pyi]
