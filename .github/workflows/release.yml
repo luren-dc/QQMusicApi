@@ -55,33 +55,18 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
-      - name: Setup PDM
-        uses: pdm-project/setup-pdm@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
         with:
-          python-version: 3.12
-      - name: Install dependencies
-        run: |
-          pdm install
-      - name: mint API token
-        id: mint-token
-        run: |
-          # retrieve the ambient OIDC token
-          resp=$(curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=pypi")
-          oidc_token=$(jq -r '.value' <<< "${resp}")
-          # exchange the OIDC token for an API token
-          resp=$(curl -X POST https://pypi.org/_/oidc/mint-token -d "{\"token\": \"${oidc_token}\"}")
-          api_token=$(jq -r '.token' <<< "${resp}")
-          # mask the newly minted API token, so that we don't accidentally leak it
-          echo "::add-mask::${api_token}"
-          # see the next step in the workflow for an example of using this step output
-          echo "api-token=${api_token}" >> "${GITHUB_OUTPUT}"
+          enable-cache: true
+      - name: Set up Python
+        run: uv python install
+      - name: Install the project
+        run: uv sync
       - name: Build and publish
-        env:
-          PYPI_TOKEN: ${{ steps.mint-token.outputs.api-token }}
         run: |
-          pdm build
-          pdm publish --username __token__ --password $PYPI_TOKEN
+          uv build
+          uv publish --trusted-publishing automatic
 
   release:
     runs-on: ubuntu-latest
@@ -89,13 +74,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup PDM
-        uses: pdm-project/setup-pdm@v4
-        with:
-          python-version: 3.12
       - name: Get version
-        run: |
-          echo PACKAGE_VERSION=`pdm show --version` >> $GITHUB_ENV
+        run: grep '__version__' qqmusic_api/__init__.py | awk -F'"' '{print $2}'
       - name: Release
         uses: ncipollo/release-action@v1
         with:

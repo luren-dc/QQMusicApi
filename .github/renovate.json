@@ -1,26 +1,26 @@
 {
-    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-    "extends": [
-        "config:best-practices"
-    ],
-    "labels": [
-        "dependencies"
-    ],
-    "packageRules": [
-        {
-            "matchDepTypes": [
-                "devDependencies"
-            ],
-            "groupName": "devDependencies",
-            "labels": [
-                "dev-dependencies"
-            ]
-        }
-    ],
-    "lockFileMaintenance": {
-        "enabled": true
-    },
-    "pre-commit": {
-        "enabled": true
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:best-practices"
+  ],
+  "labels": [
+    "dependencies"
+  ],
+  "packageRules": [
+    {
+      "matchDepTypes": [
+        "devDependencies"
+      ],
+      "groupName": "devDependencies",
+      "labels": [
+        "dev-dependencies"
+      ]
     }
+  ],
+  "lockFileMaintenance": {
+    "enabled": true
+  },
+  "pre-commit": {
+    "enabled": true
+  }
 }

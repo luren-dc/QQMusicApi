@@ -14,7 +14,7 @@ repos:
       - id: end-of-file-fixer
         exclude: ^LICENSE|\.(html|csv|txt|svg)$
       - id: pretty-format-json
-        args: [--autofix, --no-ensure-ascii, --no-sort-keys, --indent, "4"]
+        args: [--autofix, --no-ensure-ascii, --no-sort-keys]
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
         exclude: \.(html|svg)$
