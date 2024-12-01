@@ -242,13 +242,12 @@ files = [
 
 [[package]]
 name = "docstring-inheritance"
-version = "2.2.1"
-requires_python = "<3.13,>=3.8"
+version = "2.2.2"
+requires_python = "<4,>=3.9"
 summary = "Avoid writing and maintaining duplicated docstrings."
 groups = ["docs"]
 files = [
-    {file = "docstring_inheritance-2.2.1-py3-none-any.whl", hash = "sha256:c0332a3ad0daf3de55b227366a67e57f1dccbb5ea3988b085be6e4583d180d19"},
-    {file = "docstring_inheritance-2.2.1.tar.gz", hash = "sha256:dbc50558411f30da98e2b50f2e2173e8ea414b5d947650c757c008a7aa3374d7"},
+    {file = "docstring_inheritance-2.2.2-py3-none-any.whl", hash = "sha256:090d7a6e098bbea8914839391d56cc38e32d37d471d99a3397ef9d94fa84b5e9"},
 ]
 
 [[package]]
