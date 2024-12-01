@@ -73,25 +73,25 @@ conventional_commits = true
 filter_unconventional = true
 # regex for preprocessing the commit messages
 commit_preprocessors = [
-    # remove issue numbers from commits
-    { pattern = '\((\w+\s)?#([0-9]+)\)', replace = "" },
+  # remove issue numbers from commits
+  { pattern = '\((\w+\s)?#([0-9]+)\)', replace = "" },
 ]
 # regex for parsing and grouping commits
 commit_parsers = [
-    { message = "^feat", group = "功能更新" },
-    { message = "^fix", group = "Bug 修复" },
-    { message = "^doc", group = "文档更新" },
-    { message = "^perf", group = "性能优化" },
-    { message = "^refactor", group = "功能重构" },
-    { message = "^build", group = "构建配置"},
-    { message = "^style", group = "代码风格", skip = true},
-    { message = "^test", group = "Testing", skip = true},
-    { message = "^chore\\(deps.*\\)", skip = true },
-    { message = "^chore\\(pr\\)", skip = true },
-    { message = "^chore\\(pull\\)", skip = true },
-    { message = "^chore\\(release", skip = true },
-    { message = "^chore|^ci", group = "Miscellaneous Tasks",skip=true},
-    { body = ".*security", group = "Security" },
+  { message = "^feat", group = "功能更新" },
+  { message = "^fix", group = "Bug 修复" },
+  { message = "^doc", group = "文档更新" },
+  { message = "^perf", group = "性能优化" },
+  { message = "^refactor", group = "功能重构" },
+  { message = "^build", group = "构建配置" },
+  { message = "^style", group = "代码风格", skip = true },
+  { message = "^test", group = "Testing", skip = true },
+  { message = "^chore\\(deps.*\\)", skip = true },
+  { message = "^chore\\(pr\\)", skip = true },
+  { message = "^chore\\(pull\\)", skip = true },
+  { message = "^chore\\(release", skip = true },
+  { message = "^chore|^ci", group = "Miscellaneous Tasks", skip = true },
+  { body = ".*security", group = "Security" },
 ]
 # filter out the commits that are not matched by commit parsers
 filter_commits = false

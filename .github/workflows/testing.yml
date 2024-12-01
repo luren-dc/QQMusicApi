@@ -16,14 +16,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup PDM
-        uses: pdm-project/setup-pdm@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
         with:
-          python-version: "3.12"
-          cache: true
-      - name: Install dependencies
-        run: |
-          pdm sync -dG testing
+          enable-cache: true
+      - name: Set up Python
+        run: uv python install
+      - name: Install the project
+        run: uv sync --group testing
       - name: Run tests
         env:
           MUSIC_ID: ${{ secrets.MUSIC_ID }}
@@ -31,8 +31,7 @@ jobs:
           MUSIC_EUIN: ${{ secrets.MUSIC_EUIN }}
           MUSIC_REFRESH_KEY: ${{ secrets.MUSIC_REFRESH_KEY }}
           MUSIC_REFRESH_TOKEN: ${{ secrets.MUSIC_REFRESH_TOKEN }}
-        run: |
-          pdm run pytest
+        run: uv run pytest
       - name: Update MUSIC_KEY
         if: ${{ env.NEW_MUSIC_KEY != '' }}
         env:

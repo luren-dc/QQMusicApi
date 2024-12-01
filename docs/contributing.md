@@ -6,8 +6,7 @@
 
 - **Python 3.9+**
 - **git**
-- **virtualenv**
-- [**PDM**](https://pdm.fming.dev/latest/#installation)
+- [**uv**](https://docs.astral.sh/uv/)
 - [**pre-commit**](https://pre-commit.com/)
 
 ## 开发流程
@@ -15,8 +14,8 @@
 ### 配置开发环境
 
 ```bash
-# 安装 PDM 和 pre-commit
-# https://pdm.fming.dev/latest/#installation
+# 安装 uv 和 pre-commit
+# https://docs.astral.sh/uv/
 # https://pre-commit.com/#install
 
 # 在 GitHub 上分叉存储库并在本地克隆您的分叉。
@@ -24,10 +23,7 @@ git clone git@github.com:<your username>/QQMusicApi.git
 cd QQMusicApi
 
 # 安装开发依赖
-git checkout -b dev
-python scripts/install-dev.py
-
-# 开始编码
+python install-dev.py
 ```
 
 ### 构建文档
@@ -36,13 +32,13 @@ python scripts/install-dev.py
 
 ```bash
 # 构建文档
-python scripts/make_docs.py
+uv run mkdocs build
 ```
 
 ### 在线文档
 
 ```bash
-pdm docs
+uv run mkdocs serve
 ```
 
 ### 创建 Pull Request
