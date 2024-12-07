@@ -6,6 +6,10 @@
 
 ## What's Changed
 
+### Bug 修复
+
+- **(deps)** update dependency cryptography to v44  - ([eb2cf36](https://github.com/luren-dc/QQMusicApi/commit/eb2cf3610422819c4846b475a4067f1a473e25fc)) by [@renovate[bot]](https://github.com/renovate[bot])  in [#81](https://github.com/luren-dc/QQMusicApi/pull/81)
+
 ### 功能更新
 
 - **(credential)** 从字符串创建 Credential - ([025cb30](https://github.com/luren-dc/QQMusicApi/commit/025cb3015fd60d56158aef8f0f3ea569cdae73ef)) by [@luren-dc](https://github.com/luren-dc) 
@@ -16,7 +20,7 @@
 - Update pdm.lock  - ([e977b5b](https://github.com/luren-dc/QQMusicApi/commit/e977b5b4765a731700470486438b364c889526f9)) by [@github-actions[bot]](https://github.com/github-actions[bot])  in [#76](https://github.com/luren-dc/QQMusicApi/pull/76)
 
 ## New Contributors
-* @renovate[bot] made their first contribution in [#84](https://github.com/luren-dc/QQMusicApi/pull/84)
+* @renovate[bot] made their first contribution in [#81](https://github.com/luren-dc/QQMusicApi/pull/81)
 ## [[0.1.11](https://github.com/luren-dc/QQMusicApi/compare/v0.1.10..v0.1.11)] - 2024-11-10
 
 ### Bug 修复
