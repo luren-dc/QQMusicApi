@@ -50,7 +50,7 @@ class QRCodeLogin(Login):
         """检测二维码状态
 
         Returns:
-            二维码状态，扫码成功返回凭证
+            二维码状态,扫码成功返回凭证
         """
 
 

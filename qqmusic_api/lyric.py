@@ -20,7 +20,7 @@ async def get_lyric(
     """获取歌词
 
     Note:
-        歌曲 mid 和 id，两者至少提供一个
+        歌曲 mid 和 id,两者至少提供一个
 
     Args:
         mid:   歌曲 mid

@@ -18,7 +18,7 @@ sync(user.get_euin(2680888327))
 # --8<-- [start:user]
 u = user.User("owCFoecFNeoA7z**")
 
-# 部分 API 需要有效 `credential`，否则报错
+# 部分 API 需要有效 `credential`,否则报错
 u = user.User("owCFoecFNeoA7z**", credential)
 
 # 获取主页信息

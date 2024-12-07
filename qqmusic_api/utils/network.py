@@ -38,7 +38,7 @@ def get_qimei() -> str:
 
 
 def get_session() -> httpx.AsyncClient:
-    """获取当前 EventLoop 的 Session，用于自定义请求
+    """获取当前 EventLoop 的 Session,用于自定义请求
 
     Returns:
         httpx.AsyncClient

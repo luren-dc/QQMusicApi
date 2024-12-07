@@ -30,7 +30,7 @@ async def get_euin(musicid: int) -> str:
         musicid: 需要获取 euin 的 musicid
 
     Returns:
-        获取到的 encrypt_uin，为空表示获取失败
+        获取到的 encrypt_uin,为空表示获取失败
     """
     try:
         result = await Api(**API["profile"]).update_params(ct=20, cv=4747474, cid=205360838, userid=musicid).result
@@ -47,7 +47,7 @@ async def get_musicid(euin: str) -> int:
         euin: 需要获取 musicid 的 euin
 
     Returns:
-        获取到的 musicid，0 表示获取失败
+        获取到的 musicid,0 表示获取失败
     """
     api = get_api("songlist")["detail"]
     try:
@@ -91,8 +91,8 @@ class User:
     def __init__(self, euin: str, credential: Optional[Credential] = None):
         """初始化用户类
 
-        传入有效 credential 获取他人的信息会更完整但会留痕，且部分 API 不会验证
-        credential 是否有效，强制 credential 的 API 在 credential 失效时会报错
+        传入有效 credential 获取他人的信息会更完整但会留痕,且部分 API 不会验证
+        credential 是否有效,强制 credential 的 API 在 credential 失效时会报错
 
         Args:
             euin:       encrypt_uin

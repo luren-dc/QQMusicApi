@@ -1,22 +1,22 @@
 {
-    "detail": {
-        "module": "music.musichallAlbum.AlbumInfoServer",
-        "method": "GetAlbumDetail",
-        "params": {
-            "albumMid": "str 专辑 mid",
-            "albumId": "str 专辑 id"
-        },
-        "comment": "获取专辑信息"
+  "detail": {
+    "module": "music.musichallAlbum.AlbumInfoServer",
+    "method": "GetAlbumDetail",
+    "params": {
+      "albumMid": "str 专辑 mid",
+      "albumId": "str 专辑 id"
     },
-    "song": {
-        "module": "music.musichallAlbum.AlbumSongList",
-        "method": "GetAlbumSongList",
-        "params": {
-            "albumMid": "str 专辑 mid",
-            "albumId": "str 专辑 id",
-            "begin": "int 开启位置",
-            "num": "int 返回数量"
-        },
-        "comment": "获取专辑歌曲"
-    }
+    "comment": "获取专辑信息"
+  },
+  "song": {
+    "module": "music.musichallAlbum.AlbumSongList",
+    "method": "GetAlbumSongList",
+    "params": {
+      "albumMid": "str 专辑 mid",
+      "albumId": "str 专辑 id",
+      "begin": "int 开启位置",
+      "num": "int 返回数量"
+    },
+    "comment": "获取专辑歌曲"
+  }
 }

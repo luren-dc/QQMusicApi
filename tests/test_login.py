@@ -20,7 +20,7 @@ async def test_wx_login():
 
 async def test_phone_login():
     phone = 17380269540
-    state, _ = await PhoneLoginApi.send_authcode(phone)  # 号码为随机生成，仅用于测试
+    state, _ = await PhoneLoginApi.send_authcode(phone)  # 号码为随机生成,仅用于测试
     assert state in [PhoneLoginEvents.SEND, PhoneLoginEvents.CAPTCHA]
     try:
         await PhoneLoginApi.authorize(phone, 123456)

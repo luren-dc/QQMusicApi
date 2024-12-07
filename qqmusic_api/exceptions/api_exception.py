@@ -4,7 +4,7 @@
 class ApiException(Exception):
     """API Exception 基类"""
 
-    def __init__(self, message: str = "出现了错误，但未说明原因") -> None:
+    def __init__(self, message: str = "出现了错误,但未说明原因") -> None:
         super().__init__(message)
         self.message = message
 

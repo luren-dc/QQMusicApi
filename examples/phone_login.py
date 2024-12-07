@@ -1,5 +1,4 @@
 import asyncio
-import subprocess
 import sys
 
 from qqmusic_api.login_utils import PhoneLogin, PhoneLoginEvents
@@ -18,14 +17,14 @@ async def phone_login():
                 print("获取滑块验证链接失败")
                 return
             print("需要滑块验证", login.auth_url)
-            print("验证后回车")
             if sys.platform == "win32":
-                subprocess.call(["start", login.auth_url], shell=True)
+                await asyncio.create_subprocess_exec("start", login.auth_url, shell=True)
             elif sys.platform == "darwin":
-                subprocess.call(["open", login.auth_url])
+                await asyncio.create_subprocess_exec("open", login.auth_url)
             else:
-                subprocess.call(["xdg-open", login.auth_url])
-            input("")
+                await asyncio.create_subprocess_exec("xdg-open", login.auth_url)
+            print("验证后回车")
+            await asyncio.sleep(0)
         else:
             print("未知情况", login.error_msg)
             return

@@ -36,7 +36,7 @@ async def check_expired(credential: Credential) -> bool:
 async def refresh_cookies(credential: Credential) -> Credential:
     """刷新 Cookies
 
-    刷新 cookies，刷新失败直接返回原始 credential,
+    刷新 cookies,刷新失败直接返回原始 credential,
 
     Note:
         刷新无效 cookie 需要 `refresh_key` 和 `refresh_token` 字段
@@ -366,7 +366,7 @@ class PhoneLoginApi:
             country_code: 国家码
 
         Returns:
-            发送验证码状态，发送失败返回错误信息或验证链接
+            发送验证码状态,发送失败返回错误信息或验证链接
         """
         res = (
             await Api(**API["phone"]["send_authcode"])
@@ -394,7 +394,7 @@ class PhoneLoginApi:
     async def authorize(phone: int, auth_code: int, country_code: int = 86) -> Credential:
         """验证码鉴权
 
-        只能鉴权一次，无法重复鉴权
+        只能鉴权一次,无法重复鉴权
 
         Args:
             phone: 手机号

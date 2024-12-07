@@ -58,19 +58,19 @@ class BaseSongFileType(Enum):
 class SongFileType(BaseSongFileType):
     """歌曲文件类型
 
-    + MASTER:   臻品母带2.0，24Bit 192kHz，size_new[0]
-    + ATMOS_2:  臻品全景声2.0，16Bit 44.1kHz，size_new[1]
-    + ATMOS_51: 臻品音质2.0，16Bit 44.1kHz，size_new[2]
-    + FLAC:     flac 格式，16Bit 44.1kHz～24Bit 48kHz，size_flac
-    + OGG_640:  ogg 格式，640kbps，size_new[5]
-    + OGG_320:  ogg 格式，320kbps，size_new[3]
-    + OGG_192:  ogg 格式，192kbps，size_192ogg
-    + OGG_96:   ogg 格式，96kbps，size_96ogg
-    + MP3_320:  mp3 格式，320kbps，size_320mp3
-    + MP3_128:  mp3 格式，128kbps，size_128mp3
-    + ACC_192:  m4a 格式，192kbps，size_192aac
-    + ACC_96:   m4a 格式，96kbps，size_96aac
-    + ACC_48:   m4a 格式，48kbps，size_48aac
+    + MASTER:   臻品母带2.0,24Bit 192kHz,size_new[0]
+    + ATMOS_2:  臻品全景声2.0,16Bit 44.1kHz,size_new[1]
+    + ATMOS_51: 臻品音质2.0,16Bit 44.1kHz,size_new[2]
+    + FLAC:     flac 格式,16Bit 44.1kHz~24Bit 48kHz,size_flac
+    + OGG_640:  ogg 格式,640kbps,size_new[5]
+    + OGG_320:  ogg 格式,320kbps,size_new[3]
+    + OGG_192:  ogg 格式,192kbps,size_192ogg
+    + OGG_96:   ogg 格式,96kbps,size_96ogg
+    + MP3_320:  mp3 格式,320kbps,size_320mp3
+    + MP3_128:  mp3 格式,128kbps,size_128mp3
+    + ACC_192:  m4a 格式,192kbps,size_192aac
+    + ACC_96:   m4a 格式,96kbps,size_96aac
+    + ACC_48:   m4a 格式,48kbps,size_48aac
     """
 
     MASTER = ("AI00", ".flac")
@@ -91,14 +91,14 @@ class SongFileType(BaseSongFileType):
 class EncryptedSongFileType(BaseSongFileType):
     """加密歌曲文件类型
 
-    + MASTER:   臻品母带2.0，24Bit 192kHz，size_new[0]
-    + ATMOS_2:  臻品全景声2.0，16Bit 44.1kHz，size_new[1]
-    + ATMOS_51: 臻品音质2.0，16Bit 44.1kHz，size_new[2]
-    + FLAC:     mflac 格式，16Bit 44.1kHz～24Bit 48kHz，size_flac
-    + OGG_640:  mgg 格式，640kbps，size_new[5]
-    + OGG_320:  mgg 格式，320kbps，size_new[3]
-    + OGG_192:  mgg 格式，192kbps，size_192ogg
-    + OGG_96:   mgg 格式，96kbps，size_96ogg
+    + MASTER:   臻品母带2.0,24Bit 192kHz,size_new[0]
+    + ATMOS_2:  臻品全景声2.0,16Bit 44.1kHz,size_new[1]
+    + ATMOS_51: 臻品音质2.0,16Bit 44.1kHz,size_new[2]
+    + FLAC:     mflac 格式,16Bit 44.1kHz~24Bit 48kHz,size_flac
+    + OGG_640:  mgg 格式,640kbps,size_new[5]
+    + OGG_320:  mgg 格式,320kbps,size_new[3]
+    + OGG_192:  mgg 格式,192kbps,size_192ogg
+    + OGG_96:   mgg 格式,96kbps,size_96ogg
     """
 
     MASTER = ("AIM0", ".mflac")
@@ -225,7 +225,7 @@ class Song:
         """初始化歌曲类
 
         Note:
-            歌曲 mid 和 id，两者至少提供一个
+            歌曲 mid 和 id,两者至少提供一个
 
         Args:
             mid: 歌曲 mid

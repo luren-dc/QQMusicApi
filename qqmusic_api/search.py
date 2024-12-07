@@ -70,7 +70,7 @@ async def quick_search(keyword: str) -> dict:
         keyword: 关键词
 
     Returns:
-        包含专辑，歌手，歌曲的简略信息
+        包含专辑,歌手,歌曲的简略信息
     """
     res = await Api(**API["quick_search"]).update_params(key=keyword).result
     return res
@@ -89,7 +89,7 @@ async def general_search(
         highlight: 是否高亮关键词
 
     Returns:
-        包含直接结果，歌曲，歌手，专辑，歌单，mv等.
+        包含直接结果,歌曲,歌手,专辑,歌单,mv等.
     """
     params = {
         "searchid": get_searchID(),
