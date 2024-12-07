@@ -15,6 +15,8 @@
 - 从 PDM 迁移到 UV  - ([804c992](https://github.com/luren-dc/QQMusicApi/commit/804c992ebc1573fe1520846b9a7c90f41b83c144)) by [@luren-dc](https://github.com/luren-dc)  in [#78](https://github.com/luren-dc/QQMusicApi/pull/78)
 - Update pdm.lock  - ([e977b5b](https://github.com/luren-dc/QQMusicApi/commit/e977b5b4765a731700470486438b364c889526f9)) by [@github-actions[bot]](https://github.com/github-actions[bot])  in [#76](https://github.com/luren-dc/QQMusicApi/pull/76)
 
+## New Contributors
+* @renovate[bot] made their first contribution in [#85](https://github.com/luren-dc/QQMusicApi/pull/85)
 ## [[0.1.11](https://github.com/luren-dc/QQMusicApi/compare/v0.1.10..v0.1.11)] - 2024-11-10
 
 ### Bug 修复
