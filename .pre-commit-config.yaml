@@ -20,7 +20,7 @@ repos:
         exclude: \.(html|svg)$
 
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v4.0.0
+    rev: v4.1.0
     hooks:
       - id: commitizen
 
