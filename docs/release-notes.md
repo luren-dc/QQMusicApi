@@ -9,6 +9,7 @@
 ### Bug 修复
 
 - **(deps)** update dependency cryptography to v44  - ([eb2cf36](https://github.com/luren-dc/QQMusicApi/commit/eb2cf3610422819c4846b475a4067f1a473e25fc)) by [@renovate[bot]](https://github.com/renovate[bot])  in [#81](https://github.com/luren-dc/QQMusicApi/pull/81)
+- **(search)** 修复搜索`singer`报错,`audio_album`无结果 - ([c3ac3c3](https://github.com/luren-dc/QQMusicApi/commit/c3ac3c3e2f2d7eb91fde595bb00518816b520455)) by [@luren-dc](https://github.com/luren-dc) 
 
 ### 功能更新
 
