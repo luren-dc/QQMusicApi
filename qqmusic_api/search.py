@@ -134,13 +134,13 @@ async def search_by_type(
     res = await Api(**API["mobile_search_by_type"]).update_params(**params).result
     types = {
         SearchType.SONG: "item_song",
-        SearchType.SINGER: "item_singer",
+        SearchType.SINGER: "singer",
         SearchType.ALBUM: "item_album",
         SearchType.SONGLIST: "item_songlist",
         SearchType.MV: "item_mv",
         SearchType.LYRIC: "item_song",
         SearchType.USER: "item_user",
-        SearchType.AUDIO_ALBUM: "item_album",
+        SearchType.AUDIO_ALBUM: "item_audio",
         SearchType.AUDIO: "item_song",
     }
     return res["body"][types[search_type]]

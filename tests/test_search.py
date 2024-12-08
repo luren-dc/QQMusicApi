@@ -1,6 +1,7 @@
 import pytest
 
 from qqmusic_api.search import (
+    SearchType,
     complete,
     general_search,
     hotkey,
@@ -28,4 +29,5 @@ async def test_general_search():
 
 
 async def test_search_by_type():
-    assert len(await search_by_type("周杰伦", num=30)) == 30
+    for search_type in SearchType:
+        assert len(await search_by_type("周杰伦", num=10, search_type=search_type)) == 10
