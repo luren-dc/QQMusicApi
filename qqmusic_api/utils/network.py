@@ -13,6 +13,7 @@ from .session import get_session
 
 QQMUSIC_API = "https://u.y.qq.com/cgi-bin/musicu.fcg"
 
+
 @dataclass
 class Api:
     """API 请求类
@@ -183,10 +184,10 @@ class Api:
     async def request(self) -> httpx.Response:
         """发起请求"""
         config = self._prepare_request()
-        resp = await self._session.request(**config)
+        resp = await self._session.client.request(**config)
         if not self.ignore_code:
             resp.raise_for_status()
-        self._session.cookies.clear()
+        self._session.client.cookies.clear()
         return resp
 
     def _process_response(self, resp: httpx.Response) -> Union[None, str, dict]:
