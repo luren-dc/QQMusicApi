@@ -14,6 +14,7 @@
 ### 功能更新
 
 - **(credential)** 从字符串创建 Credential - ([025cb30](https://github.com/luren-dc/QQMusicApi/commit/025cb3015fd60d56158aef8f0f3ea569cdae73ef)) by [@luren-dc](https://github.com/luren-dc) 
+- 使用`Session`管理请求  - ([7485870](https://github.com/luren-dc/QQMusicApi/commit/748587083e69659a3571a93ee4e3fedfb5497a58)) by [@luren-dc](https://github.com/luren-dc)  in [#87](https://github.com/luren-dc/QQMusicApi/pull/87)
 
 ### 构建配置
 
