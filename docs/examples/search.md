@@ -1,23 +1,36 @@
 # 搜索
 
 ```python
---8<-- "examples/search.py:import"
+from qqmusic_api import search, sync
 ```
 
 ## 示例：综合搜索
 
 ```python
---8<-- "examples/search.py:general_search"
+sync(
+    search.general_search(
+        "周杰伦",
+        page=1,
+        highlight=False,
+    )
+)
 ```
 
 ## 示例：类型搜索
 
 ```python
---8<-- "examples/search.py:search_by_type"
+sync(
+    search.search_by_type(
+        "周杰伦",
+        search_type=search.SearchType.SINGER,
+        page=1,
+        highlight=False,
+    )
+)
 ```
 
 ## 示例：快速搜索
 
 ```python
---8<-- "examples/search.py:quick_search"
+sync(search.quick_search("周杰伦"))
 ```

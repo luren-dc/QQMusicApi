@@ -11,9 +11,9 @@ logger = logging.getLogger("qqmusicapi")
 
 
 __all__ = [
+    "Credential",
     "album",
     "create_session",
-    "Credential",
     "get_session",
     "login",
     "login_utils",
