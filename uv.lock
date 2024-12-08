@@ -3,17 +3,17 @@ requires-python = ">=3.9"
 
 [[package]]
 name = "anyio"
-version = "4.6.2.post1"
+version = "4.7.0"
 source = { registry = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple" }
 dependencies = [
     { name = "exceptiongroup", marker = "python_full_version < '3.11'" },
     { name = "idna" },
     { name = "sniffio" },
-    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
 ]
-sdist = { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/9f/09/45b9b7a6d4e45c6bcb5bf61d19e3ab87df68e0601fa8c5293de3542546cc/anyio-4.6.2.post1.tar.gz", hash = "sha256:4c8bc31ccdb51c7f7bd251f51c609e038d63e34219b44aa86e47576389880b4c", size = 173422 }
+sdist = { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/f6/40/318e58f669b1a9e00f5c4453910682e2d9dd594334539c7b7817dabb765f/anyio-4.7.0.tar.gz", hash = "sha256:2f834749c602966b7d456a7567cafcb309f96482b5081d14ac93ccd457f9dd48", size = 177076 }
 wheels = [
-    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/e4/f5/f2b75d2fc6f1a260f340f0e7c6a060f4dd2961cc16884ed851b0d18da06a/anyio-4.6.2.post1-py3-none-any.whl", hash = "sha256:6d170c36fba3bdd840c73d3868c1e777e33676a69c3a72cf0a0d5d6d8009b61d", size = 90377 },
+    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/a0/7a/4daaf3b6c08ad7ceffea4634ec206faeff697526421c20f07628c7372156/anyio-4.7.0-py3-none-any.whl", hash = "sha256:ea60c3723ab42ba6fff7e8ccb0488c898ec538ff4df1f1d5e642c3601d07e352", size = 93052 },
 ]
 
 [[package]]
@@ -249,11 +249,10 @@ wheels = [
 
 [[package]]
 name = "docstring-inheritance"
-version = "2.2.1"
+version = "2.2.2"
 source = { registry = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple" }
-sdist = { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/4d/e6/b966467417481dea27f77f07cd99875fde6f2045736865d29ba89553cfb1/docstring_inheritance-2.2.1.tar.gz", hash = "sha256:dbc50558411f30da98e2b50f2e2173e8ea414b5d947650c757c008a7aa3374d7", size = 28062 }
 wheels = [
-    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/2b/b9/a23eac8e6c67d5caffaf52c3cd13b50b42b66f2e336a1c526c84cabbd441/docstring_inheritance-2.2.1-py3-none-any.whl", hash = "sha256:c0332a3ad0daf3de55b227366a67e57f1dccbb5ea3988b085be6e4583d180d19", size = 24274 },
+    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/df/c4/a098fe2006371014eddf84244751352c6160c2dc7d2d033aee732f4b2065/docstring_inheritance-2.2.2-py3-none-any.whl", hash = "sha256:090d7a6e098bbea8914839391d56cc38e32d37d471d99a3397ef9d94fa84b5e9", size = 24201 },
 ]
 
 [[package]]
@@ -338,7 +337,7 @@ wheels = [
 
 [[package]]
 name = "httpx"
-version = "0.28.0"
+version = "0.28.1"
 source = { registry = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple" }
 dependencies = [
     { name = "anyio" },
@@ -346,9 +345,9 @@ dependencies = [
     { name = "httpcore" },
     { name = "idna" },
 ]
-sdist = { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/10/df/676b7cf674dd1bdc71a64ad393c89879f75e4a0ab8395165b498262ae106/httpx-0.28.0.tar.gz", hash = "sha256:0858d3bab51ba7e386637f22a61d8ccddaeec5f3fe4209da3a6168dbb91573e0", size = 141307 }
+sdist = { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/b1/df/48c586a5fe32a0f01324ee087459e112ebb7224f646c0b5023f5e79e9956/httpx-0.28.1.tar.gz", hash = "sha256:75e98c5f16b0f35b567856f597f06ff2270a374470a5c2392242528e3e3e42fc", size = 141406 }
 wheels = [
-    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/8f/fb/a19866137577ba60c6d8b69498dc36be479b13ba454f691348ddf428f185/httpx-0.28.0-py3-none-any.whl", hash = "sha256:dc0b419a0cfeb6e8b34e85167c0da2671206f5095f1baa9663d23bcfd6b535fc", size = 73551 },
+    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/2a/39/e50c7c3a983047577ee07d2a9e53faf5a69493943ec3f6a384bdc792deb2/httpx-0.28.1-py3-none-any.whl", hash = "sha256:d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad", size = 73517 },
 ]
 
 [[package]]
@@ -550,7 +549,7 @@ wheels = [
 
 [[package]]
 name = "mkdocs-material"
-version = "9.5.46"
+version = "9.5.47"
 source = { registry = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple" }
 dependencies = [
     { name = "babel" },
@@ -565,9 +564,9 @@ dependencies = [
     { name = "regex" },
     { name = "requests" },
 ]
-sdist = { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/79/f1/3efdd8f000e497e9a13ba9429d4fdeb0d87f0f876bebd7d8613ff86a8910/mkdocs_material-9.5.46.tar.gz", hash = "sha256:ae2043f4238e572f9a40e0b577f50400d6fc31e2fef8ea141800aebf3bd273d7", size = 3910723 }
+sdist = { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/7a/0a/6b5a5761d6e500f0c6de9ae24461ac93c66b35785faac331e6d66522776f/mkdocs_material-9.5.47.tar.gz", hash = "sha256:fc3b7a8e00ad896660bd3a5cc12ca0cb28bdc2bcbe2a946b5714c23ac91b0ede", size = 3910665 }
 wheels = [
-    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/9f/64/af210ec1bc40fb2f195b7feede4c895c54c94acc48b108a2ad28b79d226f/mkdocs_material-9.5.46-py3-none-any.whl", hash = "sha256:98f0a2039c62e551a68aad0791a8d41324ff90c03a6e6cea381a384b84908b83", size = 8625807 },
+    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/aa/ef/25150e53836255bc8a2cee958e251516035e85b307774fbcfc6bda0d0388/mkdocs_material-9.5.47-py3-none-any.whl", hash = "sha256:53fb9c9624e7865da6ec807d116cd7be24b3cb36ab31b1d1d1a9af58c56009a2", size = 8625827 },
 ]
 
 [[package]]
@@ -692,7 +691,7 @@ wheels = [
 
 [[package]]
 name = "pytest"
-version = "8.3.3"
+version = "8.3.4"
 source = { registry = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple" }
 dependencies = [
     { name = "colorama", marker = "sys_platform == 'win32'" },
@@ -702,9 +701,9 @@ dependencies = [
     { name = "pluggy" },
     { name = "tomli", marker = "python_full_version < '3.11'" },
 ]
-sdist = { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/8b/6c/62bbd536103af674e227c41a8f3dcd022d591f6eed5facb5a0f31ee33bbc/pytest-8.3.3.tar.gz", hash = "sha256:70b98107bd648308a7952b06e6ca9a50bc660be218d53c257cc1fc94fda10181", size = 1442487 }
+sdist = { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/05/35/30e0d83068951d90a01852cb1cef56e5d8a09d20c7f511634cc2f7e0372a/pytest-8.3.4.tar.gz", hash = "sha256:965370d062bce11e73868e0335abac31b4d3de0e82f4007408d242b4f8610761", size = 1445919 }
 wheels = [
-    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/6b/77/7440a06a8ead44c7757a64362dd22df5760f9b12dc5f11b6188cd2fc27a0/pytest-8.3.3-py3-none-any.whl", hash = "sha256:a6853c7375b2663155079443d2e45de913a911a11d669df02a50814944db57b2", size = 342341 },
+    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/11/92/76a1c94d3afee238333bc0a42b82935dd8f9cf8ce9e336ff87ee14d9e1cf/pytest-8.3.4-py3-none-any.whl", hash = "sha256:50e16d954148559c9a74109af1eaf0c945ba2d8f30f0a3d3335edde19788b6f6", size = 343083 },
 ]
 
 [[package]]
@@ -963,11 +962,11 @@ wheels = [
 
 [[package]]
 name = "six"
-version = "1.16.0"
+version = "1.17.0"
 source = { registry = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple" }
-sdist = { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/71/39/171f1c67cd00715f190ba0b100d606d440a28c93c7714febeca8b79af85e/six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926", size = 34041 }
+sdist = { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/94/e7/b2c673351809dca68a0e064b6af791aa332cf192da575fd474ed7d6f16a2/six-1.17.0.tar.gz", hash = "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81", size = 34031 }
 wheels = [
-    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/d9/5a/e7c31adbe875f2abbb91bd84cf2dc52d792b5a01506781dbcf25c91daf11/six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254", size = 11053 },
+    { url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl", hash = "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274", size = 11050 },
 ]
 
 [[package]]
