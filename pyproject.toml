@@ -5,7 +5,7 @@ authors = [
   { name = "Luren", email = "68656403+luren-dc@users.noreply.github.com" },
 ]
 dependencies = [
-  "cryptography<44.0.1,>=44.0.0",
+  "cryptography>=44.0.0,<44.0.1",
   "typing-extensions>=4.12.2",
   "httpx>=0.27.0",
 ]
@@ -41,11 +41,6 @@ build-backend = "hatchling.build"
 
 [tool.uv]
 package = true
-
-[[tool.uv.index]]
-name = "tsinghua"
-url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple"
-default = true
 
 [tool.hatch.version]
 path = "qqmusic_api/__init__.py"
