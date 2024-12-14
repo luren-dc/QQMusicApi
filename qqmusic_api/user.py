@@ -107,12 +107,11 @@ class User:
         Returns:
             主页信息
         """
-        result = (
+        return (
             await Api(**API["homepage"], credential=self.credential)
             .update_params(IsQueryTabDetail=1, uin=self.euin)
             .result
         )
-        return result
 
     async def get_created_songlist(self) -> list[dict]:
         """获取创建的歌单

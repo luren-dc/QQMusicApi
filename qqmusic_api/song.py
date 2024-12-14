@@ -204,8 +204,7 @@ async def get_try_url(mid: str, vs: str) -> str:
     )
     if url := res["midurlinfo"][0]["wifiurl"]:
         return f"https://isure.stream.qqmusic.qq.com/{url}"
-    else:
-        return ""
+    return ""
 
 
 class Song:

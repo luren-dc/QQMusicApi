@@ -236,6 +236,6 @@ class Api:
         code = resp["code"]
         if code == 1000:
             raise CredentialExpiredError(self.data, resp)
-        elif code != 0:
+        if code != 0:
             raise ResponseCodeError(code, self.data, resp)
         return resp.get("data", resp)

@@ -1,6 +1,7 @@
 import os
 import warnings
 
+import anyio
 import pytest
 import pytest_asyncio
 
@@ -44,8 +45,8 @@ async def credential():
 
         github_env = os.getenv("GITHUB_ENV", None)
         if github_env is not None:
-            with open(github_env, "a", encoding="utf8") as f:
-                f.write(f"NEW_MUSIC_KEY={c.musickey}\n")
+            async with await anyio.open_file(github_env, "a", encoding="utf8") as f:
+                await f.write(f"NEW_MUSIC_KEY={c.musickey}\n")
     return c
 
 

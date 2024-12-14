@@ -12,7 +12,7 @@ async def phone_login():
         if state == PhoneLoginEvents.SEND:
             print("发送成功")
             break
-        elif state == PhoneLoginEvents.CAPTCHA:
+        if state == PhoneLoginEvents.CAPTCHA:
             if login.auth_url is None:
                 print("获取滑块验证链接失败")
                 return

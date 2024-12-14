@@ -255,10 +255,9 @@ class QQLoginApi:
 
             if response["code"] == 0:
                 return QrCodeLoginEvents.DONE, Credential.from_cookies_dict(response["data"])
-            elif response["code"] == 1000:
+            if response["code"] == 1000:
                 raise LoginError("[QQLoginApi] 无法重复鉴权")
-            else:
-                raise LoginError("[QQLoginApi] 未知原因导致鉴权失败")
+            raise LoginError("[QQLoginApi] 未知原因导致鉴权失败")
 
         return event_map.get(code, QrCodeLoginEvents.OTHER), None
 
@@ -346,10 +345,9 @@ class WXLoginApi:
             )
             if response["code"] == 0:
                 return QrCodeLoginEvents.DONE, Credential.from_cookies_dict(response["data"])
-            elif response["code"] == 1000:
+            if response["code"] == 1000:
                 raise LoginError("[WXLoginApi] 无法重复鉴权")
-            else:
-                raise LoginError("[WXLoginApi] 未知原因导致鉴权失败")
+            raise LoginError("[WXLoginApi] 未知原因导致鉴权失败")
 
         return event_map.get(wx_errcode, QrCodeLoginEvents.OTHER), None
 
@@ -383,12 +381,11 @@ class PhoneLoginApi:
         code = res["code"]
         if code == 20276:
             return PhoneLoginEvents.CAPTCHA, res["data"]["securityURL"]
-        elif code == 100001:
+        if code == 100001:
             return PhoneLoginEvents.FREQUENCY, ""
-        elif code == 0:
+        if code == 0:
             return PhoneLoginEvents.SEND, ""
-        else:
-            return PhoneLoginEvents.OTHER, res["data"]["errMsg"]
+        return PhoneLoginEvents.OTHER, res["data"]["errMsg"]
 
     @staticmethod
     async def authorize(phone: int, auth_code: int, country_code: int = 86) -> Credential:
@@ -420,7 +417,6 @@ class PhoneLoginApi:
         )
         if res["code"] == 20271:
             raise LoginError("[PhoneLoginApi] 验证码错误或已鉴权")
-        elif res["code"] == 0:
+        if res["code"] == 0:
             return Credential.from_cookies_dict(res["data"])
-        else:
-            raise LoginError("[PhoneLoginApi] 未知原因导致鉴权失败")
+        raise LoginError("[PhoneLoginApi] 未知原因导致鉴权失败")

@@ -22,8 +22,7 @@ def get_api(field: str) -> dict:
     path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "api", f"{field.lower()}.json"))
     if os.path.exists(path):
         with open(path, encoding="utf8") as f:
-            data = json.load(f)
-            return data
+            return json.load(f)
     else:
         return {}
 
@@ -97,8 +96,7 @@ def qrc_decrypt(encrypted_qrc: Union[str, bytearray, bytes]) -> str:
         for i in range(0, len(encrypted_qrc), 8):
             data += tripledes_crypt(encrypted_qrc[i : i + 8], schedule)
 
-        decrypted_qrc = zlib.decompress(data).decode("utf-8")
-        return decrypted_qrc
+        return zlib.decompress(data).decode("utf-8")
 
     except Exception as e:
         raise ValueError(f"解密失败: {e}")

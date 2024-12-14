@@ -1,5 +1,6 @@
 import asyncio
 
+import anyio
 import httpx
 
 from qqmusic_api import Credential, song
@@ -27,10 +28,10 @@ async def download_file(client, mid, url):
             response.raise_for_status()
             # 文件名 {mid}.mp3
             file_path = f"{mid}.mp3"
-            with open(file_path, "wb") as f:
-                async for chunk in response.aiter_bytes(chunk_size=1024):
+            async with await anyio.open_file(file_path, "wb") as f:
+                async for chunk in response.aiter_bytes(1024 * 5):
                     if chunk:
-                        f.write(chunk)
+                        await f.write(chunk)
         print(f"Downloaded {file_path}")
     except httpx.RequestError as e:
         print(f"An error occurred: {e}")
