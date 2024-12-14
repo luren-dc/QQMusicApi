@@ -2,12 +2,20 @@
 
 import asyncio
 from collections import deque
-from typing import Optional
+from typing import Optional, TypedDict
 
 import httpx
 
 from .credential import Credential
-from .qimei import QIMEI
+from .device import get_cached_device
+from .qimei import get_qimei
+
+
+class ApiConfig(TypedDict):
+    """API 配置"""
+
+    version: str
+    version_code: int
 
 
 class Session(httpx.AsyncClient):
@@ -26,11 +34,11 @@ class Session(httpx.AsyncClient):
             }
         )
         self.timeout = 20
-        self.api_config = {
-            "version": "13.2.5.8",
-            "version_code": 13020508,
-            "qimei": QIMEI.get_qimei("13.2.5.8").q36,
-        }
+        self.api_config = ApiConfig(
+            version="13.2.5.8",
+            version_code=13020508,
+        )
+        self.qimei = get_qimei(get_cached_device(), self.api_config["version"])["q36"]
 
     async def __aenter__(self) -> "Session":
         """进入 async with 上下文时调用"""
@@ -44,11 +52,6 @@ class Session(httpx.AsyncClient):
         loop = get_loop()
         session_manager.pop_from_stack(loop)
         await super().__aexit__(*args, **kwargs)
-
-    @property
-    def qimei(self) -> str:
-        """获取 Qimei"""
-        return str(self.api_config["qimei"])
 
     @property
     def musicid(self) -> int:
