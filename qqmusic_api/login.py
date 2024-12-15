@@ -56,7 +56,7 @@ async def refresh_cookies(credential: Credential) -> Credential:
         "musicid": credential.musicid,
     }
 
-    api = API["wx"]["login"] if credential.login_type == 1 else API["wx"]["login"]
+    api = API["wx"]["login"] if credential.login_type == 1 else API["qq"]["login"]
     res = await Api(**api).update_params(**params).update_extra_common(tmeLoginType=str(credential.login_type)).result
     if res["code"] != 0:
         return credential
