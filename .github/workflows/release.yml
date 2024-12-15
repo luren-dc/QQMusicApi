@@ -77,7 +77,7 @@ jobs:
       - name: Get version
         run: grep '__version__' qqmusic_api/__init__.py | awk -F'"' '{print $2}'
       - name: Release
-        uses: ncipollo/release-action@v1
+        uses: softprops/action-gh-release@v2
         with:
           body: ${{ needs.generate-release-body.outputs.release_body }}
-          tag: v${{ env.PACKAGE_VERSION }}
+          tag_name: v${{ env.PACKAGE_VERSION }}
