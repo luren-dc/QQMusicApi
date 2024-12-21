@@ -36,13 +36,7 @@ repos:
         args: [--fix]
       - id: ruff-format
 
-  - repo: https://github.com/pre-commit/mirrors-mypy
+  - repo: https://github.com/DetachHead/basedpyright-pre-commit-mirror
     rev: v1.13.0
     hooks:
-      - id: mypy
-        args:
-          [
-            --ignore-missing-imports,
-            --scripts-are-modules,
-            --check-untyped-defs,
-          ]
+    - id: basedpyright
