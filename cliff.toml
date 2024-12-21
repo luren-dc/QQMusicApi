@@ -75,6 +75,8 @@ filter_unconventional = true
 commit_preprocessors = [
   # remove issue numbers from commits
   { pattern = '\((\w+\s)?#([0-9]+)\)', replace = "" },
+  # Remove gitmoji, both actual UTF emoji and :emoji:
+  { pattern = ' *(:\w+:|[\p{Emoji_Presentation}\p{Extended_Pictographic}](?:\u{FE0F})?\u{200D}?) *', replace = "" },
 ]
 # regex for parsing and grouping commits
 commit_parsers = [

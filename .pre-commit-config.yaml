@@ -24,6 +24,11 @@ repos:
     hooks:
       - id: commitizen
 
+  - repo: https://github.com/ljnsn/cz-conventional-gitmoji
+    rev: v0.6.1
+    hooks:
+      - id: conventional-gitmoji
+
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.8.4
     hooks:
