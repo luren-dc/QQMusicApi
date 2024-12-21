@@ -19,6 +19,7 @@
 
 ### 功能重构
 
+- 重构`utils.utils`为`utils.common` - ([8a99daf](https://github.com/luren-dc/QQMusicApi/commit/8a99dafb7f75806a152ea1bd8d95b30ab4b871a4)) by [@luren-dc](https://github.com/luren-dc) 
 - 重构 QIMEI 获取 - ([7f0aa0f](https://github.com/luren-dc/QQMusicApi/commit/7f0aa0ffad5c4617c881ce58f3213a9c2f046084)) by [@luren-dc](https://github.com/luren-dc) 
 
 ### 构建配置
