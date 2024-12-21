@@ -2,8 +2,8 @@
 
 from enum import Enum
 
+from .utils.common import get_api, get_searchID
 from .utils.network import Api
-from .utils.utils import get_api, get_searchID
 
 API = get_api("search")
 

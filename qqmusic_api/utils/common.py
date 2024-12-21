@@ -1,5 +1,6 @@
 """实用函数"""
 
+import hashlib
 import json
 import os
 import random
@@ -8,6 +9,19 @@ import zlib
 from typing import Union
 
 from .tripledes import DECRYPT, tripledes_crypt, tripledes_key_setup
+
+
+def calc_md5(*strings: Union[str, bytes]) -> str:
+    """计算 MD5 值"""
+    md5 = hashlib.md5()
+    for item in strings:
+        if isinstance(item, bytes):
+            md5.update(item)
+        elif isinstance(item, str):
+            md5.update(item.encode())
+        else:
+            raise ValueError(f"Unsupported type: {type(item)}")
+    return md5.hexdigest()
 
 
 def get_api(field: str) -> dict:

@@ -1,7 +1,7 @@
 """歌单相关 API"""
 
+from .utils.common import get_api
 from .utils.network import Api
-from .utils.utils import get_api
 
 API = get_api("songlist")
 

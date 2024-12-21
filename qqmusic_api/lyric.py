@@ -3,8 +3,8 @@
 import xml.etree.ElementTree as ET
 from typing import Optional
 
+from .utils.common import get_api, qrc_decrypt
 from .utils.network import Api
-from .utils.utils import get_api, qrc_decrypt
 
 API = get_api("lyric")
 

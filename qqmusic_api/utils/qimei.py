@@ -1,12 +1,11 @@
 """QIMEI 获取"""
 
 import base64
-import hashlib
 import json
 import random
 from datetime import datetime, timedelta
 from time import time
-from typing import TypedDict, Union, cast
+from typing import TypedDict, cast
 
 import httpx
 from cryptography.hazmat.primitives import serialization
@@ -14,6 +13,7 @@ from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
+from .common import calc_md5
 from .device import Device
 
 PUBLIC_KEY = """-----BEGIN PUBLIC KEY-----
@@ -28,19 +28,6 @@ class QimeiResult(TypedDict):
 
     q16: str
     q36: str
-
-
-def calc_md5(*strings: Union[str, bytes]) -> str:
-    """计算 MD5 值"""
-    md5 = hashlib.md5()
-    for item in strings:
-        if isinstance(item, bytes):
-            md5.update(item)
-        elif isinstance(item, str):
-            md5.update(item.encode())
-        else:
-            raise ValueError(f"Unsupported type: {type(item)}")
-    return md5.hexdigest()
 
 
 def rsa_encrypt(content: bytes) -> bytes:

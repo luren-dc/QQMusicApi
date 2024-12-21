@@ -3,8 +3,8 @@
 import random
 
 from .song import query_song
+from .utils.common import get_api, get_guid
 from .utils.network import Api
-from .utils.utils import get_api, get_guid
 
 API = get_api("mv")
 

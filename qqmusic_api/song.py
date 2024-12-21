@@ -4,9 +4,9 @@ import asyncio
 from enum import Enum
 from typing import Optional, Union, overload
 
+from .utils.common import get_api, get_guid
 from .utils.credential import Credential
 from .utils.network import Api
-from .utils.utils import get_api, get_guid
 
 API = get_api("song")
 

@@ -3,9 +3,9 @@
 from typing import Optional
 
 from .exceptions import ResponseCodeError
+from .utils.common import get_api
 from .utils.credential import Credential
 from .utils.network import Api
-from .utils.utils import get_api
 
 API = get_api("user")
 
