@@ -1,13 +1,18 @@
 """网络请求"""
 
 import json
+import sys
 from dataclasses import dataclass, field
 from typing import Any, Literal, Optional, Union
 
 import httpx
-from typing_extensions import Self
 
-from ..exceptions import CredentialExpiredError, ResponseCodeError
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
+
+from ..exceptions import CredentialExpiredError, ResponseCodeError, SignInvalidError
 from .credential import Credential
 from .session import get_session
 from .sign import sign
@@ -261,6 +266,8 @@ class Api:
                 code,
             )
 
+        if code == 2000:
+            raise SignInvalidError(data=resp)
         if code == 1000:
             raise CredentialExpiredError(self.data, resp)
         if code != 0:
