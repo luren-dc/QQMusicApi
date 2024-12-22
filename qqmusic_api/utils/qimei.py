@@ -115,6 +115,8 @@ def random_payload_by_device(device: Device, version: str) -> dict:
 
 def get_qimei(device: Device, version: str) -> QimeiResult:
     """获取 QIMEI"""
+    from .. import logger
+
     try:
         payload = random_payload_by_device(device, version)
         crypt_key = "".join(random.choices("adbcdef1234567890", k=16))
@@ -148,6 +150,8 @@ def get_qimei(device: Device, version: str) -> QimeiResult:
                 },
             },
         )
+        logger.debug("获取 QIMEI 成功: %s", res.json())
         return json.loads(res.json()["data"])["data"]
     except Exception:
+        logger.exception("获取 QIMEI 失败,使用默认 QIMEI")
         return QimeiResult(q16="", q36="6c9d3cd110abca9b16311cee10001e717614")

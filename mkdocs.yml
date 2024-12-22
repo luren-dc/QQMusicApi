@@ -127,6 +127,7 @@ plugins:
 
 nav:
   - 主页: index.md
+  - Logging: logging.md
   - API 示例:
       - Session: examples/session.md
       - 凭证（Cookie）: examples/credential.md
@@ -137,8 +138,8 @@ nav:
       - 同步执行: examples/sync.md
   - API 文档:
       - utils:
+          - common: api/utils/common.md
           - qimei: api/utils/qimei.md
-          - utils: api/utils/utils.md
           - network: api/utils/network.md
           - credential: api/utils/credential.md
           - session: api/utils/session.md

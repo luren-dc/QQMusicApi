@@ -89,8 +89,9 @@ def get_cached_device() -> Device:
         device = Device()
         save_device(device)
         return device
-    device_data = device_path.read_text()
-    return Device(**json.loads(device_data))
+    device_data = json.loads(device_path.read_text())
+    device_data["version"] = OSVersion(**device_data["version"])
+    return Device(**device_data)
 
 
 def save_device(device: Device):

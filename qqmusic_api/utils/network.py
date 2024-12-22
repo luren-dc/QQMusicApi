@@ -183,10 +183,16 @@ class Api:
 
     async def request(self) -> httpx.Response:
         """发起请求"""
+        from .. import logger
+
         config = self._prepare_request()
+
+        logger.debug(
+            f"发起请求: {self.url} {self.module} {self.method} {self.module} params: {self.params} data: {self.data}"
+        )
+
         resp = await self._session.request(**config)
-        if not self.ignore_code:
-            resp.raise_for_status()
+        resp.raise_for_status()
         self._session.cookies.clear()
         return resp
 
@@ -230,12 +236,24 @@ class Api:
 
     def _process_response_code(self, resp: dict) -> dict:
         """处理响应代码"""
+        from .. import logger
+
         # 是否忽略响应代码
         if self.ignore_code:
             return resp
         code = resp["code"]
+
+        if self.module:
+            logger.debug(
+                "API %s.%s: %s",
+                self.module,
+                self.method,
+                code,
+            )
+
         if code == 1000:
             raise CredentialExpiredError(self.data, resp)
         if code != 0:
             raise ResponseCodeError(code, self.data, resp)
+
         return resp.get("data", resp)

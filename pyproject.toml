@@ -84,7 +84,7 @@ line-length = 120
 extend-exclude = ["docs"]
 
 [tool.ruff.lint]
-extend-select = ["Q", "RUF", "C90", "UP", "I", "D", "ASYNC", "C4", "FURB", "R"]
+extend-select = ["Q", "RUF", "C90", "UP", "I", "D", "ASYNC", "C4", "FURB", "R", "PERF"]
 ignore = ["D105", "D107", "D205", "D415"]
 pydocstyle = { convention = "google" }
 
