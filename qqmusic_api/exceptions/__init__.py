@@ -1,4 +1,11 @@
-from .api_exception import ApiException, CredentialExpiredError, CredentialInvalidError, LoginError, ResponseCodeError
+from .api_exception import (
+    ApiException,
+    CredentialExpiredError,
+    CredentialInvalidError,
+    LoginError,
+    ResponseCodeError,
+    SignInvalidError,
+)
 
 __all__ = [
     "ApiException",
@@ -6,4 +13,5 @@ __all__ = [
     "CredentialInvalidError",
     "LoginError",
     "ResponseCodeError",
+    "SignInvalidError",
 ]
