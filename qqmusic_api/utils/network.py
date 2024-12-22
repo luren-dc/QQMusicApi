@@ -10,8 +10,7 @@ from typing_extensions import Self
 from ..exceptions import CredentialExpiredError, ResponseCodeError
 from .credential import Credential
 from .session import get_session
-
-QQMUSIC_API = "https://u.y.qq.com/cgi-bin/musicu.fcg"
+from .sign import sign
 
 
 @dataclass
@@ -34,7 +33,7 @@ class Api:
         comment: API 注释
     """
 
-    url: str = field(default=QQMUSIC_API)
+    url: str = field(default="")
     method: str = field(default="GET")
     module: str = field(default="")
     params: dict = field(default_factory=dict)
@@ -113,6 +112,11 @@ class Api:
         if not self.module:
             return
 
+        if self._session.api_config["enable_sign"]:
+            self.url = self._session.api_config["enc_endpoint"]
+        else:
+            self.url = self._session.api_config["endpoint"]
+
         common_data = {
             "ct": "11",
             "cv": self._session.api_config["version_code"],
@@ -138,6 +142,12 @@ class Api:
 
         self.json_body = True
         self.params.clear()
+
+        if self._session.api_config["enable_sign"]:
+            self.url = self._session.api_config["enc_endpoint"]
+            self.params["sign"] = sign(self.data)
+        else:
+            self.url = self._session.api_config["endpoint"]
 
     def _prepare_credential(self) -> None:
         """准备账号凭据"""
