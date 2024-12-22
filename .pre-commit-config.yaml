@@ -23,6 +23,7 @@ repos:
     rev: v4.1.0
     hooks:
       - id: commitizen
+        additional_dependencies: [cz-conventional-gitmoji]
 
   - repo: https://github.com/ljnsn/cz-conventional-gitmoji
     rev: v0.6.1

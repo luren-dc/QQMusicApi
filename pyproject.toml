@@ -68,6 +68,9 @@ docs = [
   "griffe-modernized-annotations>=1.0.8",
 ]
 
+[tool.commitizen]
+name = "cz_gitmoji"
+
 [tool.basedpyright]
 venvPath = "."
 venv = ".venv"

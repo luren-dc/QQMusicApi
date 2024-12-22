@@ -3,6 +3,32 @@
   "extends": [
     "config:recommended"
   ],
+  "unicodeEmoji": true,
+  "packageRules": [
+    {
+      "matchUpdateTypes": [
+        "lockFileMaintenance",
+        "pin",
+        "pinDigest"
+      ],
+      "semanticCommitType": ":pushpin: chore"
+    },
+    {
+      "matchUpdateTypes": [
+        "rollback"
+      ],
+      "semanticCommitType": ":arrow_down: chore"
+    },
+    {
+      "matchUpdateTypes": [
+        "bump",
+        "major",
+        "minor",
+        "patch"
+      ],
+      "semanticCommitType": ":arrow_up: chore"
+    }
+  ],
   "labels": [
     "dependencies"
   ],
