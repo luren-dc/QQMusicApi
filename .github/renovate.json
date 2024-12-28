@@ -10,13 +10,13 @@
         "pin",
         "pinDigest"
       ],
-      "semanticCommitType": ":pushpin: chore"
+      "semanticCommitType": "📌 chore"
     },
     {
       "matchUpdateTypes": [
         "rollback"
       ],
-      "semanticCommitType": ":arrow_down: chore"
+      "semanticCommitType": "⬇️ chore"
     },
     {
       "matchUpdateTypes": [
@@ -25,7 +25,7 @@
         "minor",
         "patch"
       ],
-      "semanticCommitType": ":arrow_up: chore"
+      "semanticCommitType": "⬆️ chore"
     }
   ],
   "labels": [
