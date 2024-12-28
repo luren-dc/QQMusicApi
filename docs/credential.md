@@ -1,5 +1,7 @@
 # 凭证（Cookie）
 
+[`Credential`][utils.credential.Credential] 用于管理 QQ 音乐的账号数据
+
 ## 部分字段解释
 
 | 字段          | 类型 |       必需       | 说明                                |
@@ -17,6 +19,17 @@
 | `Q_H_L_`开头 | 6-11 位  | QQ 账号  |
 | `W_X_`开头   | 最大19位 | 微信账号 |
 
+## 全局使用
+
+```python
+from qqmusic_api import Credential, set_session_credential, sync
+
+async def main():
+  set_session_credential(Credential())
+
+sync(main())
+```
+
 ## 示例
 
 ```python
@@ -33,15 +46,4 @@ sync(credential.is_expired())
 
 # 刷新 credential
 sync(credential.refresh())
-```
-
-## 全局使用
-
-```python
-from qqmusic_api import Credential, set_session_credential, sync
-
-async def main():
-  set_session_credential(Credential())
-
-sync(main())
 ```

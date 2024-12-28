@@ -1,5 +1,8 @@
 # Session
 
+实现 QQ音乐 API请求管理，支持设置全局 `Credential`
+
+## 示例
 
 ```python
 from qqmusic_api import create_session, get_session, set_session

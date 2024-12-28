@@ -127,10 +127,11 @@ plugins:
 
 nav:
   - 主页: index.md
-  - Logging: logging.md
+  - 指南:
+    - Logging: logging.md
+    - Session: session.md
+    - 凭证（Cookie）: credential.md
   - API 示例:
-      - Session: examples/session.md
-      - 凭证（Cookie）: examples/credential.md
       - 登录: examples/login.md
       - 搜索: examples/search.md
       - 歌曲: examples/song.md
