@@ -148,12 +148,6 @@ class Api:
         self.json_body = True
         self.params.clear()
 
-        if self._session.api_config["enable_sign"]:
-            self.url = self._session.api_config["enc_endpoint"]
-            self.params["sign"] = sign(self.data)
-        else:
-            self.url = self._session.api_config["endpoint"]
-
     def _prepare_credential(self) -> None:
         """准备账号凭据"""
         if self.verify:
@@ -175,6 +169,12 @@ class Api:
                 "tmeLoginType": str(self.credential.login_type),
             }
             self._cookies.update(cookies)
+
+        if self._session.api_config["enable_sign"]:
+            self.url = self._session.api_config["enc_endpoint"]
+            self.params["sign"] = sign(self.data)
+        else:
+            self.url = self._session.api_config["endpoint"]
 
     def _prepare_request(self) -> dict:
         """准备请求"""
