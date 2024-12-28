@@ -1,7 +1,7 @@
 """歌手相关 API"""
 
 from enum import Enum
-from typing import Literal, Optional
+from typing import Literal
 
 from .utils.common import get_api
 from .utils.network import Api
@@ -151,7 +151,7 @@ class Singer:
             mid: 歌手 mid
         """
         self.mid = mid
-        self._info: Optional[dict] = None
+        self._info: dict | None = None
 
     async def get_info(self) -> dict:
         """获取歌手信息

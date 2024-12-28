@@ -2,7 +2,7 @@
 
 import asyncio
 from collections import deque
-from typing import Optional, TypedDict
+from typing import TypedDict
 
 import httpx
 
@@ -27,7 +27,7 @@ class Session(httpx.AsyncClient):
     HOST = "y.qq.com"
     UA_DEFAULT = "Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.54"
 
-    def __init__(self, *, credential: Optional[Credential] = None, enable_sign: bool = False, **kwargs) -> None:
+    def __init__(self, *, credential: Credential | None = None, enable_sign: bool = False, **kwargs) -> None:
         super().__init__(**kwargs)
         self.credential = credential or Credential()
         self.headers = httpx.Headers(
@@ -112,7 +112,7 @@ class SessionManager:
         if self.context_stack.get(loop):
             self.context_stack[loop].pop()
 
-    def create_session(self, credential: Optional[Credential] = None, enable_sign: bool = False) -> Session:
+    def create_session(self, credential: Credential | None = None, enable_sign: bool = False) -> Session:
         """创建新的 Session"""
         session = Session(credential=credential, enable_sign=enable_sign)
         self.session_pool[get_loop()] = session
@@ -139,7 +139,7 @@ def set_session(session: Session) -> None:
     session_manager.set(session)
 
 
-def create_session(credential: Optional[Credential] = None, enable_sign: bool = False) -> Session:
+def create_session(credential: Credential | None = None, enable_sign: bool = False) -> Session:
     """创建新的 Session
 
     Args:

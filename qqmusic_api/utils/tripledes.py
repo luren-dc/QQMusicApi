@@ -9,7 +9,6 @@
 
 # SPDX-FileCopyrightText: Copyright (c) 2024 沉默の金 <cmzj@cmzj.org>
 # SPDX-License-Identifier: GPL-3.0-only
-from typing import Union
 
 ENCRYPT = 1
 DECRYPT = 0
@@ -65,7 +64,7 @@ sbox = (
 )  # fmt: skip
 
 
-def bitnum(a: Union[bytearray, bytes], b: int, c: int) -> int:
+def bitnum(a: bytearray | bytes, b: int, c: int) -> int:
     """从字节串中提取指定位置的位,并左移指定偏移量
 
     Args:

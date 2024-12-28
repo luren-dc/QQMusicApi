@@ -2,7 +2,7 @@
 
 import asyncio
 from enum import Enum
-from typing import Optional, Union, overload
+from typing import overload
 
 from .utils.common import get_api, get_guid
 from .utils.credential import Credential
@@ -11,7 +11,7 @@ from .utils.network import Api
 API = get_api("song")
 
 
-async def query_song(value: Union[list[str], list[int]]) -> list[dict]:
+async def query_song(value: list[str] | list[int]) -> list[dict]:
     """根据 id 或 mid 获取歌曲信息
 
     Args:
@@ -115,7 +115,7 @@ class EncryptedSongFileType(BaseSongFileType):
 async def get_song_urls(
     mid: list[str],
     file_type: SongFileType = SongFileType.MP3_128,
-    credential: Optional[Credential] = None,
+    credential: Credential | None = None,
 ) -> dict[str, str]: ...
 
 
@@ -123,15 +123,15 @@ async def get_song_urls(
 async def get_song_urls(
     mid: list[str],
     file_type: EncryptedSongFileType,
-    credential: Optional[Credential] = None,
+    credential: Credential | None = None,
 ) -> dict[str, tuple[str, str]]: ...
 
 
 async def get_song_urls(
     mid: list[str],
-    file_type: Union[EncryptedSongFileType, SongFileType] = SongFileType.MP3_128,
-    credential: Optional[Credential] = None,
-) -> Union[dict[str, str], dict[str, tuple[str, str]]]:
+    file_type: EncryptedSongFileType | SongFileType = SongFileType.MP3_128,
+    credential: Credential | None = None,
+) -> dict[str, str] | dict[str, tuple[str, str]]:
     """获取歌曲文件链接
 
     Tips:
@@ -218,8 +218,8 @@ class Song:
     def __init__(
         self,
         *,
-        mid: Optional[str] = None,
-        id: Optional[int] = None,
+        mid: str | None = None,
+        id: int | None = None,
     ):
         """初始化歌曲类
 
@@ -234,7 +234,7 @@ class Song:
             raise ValueError("mid or id must be provided")
         self.mid = mid or ""
         self.id = id or 0
-        self._info: Optional[dict] = None
+        self._info: dict | None = None
 
     async def get_mid(self) -> str:
         """获取歌曲 mid
@@ -347,21 +347,21 @@ class Song:
     async def get_url(
         self,
         file_type: SongFileType = SongFileType.MP3_128,
-        credential: Optional[Credential] = None,
+        credential: Credential | None = None,
     ) -> str: ...
 
     @overload
     async def get_url(
         self,
         file_type: EncryptedSongFileType,
-        credential: Optional[Credential] = None,
+        credential: Credential | None = None,
     ) -> tuple[str, str]: ...
 
     async def get_url(
         self,
-        file_type: Union[SongFileType, EncryptedSongFileType] = SongFileType.MP3_128,
-        credential: Optional[Credential] = None,
-    ) -> Union[str, tuple[str, str]]:
+        file_type: SongFileType | EncryptedSongFileType = SongFileType.MP3_128,
+        credential: Credential | None = None,
+    ) -> str | tuple[str, str]:
         """获取歌曲文件链接
 
         Tips:

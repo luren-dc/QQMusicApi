@@ -1,7 +1,6 @@
 """歌词 API"""
 
 import xml.etree.ElementTree as ET
-from typing import Optional
 
 from .utils.common import get_api, qrc_decrypt
 from .utils.network import Api
@@ -11,8 +10,8 @@ API = get_api("lyric")
 
 async def get_lyric(
     *,
-    mid: Optional[str] = None,
-    id: Optional[int] = None,
+    mid: str | None = None,
+    id: int | None = None,
     qrc: bool = False,
     trans: bool = False,
     roma: bool = False,

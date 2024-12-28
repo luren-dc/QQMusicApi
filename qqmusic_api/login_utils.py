@@ -5,7 +5,6 @@
 
 import sys
 from abc import ABC, abstractmethod
-from typing import Optional
 
 from .exceptions.api_exception import LoginError
 
@@ -26,7 +25,7 @@ class Login(ABC):
     """
 
     def __init__(self) -> None:
-        self.credential: Optional[Credential] = None
+        self.credential: Credential | None = None
 
 
 class QRCodeLogin(Login):
@@ -34,8 +33,8 @@ class QRCodeLogin(Login):
 
     def __init__(self) -> None:
         super().__init__()
-        self._state: Optional[QrCodeLoginEvents] = None
-        self._qrcode_data: Optional[bytes] = None
+        self._state: QrCodeLoginEvents | None = None
+        self._qrcode_data: bytes | None = None
 
     @abstractmethod
     async def get_qrcode(self) -> bytes:
@@ -46,7 +45,7 @@ class QRCodeLogin(Login):
         """
 
     @abstractmethod
-    async def check_qrcode_state(self) -> tuple[QrCodeLoginEvents, Optional[Credential]]:
+    async def check_qrcode_state(self) -> tuple[QrCodeLoginEvents, Credential | None]:
         """检测二维码状态
 
         Returns:
@@ -69,7 +68,7 @@ class QQLogin(QRCodeLogin):
         return self._qrcode_data
 
     @override
-    async def check_qrcode_state(self) -> tuple[QrCodeLoginEvents, Optional[Credential]]:
+    async def check_qrcode_state(self) -> tuple[QrCodeLoginEvents, Credential | None]:
         if self._state == QrCodeLoginEvents.DONE and self.credential:
             return self._state, self.credential
         if not self._qrsig:
@@ -94,7 +93,7 @@ class WXLogin(QRCodeLogin):
         return self._qrcode_data
 
     @override
-    async def check_qrcode_state(self) -> tuple[QrCodeLoginEvents, Optional[Credential]]:
+    async def check_qrcode_state(self) -> tuple[QrCodeLoginEvents, Credential | None]:
         if self._state == QrCodeLoginEvents.DONE and self.credential:
             return self._state, self.credential
         if not self._uuid:
@@ -118,7 +117,7 @@ class PhoneLogin(Login):
         self.phone = phone
         self.area_code = area_code
         self.auth_url = ""
-        self._state: Optional[PhoneLoginEvents] = None
+        self._state: PhoneLoginEvents | None = None
         self.error_msg = ""
 
     async def send_authcode(self) -> PhoneLoginEvents:

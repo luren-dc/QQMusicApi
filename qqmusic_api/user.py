@@ -1,7 +1,5 @@
 """用户相关 API"""
 
-from typing import Optional
-
 from .exceptions import ResponseCodeError
 from .utils.common import get_api
 from .utils.credential import Credential
@@ -88,7 +86,7 @@ class User:
         credential: 账号凭证
     """
 
-    def __init__(self, euin: str, credential: Optional[Credential] = None):
+    def __init__(self, euin: str, credential: Credential | None = None):
         """初始化用户类
 
         传入有效 credential 获取他人的信息会更完整但会留痕,且部分 API 不会验证

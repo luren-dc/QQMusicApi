@@ -6,12 +6,11 @@ import os
 import random
 import time
 import zlib
-from typing import Union
 
 from .tripledes import DECRYPT, tripledes_crypt, tripledes_key_setup
 
 
-def calc_md5(*strings: Union[str, bytes]) -> str:
+def calc_md5(*strings: str | bytes) -> str:
     """计算 MD5 值"""
     md5 = hashlib.md5()
     for item in strings:
@@ -78,7 +77,7 @@ def get_searchID() -> str:
     return str(t + n + r)
 
 
-def qrc_decrypt(encrypted_qrc: Union[str, bytearray, bytes]) -> str:
+def qrc_decrypt(encrypted_qrc: str | bytearray | bytes) -> str:
     """QRC 解码
 
     Args:
@@ -96,7 +95,7 @@ def qrc_decrypt(encrypted_qrc: Union[str, bytearray, bytes]) -> str:
     # 将输入转为 bytearray 格式
     if isinstance(encrypted_qrc, str):
         encrypted_qrc = bytearray.fromhex(encrypted_qrc)
-    elif isinstance(encrypted_qrc, (bytearray, bytes)):
+    elif isinstance(encrypted_qrc, bytearray | bytes):
         encrypted_qrc = bytearray(encrypted_qrc)
     else:
         raise ValueError("无效的加密数据类型")

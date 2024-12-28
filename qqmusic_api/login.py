@@ -5,7 +5,6 @@ import re
 import time
 import uuid
 from enum import Enum, auto
-from typing import Optional
 
 import httpx
 
@@ -130,7 +129,7 @@ class QQLoginApi:
         return qrsig, res.read()
 
     @staticmethod
-    async def check_qrcode_state(qrsig: str) -> tuple[QrCodeLoginEvents, Optional[Credential]]:
+    async def check_qrcode_state(qrsig: str) -> tuple[QrCodeLoginEvents, Credential | None]:
         """检测二维码状态
 
         Args:
@@ -299,7 +298,7 @@ class WXLoginApi:
         return uuid, qrcode_data
 
     @staticmethod
-    async def check_qrcode_state(uuid: str) -> tuple[QrCodeLoginEvents, Optional[Credential]]:
+    async def check_qrcode_state(uuid: str) -> tuple[QrCodeLoginEvents, Credential | None]:
         """检测二维码状态
 
         Args:

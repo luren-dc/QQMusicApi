@@ -1,6 +1,6 @@
 """专辑相关 API"""
 
-from typing import Literal, Optional
+from typing import Literal
 
 from .utils.common import get_api
 from .utils.network import Api
@@ -34,8 +34,8 @@ class Album:
     def __init__(
         self,
         *,
-        mid: Optional[str] = None,
-        id: Optional[int] = None,
+        mid: str | None = None,
+        id: int | None = None,
     ):
         """初始化专辑类
 
@@ -50,7 +50,7 @@ class Album:
             raise ValueError("mid or id must be provided")
         self.mid = mid or ""
         self.id = id or 0
-        self._info: Optional[dict] = None
+        self._info: dict | None = None
 
     async def get_mid(self) -> str:
         """获取专辑 mid

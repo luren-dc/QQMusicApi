@@ -3,7 +3,7 @@
 import json
 import sys
 from dataclasses import dataclass, field
-from typing import Any, Literal, Optional, Union
+from typing import Any, Literal
 
 import httpx
 
@@ -60,7 +60,7 @@ class Api:
         self.data = {k: None for k in self.data}
         self.params = {k: None for k in self.params}
         self.extra_common = {k: None for k in self.extra_common}
-        self._result: Optional[dict] = None
+        self._result: dict | None = None
         self._session = get_session()
         self._cookies = httpx.Cookies()
 
@@ -216,7 +216,7 @@ class Api:
         self._session.cookies.clear()
         return resp
 
-    def _process_response(self, resp: httpx.Response) -> Union[None, str, dict]:
+    def _process_response(self, resp: httpx.Response) -> None | str | dict:
         """处理响应"""
         content_length = resp.headers.get("Content-Length")
         if content_length and int(content_length) == 0:
@@ -226,7 +226,7 @@ class Api:
         except json.decoder.JSONDecodeError:
             return resp.text
 
-    async def fetch(self) -> Union[None, str, dict]:
+    async def fetch(self) -> None | str | dict:
         """发起请求并处理响应"""
         return self._process_response(await self.request())
 
