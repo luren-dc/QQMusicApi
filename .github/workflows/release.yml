@@ -75,9 +75,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Get version
-        run: grep '__version__' qqmusic_api/__init__.py | awk -F'"' '{print $2}'
+        run: echo "PACKAGE_VERSION=$(grep '__version__' qqmusic_api/__init__.py | awk -F'\"' '{print $2}')" >> $GITHUB_ENV
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           body: ${{ needs.generate-release-body.outputs.release_body }}
           tag_name: v${{ env.PACKAGE_VERSION }}
+          token: ${{ secrets.GH_TOKEN }}
