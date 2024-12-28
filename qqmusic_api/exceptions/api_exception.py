@@ -58,3 +58,10 @@ class LoginError(ApiException):
 
     def __init__(self, message: str = "登录失败") -> None:
         super().__init__(message)
+
+
+class SignInvalidError(ResponseCodeError):
+    """请求签名无效"""
+
+    def __init__(self, data: dict, message: str = "请求签名无效") -> None:
+        super().__init__(2000, message=message, data=data, raw={})

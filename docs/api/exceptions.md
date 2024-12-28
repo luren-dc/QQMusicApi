@@ -7,6 +7,7 @@
 - ApiException
   - ResponseCodeError
     - CredentialExpiredError
+    - SignInvalidError
   - CredentialInvalidError
   - LoginError
 
