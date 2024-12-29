@@ -46,8 +46,6 @@ extra:
 extra_css:
   - css/font.css
   - css/scheme.css
-  - https://cdn.tonycrane.cc/jbmono/jetbrainsmono.css
-  - https://cdn.tonycrane.cc/lxgw/lxgwscreen.css
   - https://fonts.loli.net/css2?family=Noto+Serif+SC&display=swap
 
 markdown_extensions:
