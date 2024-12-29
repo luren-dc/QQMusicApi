@@ -10,6 +10,10 @@
 
 -  [**breaking**]不再支持 Python 3.9 - ([4d51d23](https://github.com/luren-dc/QQMusicApi/commit/4d51d23d282de7e39d5460779462541e378298b7)) by [@luren-dc](https://github.com/luren-dc) 
 
+### 文档更新
+
+- 修改字体链接 - ([9bd6ea2](https://github.com/luren-dc/QQMusicApi/commit/9bd6ea2b97b648e5306de3eb889012b1774aa945)) by [@luren-dc](https://github.com/luren-dc) 
+
 ## [[0.2.0](https://github.com/luren-dc/QQMusicApi/compare/v0.1.11..v0.2.0)] - 2024-12-28
 
 ### Bug 修复
