@@ -191,7 +191,7 @@ class Api:
 
         config = {
             "url": self.url,
-            "method": self.method if not self.module else "POST",
+            "method": "POST" if self.module else self.method,
             "params": self.params,
             "headers": self.headers,
         }
@@ -212,7 +212,8 @@ class Api:
         )
 
         resp = await self._session.request(**config)
-        resp.raise_for_status()
+        if not self.ignore_code:
+            resp.raise_for_status()
         self._session.cookies.clear()
         return resp
 
@@ -261,8 +262,8 @@ class Api:
         # 是否忽略响应代码
         if self.ignore_code:
             return resp
-        code = resp["code"]
 
+        code = resp["code"]
         if self.module:
             logger.debug(
                 "API %s.%s: %s",
