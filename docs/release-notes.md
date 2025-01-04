@@ -6,6 +6,10 @@
 
 ## What's Changed
 
+### Bug 修复
+
+- 修复扫码登录报错 - ([7036fe3](https://github.com/luren-dc/QQMusicApi/commit/7036fe349d5b0ea9ff636915e19241a13de7a170)) by [@luren-dc](https://github.com/luren-dc) 
+
 ### 功能更新
 
 -  [**breaking**]不再支持 Python 3.9 - ([4d51d23](https://github.com/luren-dc/QQMusicApi/commit/4d51d23d282de7e39d5460779462541e378298b7)) by [@luren-dc](https://github.com/luren-dc) 
