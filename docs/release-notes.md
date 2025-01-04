@@ -8,7 +8,7 @@
 
 ### Bug 修复
 
-- 修复扫码登录报错 - ([7036fe3](https://github.com/luren-dc/QQMusicApi/commit/7036fe349d5b0ea9ff636915e19241a13de7a170)) by [@luren-dc](https://github.com/luren-dc) 
+- 修复扫码登录报错 - ([bc4d272](https://github.com/luren-dc/QQMusicApi/commit/bc4d27209a999e90acf040f0398ec9d5e34e96ae)) by [@luren-dc](https://github.com/luren-dc) 
 
 ### 功能更新
 
