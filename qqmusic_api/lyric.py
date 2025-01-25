@@ -1,11 +1,13 @@
 """歌词 API"""
 
-import xml.etree.ElementTree as ET
+import re
 
 from .utils.common import get_api, qrc_decrypt
 from .utils.network import Api
 
 API = get_api("lyric")
+
+QRC_PATTERN = re.compile(r'<Lyric_.* LyricType=".*" LyricContent="(?P<content>.*?)"/>', re.DOTALL)
 
 
 async def get_lyric(
@@ -52,14 +54,12 @@ async def get_lyric(
     res = await Api(**API["info"]).update_params(**params).result
 
     lyric = qrc_decrypt(res["lyric"])
+    
 
     if lyric and qrc:
-        try:
-            root = ET.fromstring(lyric)
-            lyric_info = root[1]
-            lyric = lyric_info[0].attrib.get("LyricContent", lyric)
-        except Exception:
-            pass
+        m_qrc = QRC_PATTERN.search(lyric)
+        if  m_qrc and m_qrc.group("content"):
+            lyric = m_qrc.group("content")
 
     return {
         "lyric": lyric,

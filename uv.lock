@@ -736,7 +736,6 @@ wheels = [
 
 [[package]]
 name = "qqmusic-api-python"
-version = "0.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "cryptography" },
