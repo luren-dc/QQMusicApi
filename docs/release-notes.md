@@ -8,6 +8,12 @@
 
 ### Bug 修复
 
+- 逐字歌词丢失换行符 - ([6a5072e](https://github.com/luren-dc/QQMusicApi/commit/6a5072e5e424ce79635bbf937032256494f8172c)) by [@luren-dc](https://github.com/luren-dc) 
+
+## [[0.2.1](https://github.com/luren-dc/QQMusicApi/compare/v0.2.0..v0.2.1)] - 2025-01-04
+
+### Bug 修复
+
 - 修复扫码登录报错 - ([bc4d272](https://github.com/luren-dc/QQMusicApi/commit/bc4d27209a999e90acf040f0398ec9d5e34e96ae)) by [@luren-dc](https://github.com/luren-dc) 
 
 ### 功能更新
