@@ -5,7 +5,7 @@ from .utils.credential import Credential
 from .utils.session import create_session, get_session, set_session, set_session_credential
 from .utils.sync import sync
 
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 
 logger = logging.getLogger("qqmusicapi")
 
