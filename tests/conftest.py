@@ -17,8 +17,10 @@ from qqmusic_api.user import User
 
 @pytest_asyncio.fixture()
 async def credential():
-    musicid = os.getenv("MUSIC_ID", 0)
+    musicid = os.getenv("MUSIC_ID", None)
     musickey = os.getenv("MUSIC_KEY", "")
+    if not musicid or not musickey:
+        pytest.skip("未设置 MUSIC_ID 或 MUSIC_KEY")
     music_euin = os.getenv("MUSIC_EUIN", "")
     refresh_key = os.getenv("MUSIC_REFRESH_KEY", "")
     refresh_token = os.getenv("MUSIC_REFRESH_TOKEN", "")
@@ -29,8 +31,6 @@ async def credential():
         refresh_token=refresh_token,
         encrypt_uin=music_euin,
     )
-    if not c.has_musicid() or not c.has_musickey():
-        pytest.skip("未设置 MUSIC_ID 或 MUSIC_KEY")
 
     if not await c.can_refresh():
         os.environ["REFRESH"] = "true"
