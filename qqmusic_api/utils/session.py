@@ -1,10 +1,35 @@
 """Session 管理"""
 
 import asyncio
+import ssl
 from collections import deque
-from typing import TypedDict
+from collections.abc import Callable, Mapping
+from typing import Any, TypedDict
 
 import httpx
+from httpx._client import EventHook, UseClientDefault
+from httpx._config import (
+    DEFAULT_LIMITS,
+    DEFAULT_MAX_REDIRECTS,
+    DEFAULT_TIMEOUT_CONFIG,
+    Limits,
+)
+from httpx._transports.base import AsyncBaseTransport
+from httpx._types import (
+    AuthTypes,
+    CertTypes,
+    CookieTypes,
+    HeaderTypes,
+    ProxyTypes,
+    QueryParamTypes,
+    RequestContent,
+    RequestData,
+    RequestExtensions,
+    RequestFiles,
+    TimeoutTypes,
+)
+from httpx._urls import URL
+from typing_extensions import override
 
 from .credential import Credential
 from .device import get_cached_device
@@ -27,9 +52,53 @@ class Session(httpx.AsyncClient):
     HOST = "y.qq.com"
     UA_DEFAULT = "Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36 Edg/116.0.1938.54"
 
-    def __init__(self, *, credential: Credential | None = None, enable_sign: bool = False, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.credential = credential or Credential()
+    def __init__(
+        self,
+        *,
+        credential: Credential | None = None,
+        enable_sign: bool = False,
+        auth: AuthTypes | None = None,
+        params: QueryParamTypes | None = None,
+        headers: HeaderTypes | None = None,
+        cookies: CookieTypes | None = None,
+        verify: ssl.SSLContext | str | bool = True,
+        cert: CertTypes | None = None,
+        http1: bool = True,
+        http2: bool = False,
+        proxy: ProxyTypes | None = None,
+        mounts: None | (Mapping[str, AsyncBaseTransport | None]) = None,
+        timeout: TimeoutTypes = DEFAULT_TIMEOUT_CONFIG,
+        follow_redirects: bool = False,
+        limits: Limits = DEFAULT_LIMITS,
+        max_redirects: int = DEFAULT_MAX_REDIRECTS,
+        event_hooks: None | (Mapping[str, list[EventHook]]) = None,
+        base_url: URL | str = "",
+        transport: AsyncBaseTransport | None = None,
+        trust_env: bool = True,
+        default_encoding: str | Callable[[bytes], str] = "utf-8",
+    ) -> None:
+        super().__init__(
+            verify=False,
+            cert=cert,
+            http1=http1,
+            http2=http2,
+            proxy=proxy,
+            mounts=mounts,
+            timeout=timeout,
+            follow_redirects=follow_redirects,
+            limits=limits,
+            max_redirects=max_redirects,
+            event_hooks=event_hooks,
+            base_url=base_url,
+            transport=transport,
+            trust_env=trust_env,
+            default_encoding=default_encoding,
+            auth=auth,
+            params=params,
+            headers=headers,
+            cookies=cookies,
+        )
+        self.credential = credential
         self.headers = httpx.Headers(
             {
                 "User-Agent": self.UA_DEFAULT,
@@ -46,28 +115,63 @@ class Session(httpx.AsyncClient):
         )
         self.qimei = get_qimei(get_cached_device(), self.api_config["version"])["q36"]
 
-    async def __aenter__(self) -> "Session":
-        """进入 async with 上下文时调用"""
+    def active(self):
+        """激活 Session"""
         loop = get_loop()
         session_manager.push_to_stack(loop, self)
+
+    def deactive(self):
+        """停用 Session"""
+        loop = get_loop()
+        session_manager.pop_from_stack(loop)
+
+    async def __aenter__(self) -> "Session":
+        """进入 async with 上下文时调用"""
+        self.active()
         await super().__aenter__()
         return self
 
     async def __aexit__(self, *args, **kwargs) -> None:
         """退出 async with 上下文时调用"""
-        loop = get_loop()
-        session_manager.pop_from_stack(loop)
+        self.deactive()
         await super().__aexit__(*args, **kwargs)
 
-    @property
-    def musicid(self) -> int:
-        """获取 musicid"""
-        return self.credential.musicid
-
-    @property
-    def musickey(self) -> str:
-        """获取 musickey"""
-        return self.credential.musickey
+    @override
+    def build_request(
+        self,
+        method: str,
+        url: URL | str,
+        *,
+        content: RequestContent | None = None,
+        data: RequestData | None = None,
+        files: RequestFiles | None = None,
+        json: Any | None = None,
+        params: QueryParamTypes | None = None,
+        headers: HeaderTypes | None = None,
+        cookies: CookieTypes | None = None,
+        timeout: TimeoutTypes | UseClientDefault = httpx.USE_CLIENT_DEFAULT,
+        extensions: RequestExtensions | None = None,
+    ) -> httpx.Request:
+        if self.credential:
+            _cookies = httpx.Cookies()
+            _cookies.set("uin", str(self.credential.musicid), domain="qq.com")
+            _cookies.set("qqmusic_key", self.credential.musickey, domain="qq.com")
+            _cookies.set("qm_keyst", self.credential.musickey, domain="qq.com")
+            _cookies.set("tmeLoginType", str(self.credential.login_type), domain="qq.com")
+            cookies = self._merge_cookies(_cookies)
+        return super().build_request(
+            method,
+            url,
+            content=content,
+            data=data,
+            files=files,
+            json=json,
+            params=params,
+            headers=headers,
+            cookies=cookies,
+            timeout=timeout,
+            extensions=extensions,
+        )
 
 
 class SessionManager:
@@ -75,26 +179,21 @@ class SessionManager:
 
     def __init__(self) -> None:
         """初始化 SessionManager"""
-        self.session_pool: dict[asyncio.AbstractEventLoop, Session] = {}  # 存储全局 Session 池
-        self.context_stack: dict[
-            asyncio.AbstractEventLoop, deque[Session]
-        ] = {}  # 使用 deque 存储 async with 上下文中的 Session 栈
+        self.session_pool: dict[asyncio.AbstractEventLoop, Session] = {}
+        self.context_stack: dict[asyncio.AbstractEventLoop, deque[Session]] = {}
 
     def get(self) -> Session:
         """获取当前事件循环的 Session"""
         loop = get_loop()
         # 优先从上下文栈中获取当前事件循环的 Session
-        if self.context_stack.get(loop):
+        if self.context_stack.get(loop, None):
             return self.context_stack[loop][-1]
+
         # 如果上下文栈中没有,返回全局池中的 Session
-        session = self.session_pool.get(loop, None)
-        if not session:
-            session = Session()
-            self.session_pool[loop] = session
-        return session
+        return self.session_pool.get(loop, Session())
 
     def set(self, session: Session) -> None:
-        """设置当前事件循环的 Session(全局池)"""
+        """设置当前事件循环的 Session"""
         loop = get_loop()
         # 如果当前事件循环正在 async with 中,不能直接设置 Session
         if self.context_stack.get(loop):
@@ -104,19 +203,13 @@ class SessionManager:
     def push_to_stack(self, loop: asyncio.AbstractEventLoop, session: Session) -> None:
         """将 Session 推入当前事件循环的 async with 上下文栈"""
         if loop not in self.context_stack:
-            self.context_stack[loop] = deque()  # 初始化 deque
+            self.context_stack[loop] = deque()
         self.context_stack[loop].append(session)
 
     def pop_from_stack(self, loop: asyncio.AbstractEventLoop) -> None:
         """从当前事件循环的 async with 上下文栈中弹出 Session"""
         if self.context_stack.get(loop):
             self.context_stack[loop].pop()
-
-    def create_session(self, credential: Credential | None = None, enable_sign: bool = False) -> Session:
-        """创建新的 Session"""
-        session = Session(credential=credential, enable_sign=enable_sign)
-        self.session_pool[get_loop()] = session
-        return session
 
     def reset(self) -> None:
         """重置当前事件循环的 Session"""
@@ -137,21 +230,6 @@ def get_session() -> Session:
 def set_session(session: Session) -> None:
     """设置当前事件循环的 Session"""
     session_manager.set(session)
-
-
-def create_session(credential: Credential | None = None, enable_sign: bool = False) -> Session:
-    """创建新的 Session
-
-    Args:
-        credential: 凭据
-        enable_sign: 是否启用 sign
-    """
-    return session_manager.create_session(credential=credential, enable_sign=enable_sign)
-
-
-def set_session_credential(credential: Credential):
-    """设置当前 Session 的凭据"""
-    session_manager.get().credential = credential
 
 
 def get_loop() -> asyncio.AbstractEventLoop:
