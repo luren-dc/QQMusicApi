@@ -1,58 +1,49 @@
 """歌单相关 API"""
 
-from .utils.common import get_api
-from .utils.network import Api
+from typing import Any
 
-API = get_api("songlist")
+from .utils.network import api_request
 
 
-class Songlist:
-    """歌单类
+@api_request("music.srfDissInfo.DissInfo", "CgiGetDiss")
+async def get_detail(
+    songlist_id: int,
+    dirid: int = 0,
+    num: int = 10,
+    page: int = 1,
+    onlysong: bool = False,
+    tag: bool = True,
+    userinfo: bool = True,
+):
+    """获取歌单详细信息和歌曲
 
-    Attributes:
-        id: 歌单 ID
+    Args:
+        songlist_id: 歌单 ID
+        dirid: 歌单 dirid
+        num: 返回数量
+        page: 页码
+        onlysong: 是否仅返回歌曲信息(优先级最大)
+        tag: 是否返回歌单的标签信息
+        userinfo: 是否返回歌单创建者的用户信息
     """
 
-    def __init__(self, id: int, dirid: int = 0):
-        """初始化歌单类
-
-        Args:
-            id: 歌单 ID
-            dirid: 歌单 dirid
-        """
-        self.id = id
-        self.dirid = dirid
-
-    async def get_detail(self) -> dict:
-        """获取歌单详细信息
-
-        Returns:
-            歌单信息
-        """
-        param = {
-            "disstid": self.id,
-            "dirid": self.dirid,
-            "tag": False,
-            "song_num": 1,
-            "userinfo": True,
-            "orderlist": True,
+    def _processsor(data: dict[str, Any]):
+        return {
+            "dirinfo": data.get("dirinfo", {}),
+            "total_song_num": data.get("total_song_num", 0),
+            "songlist_size": data.get("songlist_size", 0),
+            "songlist": data.get("songlist", []),
+            "songtag": data.get("songtag", []),
+            "orderlist": data.get("orderlist", []),
         }
-        return (await Api(**API["detail"]).update_params(**param).result)["dirinfo"]
 
-    async def get_song(self) -> list[dict]:
-        """获取歌单歌曲
-
-        Returns:
-            歌单歌曲
-        """
-        param = {"disstid": self.id, "onlysonglist": True}
-        return (await Api(**API["detail"]).update_params(**param).result)["songlist"]
-
-    async def get_song_tag(self) -> list[dict]:
-        """获取歌单歌曲标签
-
-        Returns:
-            歌曲标签
-        """
-        param = {"disstid": self.id, "song_num": 1, "tag": True}
-        return (await Api(**API["detail"]).update_params(**param).result)["songtag"]
+    return {
+        "disstid": songlist_id,
+        "dirid": dirid,
+        "tag": tag,
+        "song_begin": num * (page - 1),
+        "song_num": num,
+        "userinfo": userinfo,
+        "orderlist": True,
+        "onlysonglist": onlysong,
+    }, _processsor

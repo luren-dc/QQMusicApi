@@ -43,7 +43,7 @@ async def get_song(value: str | int, num: int = 10, page: int = 1):
     Args:
         value: 专辑 id 或 mid
         num: 返回数量
-        page: 页数
+        page: 页码
 
     Returns:
         歌曲列表
