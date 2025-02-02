@@ -78,7 +78,7 @@ class Session(httpx.AsyncClient):
         default_encoding: str | Callable[[bytes], str] = "utf-8",
     ) -> None:
         super().__init__(
-            verify=False,
+            verify=verify,
             cert=cert,
             http1=http1,
             http2=http2,

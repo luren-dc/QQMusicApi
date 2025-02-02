@@ -8,10 +8,10 @@ from typing import Any, ClassVar, Generic, ParamSpec, TypedDict, TypeVar, cast
 
 import httpx
 
-from qqmusic_api.exceptions import CredentialExpiredError, ResponseCodeError, SignInvalidError
-from qqmusic_api.utils.credential import Credential
-from qqmusic_api.utils.session import Session, get_session
-from qqmusic_api.utils.sign import sign
+from ..exceptions import CredentialExpiredError, ResponseCodeError, SignInvalidError
+from .credential import Credential
+from .session import Session, get_session
+from .sign import sign
 
 _P = ParamSpec("_P")
 _R = TypeVar("_R")
@@ -127,10 +127,11 @@ class ApiRequest(Generic[_P, _R]):
     @property
     def data(self) -> dict[str, Any]:
         """构造请求数据体"""
+        params = {k: int(v) if isinstance(v, bool) else v for k, v in self.params.items()}
         return {
             "module": self.module,
             "method": self.method,
-            "param": self.params,
+            "param": params,
         }
 
     def build_request(self) -> dict[str, Any]:
