@@ -218,6 +218,7 @@ class ApiRequest(Generic[_P, _R]):
             self.session.cookies.clear()
 
     async def __call__(self, *args: _P.args, **kwargs: _P.kwargs) -> _R:  # noqa: D102
+        self.credential = cast(Credential, kwargs.pop("credential", self.credential))
         instance = self
         if instance.api_func:
             params, processor = await instance.api_func(*args, **kwargs)
