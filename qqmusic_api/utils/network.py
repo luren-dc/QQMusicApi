@@ -32,6 +32,7 @@ def api_request(
     *,
     verify: bool = False,
     ignore_code: bool = False,
+    proceduce_bool: bool = True,
 ):
     """API请求"""
 
@@ -44,6 +45,7 @@ def api_request(
             api_func=api_func,
             verify=verify,
             ignore_code=ignore_code,
+            proceduce_bool=proceduce_bool,
         )
 
     return decorator
@@ -103,6 +105,7 @@ class ApiRequest(Generic[_P, _R]):
         credential: Credential | None = None,
         verify: bool = False,
         ignore_code: bool = False,
+        proceduce_bool: bool = True,
     ) -> None:
         self.session = get_session()
         self.module = module
@@ -113,11 +116,12 @@ class ApiRequest(Generic[_P, _R]):
         self.verify = verify
         self.ignore_code = ignore_code
         self.api_func = api_func
+        self.proceduce_bool = proceduce_bool
         self.processor: Callable[[dict[str, Any]], Any] = NO_PROCESSOR
 
     def copy(self) -> "ApiRequest[_P, _R]":
         """创建当前 ApiRequest 实例的副本"""
-        return ApiRequest[_P, _R](
+        req = ApiRequest[_P, _R](
             module=self.module,
             method=self.method,
             api_func=self.api_func,
@@ -126,7 +130,10 @@ class ApiRequest(Generic[_P, _R]):
             credential=self.credential,
             verify=self.verify,
             ignore_code=self.ignore_code,
+            proceduce_bool=self.proceduce_bool,
         )
+        req.processor = self.processor
+        return req
 
     @property
     def common(self) -> dict[str, Any]:
@@ -136,7 +143,11 @@ class ApiRequest(Generic[_P, _R]):
     @property
     def data(self) -> dict[str, Any]:
         """构造请求数据体"""
-        params = {k: int(v) if isinstance(v, bool) else v for k, v in self.params.items()}
+        if self.proceduce_bool:
+            params = {k: int(v) if isinstance(v, bool) else v for k, v in self.params.items()}
+        else:
+            params = self.params
+
         return {
             "module": self.module,
             "method": self.method,
