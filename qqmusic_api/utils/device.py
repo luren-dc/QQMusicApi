@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import ClassVar
 from uuid import uuid4
 
-device_path = Path(__file__).parent.parent / "data" / "device.json"
+device_path = Path(__file__).parent.parent / ".cache" / "device.json"
 
 
 def random_imei() -> str:
@@ -96,4 +96,5 @@ def get_cached_device() -> Device:
 
 def save_device(device: Device):
     """缓存 Device"""
+    device_path.parent.mkdir(parents=True, exist_ok=True)
     device_path.write_text(json.dumps(asdict(device)))
