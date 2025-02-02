@@ -49,8 +49,7 @@ def api_request(
     return decorator
 
 
-def build_common_params(session: Session, credential: Credential) -> dict[str, Any]:
-    """构建公共参数"""
+def _build_common_params(session: Session, credential: Credential) -> dict[str, Any]:
     config = session.api_config
     common = {
         "cv": config["version_code"],
@@ -67,6 +66,16 @@ def build_common_params(session: Session, credential: Credential) -> dict[str, A
             }
         )
     return common
+
+
+def _set_cookies(credential: Credential, session: Session):
+    if credential.has_musicid() and credential.has_musickey():
+        cookies = httpx.Cookies()
+        cookies.set("uin", str(credential.musicid), domain="qq.com")
+        cookies.set("qqmusic_key", credential.musickey, domain="qq.com")
+        cookies.set("qm_keyst", credential.musickey, domain="qq.com")
+        cookies.set("tmeLoginType", str(credential.login_type), domain="qq.com")
+        session._merge_cookies(cookies)
 
 
 class ApiRequest(Generic[_P, _R]):
@@ -95,16 +104,16 @@ class ApiRequest(Generic[_P, _R]):
         verify: bool = False,
         ignore_code: bool = False,
     ) -> None:
+        self.session = get_session()
         self.module = module
         self.method = method
         self._common = common or {}
         self.params = params or {}
-        self.credential = credential or Credential()
+        self.credential = credential or self.session.credential or Credential()
         self.verify = verify
         self.ignore_code = ignore_code
-        self.session = get_session()
         self.api_func = api_func
-        self.processor = NO_PROCESSOR
+        self.processor: Callable[[dict[str, Any]], Any] = NO_PROCESSOR
 
     def copy(self) -> "ApiRequest[_P, _R]":
         """创建当前 ApiRequest 实例的副本"""
@@ -122,7 +131,7 @@ class ApiRequest(Generic[_P, _R]):
     @property
     def common(self) -> dict[str, Any]:
         """构造公共参数"""
-        return build_common_params(self.session, self.credential)
+        return _build_common_params(self.session, self.credential)
 
     @property
     def data(self) -> dict[str, Any]:
@@ -190,6 +199,7 @@ class ApiRequest(Generic[_P, _R]):
         request = self.build_request()
         try:
             logger.debug(f"发起单独请求: {self.module}.{self.method} params: {self.params}")
+            _set_cookies(self.credential, self.session)
             resp = await self.session.post(**request)
             resp.raise_for_status()
             return self._process_response(resp)
@@ -197,13 +207,15 @@ class ApiRequest(Generic[_P, _R]):
             self.session.cookies.clear()
 
     async def __call__(self, *args: _P.args, **kwargs: _P.kwargs) -> _R:  # noqa: D102
-        if self.api_func:
-            params, self.processor = await self.api_func(*args, **kwargs)
-            self.common.update(params.pop("common", {}))
-            self.params.update(params)
-        response_data = {}
-        response_data = await self.request()
-        return cast(_R, self.processor(response_data))
+        instance = self
+        if instance.api_func:
+            params, processor = await instance.api_func(*args, **kwargs)
+            instance = self.copy()
+            instance._common.update(params.pop("common", {}))
+            instance.params.update(params)
+            instance.processor = processor
+        response_data = await instance.request()
+        return cast(_R, instance.processor(response_data))
 
     def __repr__(self) -> str:
         return f"<ApiRequest {self.module}.{self.method}>"
@@ -227,10 +239,10 @@ class RequestGroup:
         common: dict[str, Any] | None = None,
         credential: Credential | None = None,
     ):
+        self.session = get_session()
         self._requests: list[RequestItem] = []
         self.common = common.copy() if common else {}
-        self.credential = credential or Credential()
-        self.session = get_session()
+        self.credential = credential or self.session.credential or Credential()
         self._key_counter = defaultdict(int)
 
     def add_request(self, request: ApiRequest[_P, _R], *args: _P.args, **kwargs: _P.kwargs) -> None:
@@ -246,7 +258,7 @@ class RequestGroup:
                 request=request.copy(),
                 args=args,
                 kwargs=kwargs,
-                processor=None,
+                processor=request.processor,
             )
         )
 
@@ -272,7 +284,7 @@ class RequestGroup:
 
     async def build_request(self):
         """构建请求参数"""
-        merged_data = {"comm": build_common_params(self.session, self.credential)}
+        merged_data = {"comm": _build_common_params(self.session, self.credential)}
         for req in self._requests:
             if req["request"].api_func:
                 params, processor = await req["request"].api_func(*req["args"], **req["kwargs"])
@@ -296,6 +308,7 @@ class RequestGroup:
         logger.debug(f"发起合并请求(请求数量: {len(self._requests)}): {request['json']}")
 
         try:
+            _set_cookies(self.credential, self.session)
             resp = await self.session.post(**request)
             resp.raise_for_status()
             return self._process_response(resp)

@@ -20,7 +20,7 @@ async def get_lyric(
     """获取歌词
 
     Args:
-        value: 歌曲 ID 或 MID
+        value: 歌曲 id 或 mid
         qrc: 是否返回逐字歌词
         trans: 是否返回翻译歌词
         roma: 是否返回罗马歌词

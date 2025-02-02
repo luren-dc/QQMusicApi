@@ -4,10 +4,10 @@ import asyncio
 import ssl
 from collections import deque
 from collections.abc import Callable, Mapping
-from typing import Any, TypedDict
+from typing import TypedDict
 
 import httpx
-from httpx._client import EventHook, UseClientDefault
+from httpx._client import EventHook
 from httpx._config import (
     DEFAULT_LIMITS,
     DEFAULT_MAX_REDIRECTS,
@@ -22,14 +22,9 @@ from httpx._types import (
     HeaderTypes,
     ProxyTypes,
     QueryParamTypes,
-    RequestContent,
-    RequestData,
-    RequestExtensions,
-    RequestFiles,
     TimeoutTypes,
 )
 from httpx._urls import URL
-from typing_extensions import override
 
 from .credential import Credential
 from .device import get_cached_device
@@ -135,43 +130,6 @@ class Session(httpx.AsyncClient):
         """退出 async with 上下文时调用"""
         self.deactive()
         await super().__aexit__(*args, **kwargs)
-
-    @override
-    def build_request(
-        self,
-        method: str,
-        url: URL | str,
-        *,
-        content: RequestContent | None = None,
-        data: RequestData | None = None,
-        files: RequestFiles | None = None,
-        json: Any | None = None,
-        params: QueryParamTypes | None = None,
-        headers: HeaderTypes | None = None,
-        cookies: CookieTypes | None = None,
-        timeout: TimeoutTypes | UseClientDefault = httpx.USE_CLIENT_DEFAULT,
-        extensions: RequestExtensions | None = None,
-    ) -> httpx.Request:
-        if self.credential:
-            _cookies = httpx.Cookies()
-            _cookies.set("uin", str(self.credential.musicid), domain="qq.com")
-            _cookies.set("qqmusic_key", self.credential.musickey, domain="qq.com")
-            _cookies.set("qm_keyst", self.credential.musickey, domain="qq.com")
-            _cookies.set("tmeLoginType", str(self.credential.login_type), domain="qq.com")
-            cookies = self._merge_cookies(_cookies)
-        return super().build_request(
-            method,
-            url,
-            content=content,
-            data=data,
-            files=files,
-            json=json,
-            params=params,
-            headers=headers,
-            cookies=cookies,
-            timeout=timeout,
-            extensions=extensions,
-        )
 
 
 class SessionManager:

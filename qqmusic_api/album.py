@@ -25,7 +25,7 @@ async def get_detail(value: str | int):
     """获取专辑详细信息
 
     Args:
-        value: 专辑 ID 或 Mid
+        value: 专辑 id 或 mid
 
     Returns:
         专辑详细信息
@@ -41,7 +41,7 @@ async def get_song(value: str | int, num: int = 10, page: int = 1):
     """获取专辑歌曲
 
     Args:
-        value: 专辑 ID 或 Mid
+        value: 专辑 id 或 mid
         num: 返回数量
         page: 页数
 
