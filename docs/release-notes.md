@@ -6,6 +6,10 @@
 
 ## What's Changed
 
+### 功能更新
+
+- 支持 WEB API - ([2ed9199](https://github.com/luren-dc/QQMusicApi/commit/2ed91995c5d1e906a2951666bb1dd845a35b0e89)) by [@luren-dc](https://github.com/luren-dc) 
+
 ### 功能重构
 
 - 重构 Python API  - ([fc917df](https://github.com/luren-dc/QQMusicApi/commit/fc917df2d00a378bbeb0225f9ea520fffa6d54ba)) by [@luren-dc](https://github.com/luren-dc)  in [#110](https://github.com/luren-dc/QQMusicApi/pull/110)
