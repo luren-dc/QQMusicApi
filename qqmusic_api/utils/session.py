@@ -27,7 +27,7 @@ from httpx._types import (
 from httpx._urls import URL
 
 from .credential import Credential
-from .device import get_cached_device
+from .device import get_cached_device, save_device
 from .qimei import get_qimei
 
 
@@ -108,7 +108,10 @@ class Session(httpx.AsyncClient):
             endpoint="https://u.y.qq.com/cgi-bin/musicu.fcg",
             enc_endpoint="https://u.y.qq.com/cgi-bin/musics.fcg",
         )
-        self.qimei = get_qimei(get_cached_device(), self.api_config["version"])["q36"]
+        device = get_cached_device()
+        self.qimei = get_qimei(device, self.api_config["version"])["q36"]
+        device.qimei = self.qimei
+        save_device(device)
 
     def active(self):
         """激活 Session"""

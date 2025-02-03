@@ -1,8 +1,8 @@
 import logging
 
-from . import album, login, login_utils, lyric, mv, search, singer, song, songlist, top, user
+from . import album, login, lyric, mv, search, singer, song, songlist, top, user
 from .utils.credential import Credential
-from .utils.session import create_session, get_session, set_session, set_session_credential
+from .utils.session import Session, get_session, set_session
 
 __version__ = "0.2.2"
 
@@ -11,20 +11,17 @@ logger = logging.getLogger("qqmusicapi")
 
 __all__ = [
     "Credential",
+    "Session",
     "album",
-    "create_session",
     "get_session",
     "login",
-    "login_utils",
     "lyric",
     "mv",
     "search",
     "set_session",
-    "set_session_credential",
     "singer",
     "song",
     "songlist",
-    "sync",
     "top",
     "user",
 ]

@@ -2,6 +2,7 @@
 
 import base64
 import json
+import logging
 import random
 from datetime import datetime, timedelta
 from time import time
@@ -15,6 +16,8 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 from .common import calc_md5
 from .device import Device
+
+logger = logging.getLogger("qqmusicapi.qimei")
 
 PUBLIC_KEY = """-----BEGIN PUBLIC KEY-----
 MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDEIxgwoutfwoJxcGQeedgP7FG9qaIuS0qzfR8gWkrkTZKM2iWHn2ajQpBRZjMSoSf6+KJGvar2ORhBfpDXyVtZCKpqLQ+FLkpncClKVIrBwv6PHyUvuCb0rIarmgDnzkfQAqVufEtR64iazGDKatvJ9y6B9NMbHddGSAUmRTCrHQIDAQAB
@@ -115,8 +118,6 @@ def random_payload_by_device(device: Device, version: str) -> dict:
 
 def get_qimei(device: Device, version: str) -> QimeiResult:
     """获取 QIMEI"""
-    from .. import logger
-
     try:
         payload = random_payload_by_device(device, version)
         crypt_key = "".join(random.choices("adbcdef1234567890", k=16))
@@ -149,9 +150,13 @@ def get_qimei(device: Device, version: str) -> QimeiResult:
                     "extra": extra,
                 },
             },
+            timeout=5,
         )
         logger.debug("获取 QIMEI 成功: %s", res.json())
-        return json.loads(res.json()["data"])["data"]
+        data = json.loads(res.json()["data"])["data"]
+        return QimeiResult(q16=data["q16"], q36=data["q36"])
     except Exception:
+        if device.qimei:
+            return QimeiResult(q16="", q36=device.qimei)
         logger.exception("获取 QIMEI 失败,使用默认 QIMEI")
         return QimeiResult(q16="", q36="6c9d3cd110abca9b16311cee10001e717614")

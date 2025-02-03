@@ -80,7 +80,7 @@ class Device:
     apn: str = "wifi"
     vendor_name: str = "MIUI"
     vendor_os_name: str = "qmapi"
-    qimei: None = None
+    qimei: None | str = None
 
 
 def get_cached_device() -> Device:
