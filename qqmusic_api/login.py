@@ -39,7 +39,7 @@ async def check_expired(credential: Credential) -> bool:
         return True
 
 
-async def refresh_cookies(credential: Credential):
+async def refresh_cookies(credential: Credential) -> bool:
     """刷新 Cookies
 
     Note:

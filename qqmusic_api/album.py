@@ -26,9 +26,6 @@ async def get_detail(value: str | int):
 
     Args:
         value: 专辑 id 或 mid
-
-    Returns:
-        专辑详细信息
     """
     if isinstance(value, int):
         return {"albumId": value}, NO_PROCESSOR
@@ -44,9 +41,6 @@ async def get_song(value: str | int, num: int = 10, page: int = 1):
         value: 专辑 id 或 mid
         num: 返回数量
         page: 页码
-
-    Returns:
-        歌曲列表
     """
     params: dict[str, Any] = {
         "begin": num * (page - 1),

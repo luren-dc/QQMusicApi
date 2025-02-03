@@ -22,8 +22,6 @@ async def query_song(value: list[str] | list[int]):
     Args:
         value: 歌曲 id 或 mid 列表
 
-    Returns:
-        歌曲信息
     """
     params = {
         "types": [0 for _ in range(len(value))],
@@ -199,8 +197,6 @@ async def get_try_url(mid: str, vs: str):
         mid: 歌曲 mid
         vs:  歌曲 vs
 
-    Returns:
-        试听文件链接
     """
     return {
         "filename": [f"RS02{vs}.mp3"],

@@ -35,11 +35,7 @@ class SearchType(Enum):
 
 @api_request("music.musicsearch.HotkeyService", "GetHotkeyForQQMusicMobile")
 async def hotkey():
-    """获取热搜词
-
-    Returns:
-        热搜词列表
-    """
+    """获取热搜词"""
     return {"search_id": get_searchID()}, NO_PROCESSOR
 
 
@@ -49,9 +45,6 @@ async def complete(keyword: str):
 
     Args:
         keyword: 关键词
-
-    Returns:
-        补全结果
     """
     return {
         "search_id": get_searchID(),
@@ -66,9 +59,6 @@ async def quick_search(keyword: str) -> dict[str, Any]:
 
     Args:
         keyword: 关键词
-
-    Returns:
-        包含专辑,歌手,歌曲的简略信息
     """
     resp = await get_session().get(
         "https://c.y.qq.com/splcloud/fcgi-bin/smartbox_new.fcg",
@@ -92,9 +82,6 @@ async def general_search(
         keyword: 关键词
         page: 页码
         highlight: 是否高亮关键词
-
-    Returns:
-        包含直接结果,歌曲,歌手,专辑,歌单,mv等.
     """
     return {
         "searchid": get_searchID(),
@@ -123,9 +110,6 @@ async def search_by_type(
         num: 返回数量
         page: 页码
         highlight: 是否高亮关键词
-
-    Returns:
-        搜索结果
     """
     params = {
         "searchid": get_searchID(),

@@ -49,9 +49,6 @@ async def get_mv_urls(vids: list[str]):
 
     Args:
         vids: 视频 vid 列表
-
-    Returns:
-        视频播放链接
     """
 
     def get_play_urls(data):

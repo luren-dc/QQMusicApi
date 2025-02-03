@@ -24,9 +24,6 @@ async def get_lyric(
         qrc: 是否返回逐字歌词
         trans: 是否返回翻译歌词
         roma: 是否返回罗马歌词
-
-    Returns:
-        {"lyric": 歌词或逐字歌词, "trans": 翻译歌词, "roma": 罗马歌词}
     """
     params = {
         "crypt": 1,
