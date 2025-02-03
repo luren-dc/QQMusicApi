@@ -153,7 +153,9 @@ nav:
       - lyric: api/lyric.md
       - user: api/user.md
       - exceptions: api/exceptions.md
-  - 贡献指南: contributing.md
+  - 帮助:
+    - 贡献指南: contributing.md
+    - 编写指南: coding.md
   - Release Notes: release-notes.md
 
 watch:
