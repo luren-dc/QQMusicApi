@@ -2,6 +2,9 @@
 
 传入有效 credential 获取他人的信息会更完整但会留痕,且部分 API 不会验证
 credential 是否有效,强制 credential 的 API 在 credential 失效时会报错
+
+Credential 使用优先级:
+传入的 Credential > Session 的 Credential
 """
 
 from typing import Any, cast
