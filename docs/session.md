@@ -5,30 +5,30 @@
 ## 使用加密接口
 
 ```python
-from qqmusic_api import create_session
+from qqmusic_api import Session
 
 async def main():
-  async with create_session(enable_sign=True):
+  async with Session(enable_sign=True):
       ...
 ```
 
 ## 设置 Credential
 
 ```python
-from qqmusic_api import create_session, Credential, set_session_credential
+from qqmusic_api import Session, Credential, get_session
 
 async def main():
   # 设置全局 Credential
-  set_session_credential(Credential())
+  get_session().credential = Credential()
 
-  async with create_session(enable_sign=True,credential=Credential()):
+  async with Session(enable_sign=True,credential=Credential()):
       ...
 ```
 
 ## 示例
 
 ```python
-from qqmusic_api import create_session, get_session, set_session
+from qqmusic_api import get_session, set_session
 
 
 async def main():
@@ -36,10 +36,10 @@ async def main():
     get_session()
 
     # 设置当前 EventLoop 的 Session
-    set_session(create_session())
+    set_session(Session())
 
     # 新建 Session
-    async with create_session():
+    async with Session():
         # 进入该 Session, 在 `async with` 内的 API 将由该 Session 完成
         ...
         # 离开 Session. 此后 API 将继续由全局 Session 管理

@@ -1,106 +1,55 @@
 """MV 相关 API"""
 
 import random
+from typing import Any
 
-from .song import query_song
-from .utils.common import get_api, get_guid
-from .utils.network import Api
-
-API = get_api("mv")
+from .utils.common import get_guid
+from .utils.network import NO_PROCESSOR, api_request
 
 
-class MV:
-    """MV 类
+@api_request("video.VideoDataServer", "get_video_info_batch")
+async def get_detail(vids: list[str]):
+    """获取 MV 详细信息
 
-    Attributes:
-        vid: mv id
+    Args:
+        vids: 视频 vid 列表
     """
-
-    def __init__(self, vid: str):
-        """初始化 MV 类
-
-        Args:
-            vid: 视频 id
-        """
-        self.vid = vid
-
-    async def get_detail(self) -> dict:
-        """获取 MV 详细信息
-
-        Returns:
-            视频信息
-        """
-        param = {
-            "vidlist": [self.vid],
-            "required": [
-                "vid",
-                "type",
-                "sid",
-                "cover_pic",
-                "duration",
-                "singers",
-                "video_switch",
-                "msg",
-                "name",
-                "desc",
-                "playcnt",
-                "pubdate",
-                "isfav",
-                "gmid",
-                "uploader_headurl",
-                "uploader_nick",
-                "uploader_encuin",
-                "uploader_uin",
-                "uploader_hasfollow",
-                "uploader_follower_num",
-                "uploader_hasfollow",
-            ],
-        }
-        return (await Api(**API["detail"]).update_params(**param).result)[self.vid]
-
-    async def get_related_song(self) -> list[dict]:
-        """获取 MV 相关歌曲
-
-        Returns:
-            歌曲基本信息
-        """
-        param = {
-            "vidlist": [self.vid],
-            "required": ["related_songs"],
-        }
-        song_id = (await Api(**API["detail"]).update_params(**param).result)[self.vid]["related_songs"]
-        return await query_song(song_id)
-
-    async def get_url(self) -> dict:
-        """获取 MV 播放链接
-
-        Returns:
-            视频播放链接
-        """
-        return (await get_mv_urls([self.vid]))[self.vid]
+    return {
+        "vidlist": vids,
+        "required": [
+            "vid",
+            "type",
+            "sid",
+            "cover_pic",
+            "duration",
+            "singers",
+            "video_switch",
+            "msg",
+            "name",
+            "desc",
+            "playcnt",
+            "pubdate",
+            "isfav",
+            "gmid",
+            "uploader_headurl",
+            "uploader_nick",
+            "uploader_encuin",
+            "uploader_uin",
+            "uploader_hasfollow",
+            "uploader_follower_num",
+            "uploader_hasfollow",
+            "related_songs",
+        ],
+    }, NO_PROCESSOR
 
 
-async def get_mv_urls(vid: list[str]) -> dict:
+@api_request("music.stream.MvUrlProxy", "GetMvUrls")
+async def get_mv_urls(vids: list[str]):
     """获取 MV 播放链接
 
     Args:
-        vid: 视频 vid 列表
-
-    Returns:
-        视频播放链接
+        vids: 视频 vid 列表
     """
-    param = {
-        "vids": vid,
-        "request_type": 10003,
-        "guid": get_guid(),
-        "videoformat": 1,
-        "format": 265,
-        "dolby": 1,
-        "use_new_domain": 1,
-        "use_ipv6": 1,
-    }
-    result = await Api(**API["url"]).update_params(**param).result
-    urls: dict[str, dict] = {}
 
     def get_play_urls(data):
         play_urls = {}
@@ -110,9 +59,21 @@ async def get_mv_urls(vid: list[str]) -> dict:
                 play_urls[url_info["filetype"]] = play_url
         return play_urls
 
-    for _, data in result.items():
-        urls[_] = {}
-        urls[_]["mp4"] = get_play_urls(data["mp4"])
-        urls[_]["hls"] = get_play_urls(data["hls"])
+    def _processor(data: dict[str, Any]):
+        urls: dict[str, dict] = {}
+        for _, data in data.items():
+            urls[_] = {}
+            urls[_]["mp4"] = get_play_urls(data["mp4"])
+            urls[_]["hls"] = get_play_urls(data["hls"])
+        return urls
 
-    return urls
+    return {
+        "vids": vids,
+        "request_type": 10003,
+        "guid": get_guid(),
+        "videoformat": 1,
+        "format": 265,
+        "dolby": 1,
+        "use_new_domain": 1,
+        "use_ipv6": 1,
+    }, _processor

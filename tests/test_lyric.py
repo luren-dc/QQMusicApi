@@ -7,8 +7,7 @@ pytestmark = pytest.mark.asyncio(loop_scope="session")
 
 async def test_get_lyric():
     lyric = await get_lyric(
-        mid="001CJxVG1yppB0",
-        id=213836590,
+        "001CJxVG1yppB0",
         qrc=True,
         trans=True,
         roma=True,

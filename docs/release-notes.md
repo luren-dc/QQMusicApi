@@ -3,6 +3,13 @@
 所有对该项目的重要更改都将记录在此文件中。
 
 ---
+
+## What's Changed
+
+### 功能重构
+
+- 重构 Python API  - ([fc917df](https://github.com/luren-dc/QQMusicApi/commit/fc917df2d00a378bbeb0225f9ea520fffa6d54ba)) by [@luren-dc](https://github.com/luren-dc)  in [#110](https://github.com/luren-dc/QQMusicApi/pull/110)
+
 ## [[0.2.2](https://github.com/luren-dc/QQMusicApi/compare/v0.2.1..v0.2.2)] - 2025-01-25
 
 ### Bug 修复

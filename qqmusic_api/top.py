@@ -1,52 +1,34 @@
 """排行榜相关 API"""
 
-from .utils.common import get_api
-from .utils.network import Api
+from typing import Any, cast
 
-API = get_api("top")
+from .utils.network import NO_PROCESSOR, api_request
 
 
-async def get_top_category() -> list[dict]:
-    """获取所有排行榜
+@api_request("music.musicToplist.Toplist", "GetAll")
+async def get_top_category():
+    """获取所有排行榜"""
+    return {}, lambda data: cast(list[dict[str, Any]], data.get("group", []))
 
-    Returns:
-        排行榜信息
+
+@api_request("music.musicToplist.Toplist", "GetDetail", proceduce_bool=False)
+async def get_detail(
+    top_id: int,
+    num: int = 10,
+    page: int = 1,
+    tag: bool = True,
+):
+    """获取排行榜详细信息
+
+    Args:
+        top_id: 排行榜 id
+        num: 返回数量
+        page: 页码
+        tag: 是否返回歌曲标签
     """
-    return (await Api(**API["category"]).result)["group"]
-
-
-# TODO: 支持设置日期
-class Top:
-    """排行榜类
-
-    Attributes:
-        id: 排行榜 ID
-    """
-
-    def __init__(
-        self,
-        id: int,
-    ) -> None:
-        """初始化排行榜类
-
-        Args:
-            id: 排行榜 ID
-        """
-        self.id = id
-
-    async def get_detail(self) -> dict:
-        """获取排行榜详细信息
-
-        Returns:
-            排行榜信息
-        """
-        return (await Api(**API["detail"]).update_params(topId=self.id, num=100).result)["data"]
-
-    async def get_song(self) -> list[dict]:
-        """获取排行榜歌曲信息
-
-        Returns:
-            排行榜歌曲信息
-        """
-        param = {"topId": self.id, "offset": 0, "num": 100}
-        return (await Api(**API["detail"]).update_params(**param).result)["songInfoList"]
+    return {
+        "topId": top_id,
+        "offset": num * (page - 1),
+        "num": num,
+        "withTags": tag,
+    }, NO_PROCESSOR

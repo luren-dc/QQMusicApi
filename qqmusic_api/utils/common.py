@@ -1,8 +1,6 @@
 """实用函数"""
 
 import hashlib
-import json
-import os
 import random
 import time
 import zlib
@@ -21,23 +19,6 @@ def calc_md5(*strings: str | bytes) -> str:
         else:
             raise ValueError(f"Unsupported type: {type(item)}")
     return md5.hexdigest()
-
-
-def get_api(field: str) -> dict:
-    """获取 api 字典
-
-    Args:
-        field: 字段名
-
-    Returns:
-        api 字典
-    """
-    path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "api", f"{field.lower()}.json"))
-    if os.path.exists(path):
-        with open(path, encoding="utf8") as f:
-            return json.load(f)
-    else:
-        return {}
 
 
 def get_guid() -> str:

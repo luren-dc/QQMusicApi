@@ -72,18 +72,10 @@ class Credential:
             raise CredentialInvalidError("没有提供 musickey")
 
     async def refresh(self) -> bool:
-        """刷新 cookies
-
-        Returns:
-            是否刷新成功
-        """
+        """刷新 cookies"""
         from ..login import refresh_cookies
 
-        c = await refresh_cookies(self)
-        if c == self:
-            return False
-        self.__dict__.update(c.__dict__)
-        return True
+        return await refresh_cookies(self)
 
     async def can_refresh(self) -> bool:
         """是否可以刷新 credential"""
@@ -94,11 +86,7 @@ class Credential:
         return True
 
     async def is_expired(self) -> bool:
-        """判断 credential 是否过期
-
-        Returns:
-            是否过期
-        """
+        """判断 credential 是否过期"""
         from ..login import check_expired
 
         return await check_expired(self)
@@ -118,14 +106,7 @@ class Credential:
 
     @classmethod
     def from_cookies_dict(cls, cookies: dict[str, Any]) -> Self:
-        """从 cookies 字典创建 Credential 实例
-
-        Args:
-            cookies: Cookies 字典
-
-        Returns:
-            凭据类实例
-        """
+        """从 cookies 字典创建 Credential 实例"""
         return cls(
             openid=cookies.pop("openid", ""),
             refresh_token=cookies.pop("refresh_token", ""),
@@ -146,12 +127,5 @@ class Credential:
 
     @classmethod
     def from_cookies_str(cls, cookies: str) -> Self:
-        """从 cookies 字符串创建 Credential 实例
-
-        Args:
-            cookies: Cookies 字符串
-
-        Returns:
-            凭据类实例
-        """
+        """从 cookies 字符串创建 Credential 实例"""
         return cls.from_cookies_dict(json.loads(cookies))
