@@ -1,14 +1,11 @@
 """专辑相关 API"""
 
-from typing import Literal
+from typing import Any, Literal
 
-from .utils.common import get_api
-from .utils.network import Api
-
-API = get_api("album")
+from .utils.network import NO_PROCESSOR, api_request
 
 
-def get_album_cover(mid: str, size: Literal[150, 300, 500, 800] = 300) -> str:
+def get_cover(mid: str, size: Literal[150, 300, 500, 800] = 300) -> str:
     """获取专辑封面链接
 
     Args:
@@ -23,70 +20,39 @@ def get_album_cover(mid: str, size: Literal[150, 300, 500, 800] = 300) -> str:
     return f"https://y.gtimg.cn/music/photo_new/T002R{size}x{size}M000{mid}.jpg"
 
 
-class Album:
-    """专辑类
+@api_request("music.musichallAlbum.AlbumInfoServer", "GetAlbumDetail")
+async def get_detail(value: str | int):
+    """获取专辑详细信息
 
-    Attributes:
-        mid: 专辑 mid
-        id:  专辑 id
+    Args:
+        value: 专辑 id 或 mid
     """
+    if isinstance(value, int):
+        return {"albumId": value}, NO_PROCESSOR
 
-    def __init__(
-        self,
-        *,
-        mid: str | None = None,
-        id: int | None = None,
-    ):
-        """初始化专辑类
+    return {"albumMId": value}, NO_PROCESSOR
 
-        Note:
-            歌曲 mid 和 id,两者至少提供一个
 
-        Args:
-            mid: 专辑 mid
-            id:  专辑 id
-        """
-        if mid is None and id is None:
-            raise ValueError("mid or id must be provided")
-        self.mid = mid or ""
-        self.id = id or 0
-        self._info: dict | None = None
+@api_request("music.musichallAlbum.AlbumSongList", "GetAlbumSongList")
+async def get_song(value: str | int, num: int = 10, page: int = 1):
+    """获取专辑歌曲
 
-    async def get_mid(self) -> str:
-        """获取专辑 mid
+    Args:
+        value: 专辑 id 或 mid
+        num: 返回数量
+        page: 页码
+    """
+    params: dict[str, Any] = {
+        "begin": num * (page - 1),
+        "num": num,
+    }
 
-        Returns:
-            专辑 mid
-        """
-        if not self.mid:
-            self.mid = (await self.get_detail())["basicInfo"]["albumMid"]
-        return self.mid
+    def _processor(data: dict[str, Any]) -> list[dict[str, Any]]:
+        return [song["songInfo"] for song in data["songList"]]
 
-    async def get_id(self) -> int:
-        """获取专辑 id
+    if isinstance(value, int):
+        params["albumId"] = value
+    else:
+        params["albumMid"] = value
 
-        Returns:
-            专辑 id
-        """
-        if not self.id:
-            self.id = (await self.get_detail())["basicInfo"]["albumID"]
-        return self.id
-
-    async def get_detail(self) -> dict:
-        """获取专辑详细信息
-
-        Returns:
-            专辑详细信息
-        """
-        if not self._info:
-            self._info = await Api(**API["detail"]).update_params(albumMid=self.mid, albumId=self.id).result
-        return self._info
-
-    async def get_song(self) -> list[dict]:
-        """获取专辑歌曲
-
-        Returns:
-            歌曲列表
-        """
-        result = await Api(**API["song"]).update_params(albumMid=self.mid, albumId=self.id, begin=0, num=0).result
-        return [song["songInfo"] for song in result["songList"]]
+    return params, _processor

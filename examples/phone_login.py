@@ -1,36 +1,45 @@
 import asyncio
-import sys
 
-from qqmusic_api.login_utils import PhoneLogin, PhoneLoginEvents
-
-
-async def phone_login():
-    phone = input("请输入手机号码")
-    login = PhoneLogin(int(phone))
-    while 1:
-        state = await login.send_authcode()
-        if state == PhoneLoginEvents.SEND:
-            print("发送成功")
-            break
-        if state == PhoneLoginEvents.CAPTCHA:
-            if login.auth_url is None:
-                print("获取滑块验证链接失败")
-                return
-            print("需要滑块验证", login.auth_url)
-            if sys.platform == "win32":
-                await asyncio.create_subprocess_exec("start", login.auth_url, shell=True)
-            elif sys.platform == "darwin":
-                await asyncio.create_subprocess_exec("open", login.auth_url)
-            else:
-                await asyncio.create_subprocess_exec("xdg-open", login.auth_url)
-            print("验证后回车")
-            await asyncio.sleep(0)
-        else:
-            print("未知情况", login.error_msg)
-            return
-    code = int(input("请输入验证码"))
-    credential = await login.authorize(code)
-    print(credential)
+from qqmusic_api.login import (
+    LoginError,
+    PhoneLoginEvents,
+    phone_authorize,
+    send_authcode,
+)
 
 
-asyncio.run(phone_login())
+async def phone_login_example():
+    """手机验证码登录示例"""
+    phone = 17385716326
+    country_code = 86
+
+    try:
+        # 1. 发送验证码
+        event, info = await send_authcode(phone, country_code)
+
+        if event == PhoneLoginEvents.CAPTCHA:
+            print(f"需要验证,访问链接: {info}")
+            return None
+        if event == PhoneLoginEvents.FREQUENCY:
+            print("操作过于频繁,请稍后再试")
+            return None
+
+        print("验证码已发送")
+
+        # 2. 获取用户输入
+        auth_code = input("请输入验证码: ").strip()
+
+        # 3. 执行登录
+        credential = await phone_authorize(phone, int(auth_code), country_code)
+        print(f"登录成功! MusicID: {credential.musicid}")
+        return credential
+
+    except LoginError as e:
+        print(f"登录失败: {e!s}")
+    except ValueError:
+        print("验证码必须为6位数字")
+    except Exception as e:
+        print(f"发生未知错误: {e!s}")
+
+
+asyncio.run(phone_login_example())

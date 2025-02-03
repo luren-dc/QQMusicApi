@@ -1,277 +1,206 @@
-"""用户相关 API"""
+"""用户相关 API
 
-from .exceptions import ResponseCodeError
-from .utils.common import get_api
+传入有效 credential 获取他人的信息会更完整但会留痕,且部分 API 不会验证
+credential 是否有效,强制 credential 的 API 在 credential 失效时会报错
+
+Credential 使用优先级:
+传入的 Credential > Session 的 Credential
+"""
+
+from typing import Any, cast
+
 from .utils.credential import Credential
-from .utils.network import Api
-
-API = get_api("user")
-
-
-async def get_created_songlist(musicid: int) -> list[dict]:
-    """通过 musicid 获取用户创建的歌单
-
-    Args:
-        musicid: musicid
-
-    Returns:
-        歌单列表
-    """
-    result = await Api(**API["songlist_by_uin"]).update_params(uin=str(musicid)).result
-    return result["v_playlist"]
+from .utils.network import NO_PROCESSOR, api_request
+from .utils.session import get_session
 
 
 async def get_euin(musicid: int) -> str:
-    """通过 musicid 获取 euin
+    """通过 musicid 获取 encrypt_uin"""
+    resp = await get_session().get(
+        "https://c6.y.qq.com/rsc/fcgi-bin/fcg_get_profile_homepage.fcg",
+        params={"ct": 20, "cv": 4747474, "cid": 205360838, "userid": musicid},
+    )
+    data = resp.json().get("data", {})
+    return data.get("creator", {}).get("encrypt_uin", "")
+
+
+@api_request("music.srfDissInfo.DissInfo", "CgiGetDiss")
+async def get_musicid(euin: str):
+    """通过 encrypt_uin 反查 musicid"""
+    return {"disstid": 0, "dirid": 201, "song_num": 1, "enc_host_uin": euin, "onlysonglist": 1}, lambda data: int(
+        data.get("dirinfo", {}).get("creator", {}).get("musicid", 0)
+    )
+
+
+@api_request("music.UnifiedHomepage.UnifiedHomepageSrv", "GetHomepageHeader")
+async def get_homepage(euin: str, *, credential: Credential | None = None):
+    """获取用户主页信息(包含音乐基因、歌单等)
 
     Args:
-        musicid: 需要获取 euin 的 musicid
-
-    Returns:
-        获取到的 encrypt_uin,为空表示获取失败
+        euin: encrypt_uin
+        credential: 凭证
     """
-    try:
-        result = await Api(**API["profile"]).update_params(ct=20, cv=4747474, cid=205360838, userid=musicid).result
-    except ResponseCodeError:
-        return ""
-    return result["creator"]["encrypt_uin"]
+    return {"uin": euin, "IsQueryTabDetail": 1}, NO_PROCESSOR
 
 
-async def get_musicid(euin: str) -> int:
-    """通过 euin 获取 musicid
+@api_request("VipLogin.VipLoginInter", "vip_login_base", verify=True)
+async def get_vip_info(*, credential: Credential | None = None):
+    """获取当前登录账号的 VIP 信息(需要凭证)"""
+    return {}, NO_PROCESSOR
 
+
+@api_request("music.concern.RelationList", "GetFollowSingerList", verify=True)
+async def get_follow_singers(euin: str, page: int = 1, num: int = 10, *, credential: Credential | None = None):
+    """获取关注歌手列表
 
     Args:
-        euin: 需要获取 musicid 的 euin
-
-    Returns:
-        获取到的 musicid,0 表示获取失败
+        euin: encrypt_uin
+        num: 返回数量
+        page: 页码
+        credential: 凭证
     """
-    api = get_api("songlist")["detail"]
-    try:
-        result = (
-            await Api(**api)
-            .update_params(
-                disstid=0,
-                dirid=201,
-                song_num=1,
-                enc_host_uin=euin,
-            )
-            .result
-        )
-    except ResponseCodeError:
-        return 0
-    if result["code"] != 0:
-        return 0
-    return int(result["dirinfo"]["creator"]["musicid"])
+    return {"HostUin": euin, "From": (page - 1) * num, "Size": num}, lambda data: {
+        "total": data.get("Total", 0),
+        "list": data.get("List", []),
+    }
 
 
-async def get_vip_info(credential: Credential) -> dict:
-    """获取 VIP 信息
+@api_request("music.concern.RelationList", "GetFansList", verify=True)
+async def get_fans(euin: str, page: int = 1, num: int = 10, *, credential: Credential | None = None):
+    """获取粉丝列表
 
     Args:
-        credential: 账号凭据
-
-    Returns:
-        VIP 相关信息
+        euin: encrypt_uin
+        num: 返回数量
+        page: 页码
+        credential: 凭证
     """
-    return await Api(**API["vip_info"], credential=credential).result
+    return {"HostUin": euin, "From": (page - 1) * num, "Size": num}, lambda data: {
+        "total": data.get("Total", 0),
+        "list": data.get("List", []),
+    }
 
 
-class User:
-    """用户类
+@api_request("music.homepage.Friendship", "GetFriendList", verify=True)
+async def get_friend(page: int = 1, num: int = 10, *, credential: Credential | None = None):
+    """获取好友列表
 
-    Attributes:
-        euin:       encrypt_uin
-        credential: 账号凭证
+    Args:
+        num: 返回数量
+        page: 页码
+        credential: 凭证
+    """
+    return {
+        "PageSize": num,
+        "Page": page - 1,
+    }, lambda data: {"total": data.get("Total", 0), "list": data.get("List", [])}
+
+
+@api_request("music.concern.RelationList", "GetFollowUserList", verify=True)
+async def get_follow_user(euin: str, page: int = 1, num: int = 10, *, credential: Credential | None = None):
+    """获取关注用户列表
+
+    Args:
+        euin: encrypt_uin
+        num: 返回数量
+        page: 页码
+        credential: 凭证
+    """
+    return {"HostUin": euin, "From": (page - 1) * num, "Size": num}, lambda data: {
+        "total": data.get("Total", 0),
+        "list": data.get("List", []),
+    }
+
+
+@api_request("music.musicasset.PlaylistBaseRead", "GetPlaylistByUin")
+async def get_created_songlist(uin: str, *, credential: Credential | None = None):
+    """获取创建的歌单
+
+    Args:
+        uin: musicid
+        credential: 凭证
+    """
+    return {"uin": uin}, lambda data: cast(list[dict[str, Any]], data.get("v_playlist", []))
+
+
+@api_request("music.srfDissInfo.DissInfo", "CgiGetDiss")
+async def get_fav_song(euin: str, page: int = 1, num: int = 10, *, credential: Credential | None = None):
+    """获取收藏歌曲
+
+    Args:
+        euin: encrypt_uin
+        num: 返回数量
+        page: 页码
+        credential: 凭证
     """
 
-    def __init__(self, euin: str, credential: Credential | None = None):
-        """初始化用户类
+    def _processsor(data: dict[str, Any]):
+        return {
+            "dirinfo": data.get("dirinfo", {}),
+            "total_song_num": data.get("total_song_num", 0),
+            "songlist_size": data.get("songlist_size", 0),
+            "songlist": data.get("songlist", []),
+            "songtag": data.get("songtag", []),
+            "orderlist": data.get("orderlist", []),
+        }
 
-        传入有效 credential 获取他人的信息会更完整但会留痕,且部分 API 不会验证
-        credential 是否有效,强制 credential 的 API 在 credential 失效时会报错
+    return {
+        "disstid": 0,
+        "dirid": 201,
+        "tag": True,
+        "song_begin": num * (page - 1),
+        "song_num": num,
+        "userinfo": True,
+        "orderlist": True,
+        "enc_host_uin": euin,
+    }, _processsor
 
-        Args:
-            euin:       encrypt_uin
-            credential: 账号凭证
-        """
-        self.euin = euin
-        self.credential = credential or Credential(musicid=1, musickey="None")
 
-    async def get_homepage(self) -> dict:
-        """获取主页信息
+@api_request("music.musicasset.PlaylistFavRead", "CgiGetPlaylistFavInfo")
+async def get_fav_songlist(euin: str, page: int = 1, num: int = 10, *, credential: Credential | None = None):
+    """获取收藏歌单
 
-        Returns:
-            主页信息
-        """
-        return (
-            await Api(**API["homepage"], credential=self.credential)
-            .update_params(IsQueryTabDetail=1, uin=self.euin)
-            .result
-        )
+    Args:
+        euin: encrypt_uin
+        num: 返回数量
+        page: 页码
+        credential: 凭证
+    """
+    return {"uin": euin, "offset": (page - 1) * num, "size": num}, NO_PROCESSOR
 
-    async def get_created_songlist(self) -> list[dict]:
-        """获取创建的歌单
 
-        Returns:
-            歌单列表
-        """
-        result = (
-            await Api(**API["songlist_by_euin"], credential=self.credential)
-            .update_params(hostuin=self.euin, sin=0, size=1000)
-            .result
-        )
-        data = result["disslist"]
-        data.pop(0)
-        return data
+@api_request("music.musicasset.AlbumFavRead", "CgiGetAlbumFavInfo")
+async def get_fav_album(euin: str, page: int = 1, num: int = 10, *, credential: Credential | None = None):
+    """获取收藏专辑
 
-    async def get_fav_song(self, num: int = 10, page: int = 1) -> dict:
-        """获取收藏歌单
+    Args:
+        euin: encrypt_uin
+        num: 返回数量
+        page: 页码
+        credential: 凭证
+    """
+    return {"euin": euin, "offset": (page - 1) * num, "size": num}, NO_PROCESSOR
 
-        Args:
-            num:  数量
-            page: 页码
 
-        Returns:
-            收藏歌单列表
-        """
-        api = get_api("songlist")["detail"]
-        result = (
-            await Api(**api, credential=self.credential)
-            .update_params(
-                disstid=0,
-                dirid=201,
-                song_num=num,
-                song_begin=(page - 1) * num,
-                enc_host_uin=self.euin,
-                onlysonglist=1,
-            )
-            .result
-        )
-        total = result["total_song_num"]
+@api_request("music.musicasset.MVFavRead", "getMyFavMV_v2", verify=True)
+async def get_fav_mv(euin: str, page: int = 1, num: int = 10, *, credential: Credential | None = None):
+    """获取收藏 MV
 
-        return {"total": total, "hasmore": int(total > page * num), "list": result["songlist"]}
+    Args:
+        euin: encrypt_uin
+        num: 返回数量
+        page: 页码
+        credential: 凭证
+    """
+    return {"encuin": euin, "pagesize": num, "num": page - 1}, NO_PROCESSOR
 
-    async def get_fav_songlist(self, num: int = 10, page: int = 1) -> dict:
-        """获取收藏歌单
 
-        Args:
-            num:  数量
-            page: 页码
+@api_request("music.recommend.UserProfileSettingSvr", "GetProfileReport")
+async def get_music_gene(euin: str, *, credential: Credential | None = None):
+    """获取音乐基因数据
 
-        Returns:
-            收藏歌单列表
-        """
-        return (
-            await Api(**API["fav_songlist_by_euin"], credential=self.credential)
-            .update_params(uin=self.euin, offset=num * (page - 1), size=num)
-            .result
-        )
-
-    async def get_fav_album(self, num: int = 10, page: int = 1) -> dict:
-        """获取收藏专辑
-
-        Args:
-            num:  数量
-            page: 页码
-
-        Returns:
-            收藏专辑列表
-        """
-        return (
-            await Api(**API["fav_album_by_euin"], credential=self.credential)
-            .update_params(euin=self.euin, offset=num * (page - 1), size=num)
-            .result
-        )
-
-    async def get_fav_mv(self, num: int = 10, page: int = 1) -> dict:
-        """获取收藏 MV
-
-        Args:
-            num:  数量
-            page: 页码
-
-        Returns:
-            收藏 MV 列表
-        """
-        result = (
-            await Api(**API["fav_mv_by_euin"], credential=self.credential)
-            .update_params(encuin=self.euin, pagesize=num, num=page - 1)
-            .result
-        )
-        return {"hasmore": result["hasmore"], "total": result["total"], "list": result["mvlist"]}
-
-    async def get_follow_user(self, num: int = 10, page: int = 1) -> dict:
-        """获取关注用户
-
-        Args:
-            num:  数量
-            page: 页码
-
-        Returns:
-            关注用户信息
-        """
-        result = (
-            await Api(**API["follow_user"], credential=self.credential)
-            .update_params(HostUin=self.euin, From=num * (page - 1), Size=num)
-            .result
-        )
-        return {"total": result["Total"], "list": result["List"]}
-
-    async def get_follow_singer(self, num: int = 10, page: int = 1) -> dict:
-        """获取关注歌手
-
-        Args:
-            num:  数量
-            page: 页码
-
-        Returns:
-            关注歌手信息
-        """
-        result = (
-            await Api(**API["follow_singer"], credential=self.credential)
-            .update_params(HostUin=self.euin, From=num * (page - 1), Size=num)
-            .result
-        )
-        return {"total": result["Total"], "list": result["List"]}
-
-    async def get_fans(self, num: int = 10, page: int = 1) -> dict:
-        """获取粉丝
-
-        Args:
-            num:  数量
-            page: 页码
-
-        Returns:
-            粉丝信息
-        """
-        result = (
-            await Api(**API["fans"], credential=self.credential)
-            .update_params(HostUin=self.euin, From=num * (page - 1), Size=num)
-            .result
-        )
-        return {"total": result["Total"], "list": result["List"]}
-
-    async def get_friend(self, num: int = 10, page: int = 1) -> dict:
-        """获取好友
-
-        Note:
-            只根据传入的 credential 获取
-
-        Args:
-            num:  数量
-            page: 页码
-
-        Returns:
-            好友信息
-        """
-        return await Api(**API["friend"], credential=self.credential).update_params(Page=page - 1, PageSize=num).result
-
-    async def get_gene(self) -> dict:
-        """获取音乐基因数据
-
-        Returns:
-            音乐基因数据
-        """
-        return await Api(**API["music_gene"], credential=self.credential).update_params(VisitAccount=self.euin).result
+    Args:
+        euin: encrypt_uin
+        credential: 凭证
+    """
+    return {"VisitAccount": euin}, NO_PROCESSOR
