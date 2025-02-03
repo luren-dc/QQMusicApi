@@ -67,6 +67,10 @@ docs = [
   "docstring-inheritance>=2.2.1",
   "griffe-modernized-annotations>=1.0.8",
 ]
+web = [
+    "fastapi>=0.115.8",
+    "uvicorn>=0.34.0",
+]
 
 [tool.commitizen]
 name = "cz_gitmoji"

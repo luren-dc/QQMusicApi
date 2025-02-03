@@ -51,7 +51,7 @@ def api_request(
     return decorator
 
 
-def _build_common_params(session: Session, credential: Credential) -> dict[str, Any]:
+def _build_common_params(session: Session, credential: Credential | None) -> dict[str, Any]:
     config = session.api_config
     common = {
         "cv": config["version_code"],
@@ -59,6 +59,7 @@ def _build_common_params(session: Session, credential: Credential) -> dict[str, 
         "QIMEI36": session.qimei,
     }
     common.update(ApiRequest.COMMON_DEFAULTS)
+    credential = credential or session.credential or Credential()
     if credential.has_musicid() and credential.has_musickey():
         common.update(
             {
@@ -70,7 +71,8 @@ def _build_common_params(session: Session, credential: Credential) -> dict[str, 
     return common
 
 
-def _set_cookies(credential: Credential, session: Session):
+def _set_cookies(credential: Credential | None, session: Session):
+    credential = credential or session.credential or Credential()
     if credential.has_musicid() and credential.has_musickey():
         cookies = httpx.Cookies()
         cookies.set("uin", str(credential.musicid), domain="qq.com")
@@ -107,12 +109,11 @@ class ApiRequest(Generic[_P, _R]):
         ignore_code: bool = False,
         proceduce_bool: bool = True,
     ) -> None:
-        self.session = get_session()
         self.module = module
         self.method = method
         self._common = common or {}
         self.params = params or {}
-        self.credential = credential or self.session.credential or Credential()
+        self.credential = credential
         self.verify = verify
         self.ignore_code = ignore_code
         self.api_func = api_func
@@ -138,7 +139,7 @@ class ApiRequest(Generic[_P, _R]):
     @property
     def common(self) -> dict[str, Any]:
         """构造公共参数"""
-        common = _build_common_params(self.session, self.credential)
+        common = _build_common_params(get_session(), self.credential)
         common.update(self._common)
         return common
 
@@ -161,7 +162,7 @@ class ApiRequest(Generic[_P, _R]):
         data = {"comm": self.common}
         data[f"{self.module}.{self.method}"] = self.data
 
-        config = self.session.api_config
+        config = get_session().api_config
         request_params = {
             "url": config["enc_endpoint" if config["enable_sign"] else "endpoint"],
             "json": data,
@@ -209,12 +210,14 @@ class ApiRequest(Generic[_P, _R]):
     async def request(self) -> dict[str, Any]:
         """执行异步请求"""
         if self.verify:
+            if not self.credential:
+                raise RuntimeError("缺少 Credential")
             self.credential.raise_for_invalid()
 
         request = self.build_request()
         logger.debug(f"发起单独请求: {self.module}.{self.method} params: {self.params}")
-        _set_cookies(self.credential, self.session)
-        resp = await self.session.post(**request)
+        _set_cookies(self.credential, get_session())
+        resp = await get_session().post(**request)
         resp.raise_for_status()
         return self._process_response(resp)
 
@@ -252,10 +255,9 @@ class RequestGroup:
         common: dict[str, Any] | None = None,
         credential: Credential | None = None,
     ):
-        self.session = get_session()
         self._requests: list[RequestItem] = []
         self.common = common.copy() if common else {}
-        self.credential = credential or self.session.credential or Credential()
+        self.credential = credential
         self._key_counter = defaultdict(int)
 
     def add_request(self, request: ApiRequest[_P, _R], *args: _P.args, **kwargs: _P.kwargs) -> None:
@@ -297,7 +299,7 @@ class RequestGroup:
 
     async def build_request(self):
         """构建请求参数"""
-        common = _build_common_params(self.session, self.credential)
+        common = _build_common_params(get_session(), self.credential)
         common.update(self.common)
         merged_data = {"comm": common}
         for req in self._requests:
@@ -308,7 +310,7 @@ class RequestGroup:
                 req["processor"] = processor
             merged_data[req["key"]] = req["request"].data
 
-        config = self.session.api_config
+        config = get_session().api_config
         request_params = {"url": config["enc_endpoint" if config["enable_sign"] else "endpoint"], "json": merged_data}
         if config["enable_sign"]:
             request_params["params"] = {"sign": sign(merged_data)}
@@ -321,7 +323,7 @@ class RequestGroup:
             return []
         request = await self.build_request()
         logger.debug(f"发起合并请求(请求数量: {len(self._requests)}): {request['json']}")
-        _set_cookies(self.credential, self.session)
-        resp = await self.session.post(**request)
+        _set_cookies(self.credential, get_session())
+        resp = await get_session().post(**request)
         resp.raise_for_status()
         return self._process_response(resp)

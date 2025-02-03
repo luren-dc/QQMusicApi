@@ -151,7 +151,11 @@ class SessionManager:
             return self.context_stack[loop][-1]
 
         # 如果上下文栈中没有,返回全局池中的 Session
-        return self.session_pool.get(loop, Session())
+        session = self.session_pool.get(loop, None)
+        if not session:
+            session = Session()
+            self.session_pool[loop] = session
+        return session
 
     def set(self, session: Session) -> None:
         """设置当前事件循环的 Session"""
