@@ -77,7 +77,7 @@ def _set_cookies(credential: Credential, session: Session):
         cookies.set("qqmusic_key", credential.musickey, domain="qq.com")
         cookies.set("qm_keyst", credential.musickey, domain="qq.com")
         cookies.set("tmeLoginType", str(credential.login_type), domain="qq.com")
-        session._merge_cookies(cookies)
+        session.cookies = cookies
 
 
 class ApiRequest(Generic[_P, _R]):
@@ -138,7 +138,9 @@ class ApiRequest(Generic[_P, _R]):
     @property
     def common(self) -> dict[str, Any]:
         """构造公共参数"""
-        return _build_common_params(self.session, self.credential)
+        common = _build_common_params(self.session, self.credential)
+        common.update(self._common)
+        return common
 
     @property
     def data(self) -> dict[str, Any]:
@@ -179,14 +181,13 @@ class ApiRequest(Generic[_P, _R]):
         except json.JSONDecodeError:
             return {"data": resp.text}
         req_data = data.get(f"{self.module}.{self.method}", {})
+        if self.ignore_code:
+            return req_data
         self._validate_response(req_data)
         return req_data.get("data", req_data)
 
     def _validate_response(self, data: dict[str, Any]) -> None:
         """验证响应状态码"""
-        if self.ignore_code:
-            return
-
         code = data.get("code", 0)
         logger.debug(
             "API %s.%s: %s",
@@ -207,15 +208,15 @@ class ApiRequest(Generic[_P, _R]):
 
     async def request(self) -> dict[str, Any]:
         """执行异步请求"""
+        if self.verify:
+            self.credential.raise_for_invalid()
+
         request = self.build_request()
-        try:
-            logger.debug(f"发起单独请求: {self.module}.{self.method} params: {self.params}")
-            _set_cookies(self.credential, self.session)
-            resp = await self.session.post(**request)
-            resp.raise_for_status()
-            return self._process_response(resp)
-        finally:
-            self.session.cookies.clear()
+        logger.debug(f"发起单独请求: {self.module}.{self.method} params: {self.params}")
+        _set_cookies(self.credential, self.session)
+        resp = await self.session.post(**request)
+        resp.raise_for_status()
+        return self._process_response(resp)
 
     async def __call__(self, *args: _P.args, **kwargs: _P.kwargs) -> _R:  # noqa: D102
         self.credential = cast(Credential, kwargs.pop("credential", self.credential))
@@ -296,7 +297,9 @@ class RequestGroup:
 
     async def build_request(self):
         """构建请求参数"""
-        merged_data = {"comm": _build_common_params(self.session, self.credential)}
+        common = _build_common_params(self.session, self.credential)
+        common.update(self.common)
+        merged_data = {"comm": common}
         for req in self._requests:
             if req["request"].api_func:
                 params, processor = await req["request"].api_func(*req["args"], **req["kwargs"])
@@ -318,11 +321,7 @@ class RequestGroup:
             return []
         request = await self.build_request()
         logger.debug(f"发起合并请求(请求数量: {len(self._requests)}): {request['json']}")
-
-        try:
-            _set_cookies(self.credential, self.session)
-            resp = await self.session.post(**request)
-            resp.raise_for_status()
-            return self._process_response(resp)
-        finally:
-            self.session.cookies.clear()
+        _set_cookies(self.credential, self.session)
+        resp = await self.session.post(**request)
+        resp.raise_for_status()
+        return self._process_response(resp)
