@@ -14,6 +14,10 @@
 
 - 重构 Python API  - ([fc917df](https://github.com/luren-dc/QQMusicApi/commit/fc917df2d00a378bbeb0225f9ea520fffa6d54ba)) by [@luren-dc](https://github.com/luren-dc)  in [#110](https://github.com/luren-dc/QQMusicApi/pull/110)
 
+### 性能优化
+
+- 优化Session获取 - ([e77e87f](https://github.com/luren-dc/QQMusicApi/commit/e77e87f2bf958f9391ff1a1f88c85bc3a4526b83)) by [@luren-dc](https://github.com/luren-dc) 
+
 ### 文档更新
 
 - API 编写指南 - ([5f23233](https://github.com/luren-dc/QQMusicApi/commit/5f2323373ef3a296556fce38ae7735341ec08633)) by [@luren-dc](https://github.com/luren-dc) 
