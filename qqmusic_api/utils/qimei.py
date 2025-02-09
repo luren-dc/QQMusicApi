@@ -15,7 +15,7 @@ from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 from .common import calc_md5
-from .device import Device
+from .device import Device, get_cached_device, save_device
 
 logger = logging.getLogger("qqmusicapi.qimei")
 
@@ -116,10 +116,9 @@ def random_payload_by_device(device: Device, version: str) -> dict:
     }
 
 
-def get_qimei(device: Device, version: str) -> QimeiResult:
+def get_qimei(version: str) -> QimeiResult:
     """获取 QIMEI"""
-    if device.qimei:
-        return QimeiResult(q16="", q36=device.qimei)
+    device = get_cached_device()
     try:
         payload = random_payload_by_device(device, version)
         crypt_key = "".join(random.choices("adbcdef1234567890", k=16))
@@ -156,7 +155,11 @@ def get_qimei(device: Device, version: str) -> QimeiResult:
         )
         logger.debug("获取 QIMEI 成功: %s", res.json())
         data = json.loads(res.json()["data"])["data"]
+        device.qimei = data["q36"]
+        save_device(device)
         return QimeiResult(q16=data["q16"], q36=data["q36"])
     except Exception:
+        if device.qimei:
+            return QimeiResult(q16="", q36=device.qimei)
         logger.exception("获取 QIMEI 失败,使用默认 QIMEI")
         return QimeiResult(q16="", q36="6c9d3cd110abca9b16311cee10001e717614")

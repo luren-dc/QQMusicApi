@@ -21,29 +21,30 @@
 
 ## 全局使用
 
+所有 API 请求都会使用这个 `Credential`
+
 ```python
-from qqmusic_api import Credential, set_session_credential, sync
+from qqmusic_api import Credential
 
 async def main():
-  set_session_credential(Credential())
-
-sync(main())
+    # 全局凭证设置
+    get_session().credential = Credential(...)
 ```
 
 ## 示例
 
 ```python
-from qqmusic_api import Credential, sync
+from qqmusic_api import Credential
 
 credential = Credential()
 
 # 判断能否刷新 credential
 # 不代表能刷新成功
-sync(credential.can_refresh())
+credential.can_refresh()
 
 # 判断 credential 是否过期
-sync(credential.is_expired())
+credential.is_expired()
 
 # 刷新 credential
-sync(credential.refresh())
+credential.refresh()
 ```

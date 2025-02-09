@@ -1,46 +1,62 @@
 # Session
 
-实现 QQ音乐 API请求管理，每个 `EventLoop` 对应一个全局 `Session`,可以创建使用多个 `Session`
+实现 QQ音乐 API 请求管理，基于协程上下文和线程隔离机制，支持多 Session 嵌套与并发场景。
 
-## 使用加密接口
+## 核心特性
+- 基于 `contextvars` 实现协程层级的 Session 上下文管理
+- 自动线程隔离，不同线程使用独立 Session 实例
+- 支持嵌套上下文管理器，协程内 Session 堆栈管理
 
+## 基础用法
+
+### 使用上下文管理器
 ```python
 from qqmusic_api import Session
 
 async def main():
-  async with Session(enable_sign=True):
-      ...
-```
-
-## 设置 Credential
-
-```python
-from qqmusic_api import Session, Credential, get_session
-
-async def main():
-  # 设置全局 Credential
-  get_session().credential = Credential()
-
-  async with Session(enable_sign=True,credential=Credential()):
-      ...
-```
-
-## 示例
-
-```python
-from qqmusic_api import get_session, set_session
-
-
-async def main():
-    # 获取当前 EventLoop 的 Session
-    get_session()
-
-    # 设置当前 EventLoop 的 Session
-    set_session(Session())
-
-    # 新建 Session
-    async with Session():
-        # 进入该 Session, 在 `async with` 内的 API 将由该 Session 完成
+    # 创建临时 Session 上下文
+    async with Session() as session:
+        # 在此上下文内的 API 请求使用此 Session
         ...
-        # 离开 Session. 此后 API 将继续由全局 Session 管理
+    # 退出后自动恢复之前的 Session
+```
+
+### 获取全局 Session
+```python
+from qqmusic_api import get_session
+
+async def main():
+    session = get_session()  # 获取当前事件循环的全局 Session
+```
+
+## 进阶配置
+
+### 启用加密接口
+```python
+async def main():
+    # enable_sign 启用请求签名
+    async with Session(enable_sign=True) as session:
+         ...
+```
+
+### 自定义缓存策略
+```python
+async def main():
+    # 禁用缓存并设置缓存过期时间（秒）
+    async with Session(enable_cache=False, cache_ttl=300):
+        # 此上下文内的请求将不缓存
+        ...
+```
+
+### 凭证管理
+```python
+from qqmusic_api import Credential
+
+async def main():
+    # 全局凭证设置
+    get_session().credential = Credential(...)
+
+    # 上下文内覆盖凭证
+    async with Session(credential=Credential(...)):
+        ...
 ```
