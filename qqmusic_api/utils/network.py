@@ -2,15 +2,18 @@
 
 import json
 import logging
+from abc import ABC, abstractmethod
 from collections import defaultdict
 from collections.abc import Callable, Coroutine
 from typing import Any, ClassVar, Generic, ParamSpec, TypedDict, TypeVar, cast
 
 import httpx
+from typing_extensions import override
 
 from ..exceptions import CredentialExpiredError, ResponseCodeError, SignInvalidError
+from .common import calc_md5
 from .credential import Credential
-from .session import Session, get_session
+from .session import get_session
 from .sign import sign
 
 _P = ParamSpec("_P")
@@ -32,7 +35,10 @@ def api_request(
     *,
     verify: bool = False,
     ignore_code: bool = False,
-    proceduce_bool: bool = True,
+    process_bool: bool = True,
+    cache_ttl: int | None = None,
+    cacheable: bool = True,
+    exclude_params: list[str] = [],
 ):
     """API请求"""
 
@@ -45,48 +51,20 @@ def api_request(
             api_func=api_func,
             verify=verify,
             ignore_code=ignore_code,
-            proceduce_bool=proceduce_bool,
+            process_bool=process_bool,
+            cacheable=cacheable,
+            cache_ttl=cache_ttl,
+            exclude_params=exclude_params,
         )
 
     return decorator
 
 
-def _build_common_params(session: Session, credential: Credential | None) -> dict[str, Any]:
-    config = session.api_config
-    common = {
-        "cv": config["version_code"],
-        "v": config["version_code"],
-        "QIMEI36": session.qimei,
-    }
-    common.update(ApiRequest.COMMON_DEFAULTS)
-    credential = credential or session.credential or Credential()
-    if credential.has_musicid() and credential.has_musickey():
-        common.update(
-            {
-                "qq": str(credential.musicid),
-                "authst": credential.musickey,
-                "tmeLoginType": str(credential.login_type),
-            }
-        )
-    return common
-
-
-def _set_cookies(credential: Credential | None, session: Session):
-    credential = credential or session.credential or Credential()
-    if credential.has_musicid() and credential.has_musickey():
-        cookies = httpx.Cookies()
-        cookies.set("uin", str(credential.musicid), domain="qq.com")
-        cookies.set("qqmusic_key", credential.musickey, domain="qq.com")
-        cookies.set("qm_keyst", credential.musickey, domain="qq.com")
-        cookies.set("tmeLoginType", str(credential.login_type), domain="qq.com")
-        session.cookies = cookies
-
-
-class ApiRequest(Generic[_P, _R]):
-    """API 请求处理器"""
+class BaseRequest(ABC):
+    """请求基类"""
 
     # 公共参数默认值
-    COMMON_DEFAULTS: ClassVar = {
+    COMMON_DEFAULTS: ClassVar[dict[str, str]] = {
         "ct": "11",
         "tmeAppID": "qqmusic",
         "format": "json",
@@ -94,6 +72,106 @@ class ApiRequest(Generic[_P, _R]):
         "outCharset": "utf-8",
         "uid": "3931641530",
     }
+
+    def __init__(
+        self,
+        common: dict[str, Any] | None = None,
+        credential: Credential | None = None,
+        verify: bool = False,
+        ignore_code: bool = False,
+    ) -> None:
+        self.session = get_session()
+        self._common = common or {}
+        self._credential = credential
+        self.verify = verify
+        self.ignore_code = ignore_code
+        self.cache = self.session._cache
+
+    @property
+    def credential(self) -> Credential:
+        """获取请求凭证"""
+        return self._credential or (self.session).credential or Credential()
+
+    @credential.setter
+    def credential(self, value: Credential):
+        """设置请求凭证"""
+        self._credential = value
+
+    @property
+    def common(self) -> dict[str, Any]:
+        """公共参数"""
+        common = self._build_common_params(self.credential)
+        common.update(self._common)
+        return common
+
+    @common.setter
+    def commom(self, value: dict[str, Any]):
+        """设置公共参数"""
+        self._common = value
+
+    def _build_common_params(self, credential: Credential) -> dict[str, Any]:
+        config = (self.session).api_config
+        common = {
+            "cv": config["version_code"],
+            "v": config["version_code"],
+            "QIMEI36": (self.session).qimei,
+        }
+        common.update(self.COMMON_DEFAULTS)
+        if credential.has_musicid() and credential.has_musickey():
+            common.update(
+                {
+                    "qq": str(credential.musicid),
+                    "authst": credential.musickey,
+                    "tmeLoginType": str(credential.login_type),
+                }
+            )
+        return common
+
+    def _set_cookies(self, credential: Credential):
+        if credential.has_musicid() and credential.has_musickey():
+            cookies = httpx.Cookies()
+            cookies.set("uin", str(credential.musicid), domain=".qq.com")
+            cookies.set("qqmusic_key", credential.musickey, domain=".qq.com")
+            cookies.set("qm_keyst", credential.musickey, domain=".qq.com")
+            cookies.set("tmeLoginType", str(credential.login_type), domain=".qq.com")
+            self.session.cookies = cookies
+
+    @abstractmethod
+    def build_request_data(self) -> dict[str, Any]:
+        """构建请求体数据"""
+        pass
+
+    def build_request(self) -> dict[str, Any]:
+        """统一构建请求参数"""
+        data = self.build_request_data()
+        config = self.session.api_config
+        request_params = {
+            "url": config["enc_endpoint" if config["enable_sign"] else "endpoint"],
+            "json": data,
+        }
+        if config["enable_sign"]:
+            request_params["params"] = {"sign": sign(data)}
+        return request_params
+
+    async def request(self) -> httpx.Response:
+        """执行请求"""
+        if self.verify:
+            self.credential.raise_for_invalid()
+        request_data = self.build_request()
+        logger.debug(f"发送请求: {request_data}")
+        self._set_cookies(self.credential)
+        resp = await self.session.post(**request_data)
+        if not self.ignore_code:
+            resp.raise_for_status()
+        return resp
+
+    @abstractmethod
+    async def _process_response(self, resp: httpx.Response) -> Any:
+        pass
+
+
+class ApiRequest(BaseRequest, Generic[_P, _R]):
+    """API 请求处理器"""
 
     def __init__(
         self,
@@ -107,18 +185,22 @@ class ApiRequest(Generic[_P, _R]):
         credential: Credential | None = None,
         verify: bool = False,
         ignore_code: bool = False,
-        proceduce_bool: bool = True,
+        process_bool: bool = True,
+        cache_ttl: int | None = None,
+        cacheable: bool = True,
+        exclude_params: list[str] = [],
+        **kwargs,
     ) -> None:
+        super().__init__(common, credential, verify, ignore_code)
         self.module = module
         self.method = method
-        self._common = common or {}
         self.params = params or {}
-        self.credential = credential
-        self.verify = verify
-        self.ignore_code = ignore_code
         self.api_func = api_func
-        self.proceduce_bool = proceduce_bool
+        self.proceduce_bool = process_bool
         self.processor: Callable[[dict[str, Any]], Any] = NO_PROCESSOR
+        self.cacheable = cacheable
+        self.cache_ttl = cache_ttl
+        self.exclude_params = exclude_params
 
     def copy(self) -> "ApiRequest[_P, _R]":
         """创建当前 ApiRequest 实例的副本"""
@@ -131,21 +213,22 @@ class ApiRequest(Generic[_P, _R]):
             credential=self.credential,
             verify=self.verify,
             ignore_code=self.ignore_code,
-            proceduce_bool=self.proceduce_bool,
+            process_bool=self.proceduce_bool,
+            cacheable=self.cacheable,
+            cache_ttl=self.cache_ttl,
+            exclude_params=self.exclude_params.copy(),
         )
         req.processor = self.processor
         return req
 
-    @property
-    def common(self) -> dict[str, Any]:
-        """构造公共参数"""
-        common = _build_common_params(get_session(), self.credential)
-        common.update(self._common)
-        return common
+    @override
+    def build_request_data(self) -> dict[str, Any]:
+        common = self._build_common_params(self.credential)
+        return {"comm": common, f"{self.module}.{self.method}": self.data}
 
     @property
     def data(self) -> dict[str, Any]:
-        """构造请求数据体"""
+        """API 请求数据"""
         if self.proceduce_bool:
             params = {k: int(v) if isinstance(v, bool) else v for k, v in self.params.items()}
         else:
@@ -157,23 +240,17 @@ class ApiRequest(Generic[_P, _R]):
             "param": params,
         }
 
-    def build_request(self) -> dict[str, Any]:
-        """构建请求参数"""
-        data = {"comm": self.common}
-        data[f"{self.module}.{self.method}"] = self.data
+    def _generate_cache_key(self) -> str:
+        params = self.params.copy()
+        for key in self.exclude_params:
+            params.pop(key, None)
+        if self.credential:
+            params["credential"] = f"{self.credential.musicid}{self.credential.musickey}"
+        sorted_params = json.dumps(params, sort_keys=True, ensure_ascii=False)
+        return calc_md5(sorted_params)
 
-        config = get_session().api_config
-        request_params = {
-            "url": config["enc_endpoint" if config["enable_sign"] else "endpoint"],
-            "json": data,
-        }
-
-        if config["enable_sign"]:
-            request_params["params"] = {"sign": sign(data)}
-
-        return request_params
-
-    def _process_response(self, resp: httpx.Response) -> dict[str, Any]:
+    @override
+    async def _process_response(self, resp: httpx.Response) -> dict[str, Any]:
         """处理响应数据"""
         if not resp.content:
             return {}
@@ -207,22 +284,10 @@ class ApiRequest(Generic[_P, _R]):
         if code != 0:
             raise ResponseCodeError(code, self.data, data)
 
-    async def request(self) -> dict[str, Any]:
-        """执行异步请求"""
-        if self.verify:
-            if not self.credential:
-                raise RuntimeError("缺少 Credential")
-            self.credential.raise_for_invalid()
-
-        request = self.build_request()
-        logger.debug(f"发起单独请求: {self.module}.{self.method} params: {self.params}")
-        _set_cookies(self.credential, get_session())
-        resp = await get_session().post(**request)
-        resp.raise_for_status()
-        return self._process_response(resp)
-
     async def __call__(self, *args: _P.args, **kwargs: _P.kwargs) -> _R:  # noqa: D102
-        self.credential = cast(Credential, kwargs.pop("credential", self.credential))
+        if credential := kwargs.pop("credential", None):
+            if isinstance(credential, Credential):
+                self.credential = credential
         instance = self
         if instance.api_func:
             params, processor = await instance.api_func(*args, **kwargs)
@@ -230,8 +295,15 @@ class ApiRequest(Generic[_P, _R]):
             instance._common.update(params.pop("common", {}))
             instance.params.update(params)
             instance.processor = processor
-        response_data = await instance.request()
-        return cast(_R, instance.processor(response_data))
+        key = instance._generate_cache_key()
+        if self.session.enable_cache and self.cacheable:
+            if cache_data := await self.cache.get(key):
+                return cache_data
+        resp = await instance.request()
+        resp = cast(_R, instance.processor(await instance._process_response(resp)))
+        if self.session.enable_cache and self.cacheable:
+            await self.cache.set(key, resp, ttl=self.cache_ttl)
+        return resp
 
     def __repr__(self) -> str:
         return f"<ApiRequest {self.module}.{self.method}>"
@@ -240,6 +312,7 @@ class ApiRequest(Generic[_P, _R]):
 class RequestItem(TypedDict):
     """请求 Item"""
 
+    id: int
     key: str
     request: ApiRequest
     args: tuple[Any, ...]
@@ -247,7 +320,7 @@ class RequestItem(TypedDict):
     processor: Callable[[dict[str, Any]], Any] | None
 
 
-class RequestGroup:
+class RequestGroup(BaseRequest):
     """合并多个 API 请求,支持组级公共参数和重复模块方法处理"""
 
     def __init__(
@@ -255,10 +328,10 @@ class RequestGroup:
         common: dict[str, Any] | None = None,
         credential: Credential | None = None,
     ):
+        super().__init__(common, credential)
         self._requests: list[RequestItem] = []
-        self.common = common.copy() if common else {}
-        self.credential = credential
         self._key_counter = defaultdict(int)
+        self._results = []
 
     def add_request(self, request: ApiRequest[_P, _R], *args: _P.args, **kwargs: _P.kwargs) -> None:
         """添加请求,自动生成唯一键"""
@@ -266,23 +339,25 @@ class RequestGroup:
         self._key_counter[base_key] += 1
         count = self._key_counter[base_key]
         unique_key = f"{base_key}.{count}" if count > 1 else base_key
+        request = request.copy()
+        request.credential = self.credential
 
         self._requests.append(
             RequestItem(
+                id=len(self._requests) - 1,
                 key=unique_key,
-                request=request.copy(),
+                request=request,
                 args=args,
                 kwargs=kwargs,
                 processor=request.processor,
             )
         )
 
-    def _process_response(self, resp: httpx.Response) -> list[Any]:
+    async def _process_response(self, resp: httpx.Response):
         try:
             if not resp.content:
                 return []
 
-            results = []
             data = resp.json()
 
             for req_item in self._requests:
@@ -290,40 +365,56 @@ class RequestGroup:
                 req_data = data.get(req_item["key"], {})
                 req._validate_response(req_data)
                 if req_item["processor"]:
-                    results.append(req_item["processor"](req_data.get("data", req_data)))
+                    data = req_item["processor"](req_data.get("data", req_data))
                 else:
-                    results.append(req_data.get("data", req_data))
-            return results
+                    data = req_data.get("data", req_data)
+                if self.session.enable_cache and req.cacheable:
+                    await self.cache.set(req._generate_cache_key(), data, ttl=req.cache_ttl)
+                self._results[req_item["id"]] = data
         except json.JSONDecodeError:
-            return [{"data": resp.text}]
+            self._results = [{"data": resp.text}]
 
-    async def build_request(self):
-        """构建请求参数"""
-        common = _build_common_params(get_session(), self.credential)
-        common.update(self.common)
-        merged_data = {"comm": common}
+    async def _prepare_request(self):
         for req in self._requests:
-            if req["request"].api_func:
-                params, processor = await req["request"].api_func(*req["args"], **req["kwargs"])
+            request = req["request"]
+            if request.api_func:
+                params, processor = await request.api_func(*req["args"], **req["kwargs"])
                 self.common.update(params.pop("common", {}))
-                req["request"].params.update(params)
+                request.params.update(params)
                 req["processor"] = processor
-            merged_data[req["key"]] = req["request"].data
 
-        config = get_session().api_config
-        request_params = {"url": config["enc_endpoint" if config["enable_sign"] else "endpoint"], "json": merged_data}
-        if config["enable_sign"]:
-            request_params["params"] = {"sign": sign(merged_data)}
+    @override
+    def build_request_data(self):
+        """构建请求"""
+        common = self._build_common_params(self.credential)
+        merged_data = {req["key"]: req["request"].data for req in self._requests}
+        data = {"comm": common}
+        data.update(merged_data)
+        return data
 
-        return request_params
+    async def _get_cache(self):
+        keys = [req["request"]._generate_cache_key() for req in self._requests if req["request"].cacheable]
+        cache = self.cache
+        cache_data = await cache.multi_get(keys)
+        remove_index = []
+        for idx, data in enumerate(cache_data):
+            if data:
+                self._results[idx] = data
+                remove_index.append(idx)
+        self._requests = [req for idx, req in enumerate(self._requests) if idx not in remove_index]
 
     async def execute(self) -> list[Any]:
         """执行合并请求并返回各请求结果"""
         if not self._requests:
             return []
-        request = await self.build_request()
-        logger.debug(f"发起合并请求(请求数量: {len(self._requests)}): {request['json']}")
-        _set_cookies(self.credential, get_session())
-        resp = await get_session().post(**request)
-        resp.raise_for_status()
-        return self._process_response(resp)
+        self._results = [None] * len(self._requests)
+        await self._prepare_request()
+        if self.session.enable_cache:
+            await self._get_cache()
+
+        if not self._requests:
+            return self._results
+
+        resp = await self.request()
+        await self._process_response(resp)
+        return self._results

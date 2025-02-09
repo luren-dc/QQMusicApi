@@ -11,7 +11,7 @@ async def get_top_category():
     return {}, lambda data: cast(list[dict[str, Any]], data.get("group", []))
 
 
-@api_request("music.musicToplist.Toplist", "GetDetail", proceduce_bool=False)
+@api_request("music.musicToplist.Toplist", "GetDetail", process_bool=False)
 async def get_detail(
     top_id: int,
     num: int = 10,

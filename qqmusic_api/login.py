@@ -30,6 +30,7 @@ async def check_expired(credential: Credential) -> bool:
         "GetLoginUserInfo",
         params={},
         credential=credential,
+        cacheable=False,
     )
 
     try:
@@ -64,6 +65,7 @@ async def refresh_cookies(credential: Credential) -> bool:
         common={"tmeLoginType": str(credential.login_type)},
         params=params,
         credential=credential,
+        cacheable=False,
     )
 
     try:
@@ -363,6 +365,7 @@ async def _authorize_qq_qr(uin: str, sigx: str) -> Credential:
             "Login",
             common={"tmeLoginType": "2"},
             params={"code": code},
+            cacheable=False,
         )
         return Credential.from_cookies_dict(await api())
     except CredentialExpiredError:
@@ -376,6 +379,7 @@ async def _authorize_wx_qr(code: str) -> Credential:
             "Login",
             common={"tmeLoginType": "1"},
             params={"code": code, "strAppid": "wx48db31d50e334801"},
+            cacheable=False,
         )
         return Credential.from_cookies_dict(await api())
     except CredentialExpiredError:
@@ -399,6 +403,7 @@ async def send_authcode(phone: int, country_code: int = 86) -> tuple[PhoneLoginE
             "areaCode": str(country_code),
         },
         ignore_code=True,
+        cacheable=False,
     )()
 
     match resp["code"]:
@@ -425,6 +430,7 @@ async def phone_authorize(phone: int, auth_code: int, country_code: int = 86) ->
         common={"tmeLoginMethod": "3", "tmeLoginType": "0"},
         params={"code": str(auth_code), "phoneNo": str(phone), "areaCode": str(country_code), "loginMode": 1},
         ignore_code=True,
+        cacheable=False,
     )()
     match resp["code"]:
         case 20271:

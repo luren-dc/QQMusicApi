@@ -171,8 +171,8 @@ async def _api_web(
     params = dict(request.query_params)
     parser = Parser(module, func, params)
     credential = qqmusic_api.Credential.from_cookies_dict(request.cookies)
-    async with qqmusic_api.Session(credential=credential):
-        result, errors = await parser.parse()
+    qqmusic_api.get_session().credential = credential
+    result, errors = await parser.parse()
 
     if not parser.valid or errors:
         return {"code": 1, "error": errors}

@@ -43,7 +43,7 @@ async def get_homepage(euin: str, *, credential: Credential | None = None):
     return {"uin": euin, "IsQueryTabDetail": 1}, NO_PROCESSOR
 
 
-@api_request("VipLogin.VipLoginInter", "vip_login_base", verify=True)
+@api_request("VipLogin.VipLoginInter", "vip_login_base", verify=True, cacheable=False)
 async def get_vip_info(*, credential: Credential | None = None):
     """获取当前登录账号的 VIP 信息(需要凭证)"""
     return {}, NO_PROCESSOR

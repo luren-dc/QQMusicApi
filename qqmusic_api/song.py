@@ -151,9 +151,9 @@ async def get_song_urls(
     # 选择文件域名
     domain = "https://isure.stream.qqmusic.qq.com/"
     api_data = ("music.vkey.GetVkey", "UrlGetVkey") if not encrypted else ("music.vkey.GetEVkey", "CgiGetEVkey")
-    urls = {}
 
     def _processor(res: dict[str, Any]):
+        urls = {}
         data = res["midurlinfo"]
         for info in data:
             song_url = domain + info["wifiurl"] if info["wifiurl"] else ""
@@ -161,6 +161,7 @@ async def get_song_urls(
                 urls[info["songmid"]] = song_url
             else:
                 urls[info["songmid"]] = (song_url, info["ekey"])
+        return urls
 
     rg = RequestGroup(credential=credential)
     for mid in mid_list:
@@ -177,15 +178,19 @@ async def get_song_urls(
             api_data[1],
             params=params,
             credential=credential,
+            exclude_params=["guid"],
         )
         req.processor = _processor
         rg.add_request(req)
 
-    await rg.execute()
-    return urls
+    data = await rg.execute()
+    result = {}
+    for urls in data:
+        result.update(urls)
+    return result
 
 
-@api_request("music.vkey.GetVkey", "UrlGetVkey")
+@api_request("music.vkey.GetVkey", "UrlGetVkey", exclude_params=["guid"])
 async def get_try_url(mid: str, vs: str):
     """获取试听文件链接
 
