@@ -25,16 +25,4 @@ jobs:
       - name: Install the project
         run: uv sync --group testing
       - name: Run tests
-        env:
-          MUSIC_ID: ${{ secrets.MUSIC_ID }}
-          MUSIC_KEY: ${{ secrets.MUSIC_KEY }}
-          MUSIC_EUIN: ${{ secrets.MUSIC_EUIN }}
-          MUSIC_REFRESH_KEY: ${{ secrets.MUSIC_REFRESH_KEY }}
-          MUSIC_REFRESH_TOKEN: ${{ secrets.MUSIC_REFRESH_TOKEN }}
         run: uv run pytest
-      - name: Update MUSIC_KEY
-        if: ${{ env.NEW_MUSIC_KEY != '' }}
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          gh secret set MUSIC_KEY -b $NEW_MUSIC_KEY
