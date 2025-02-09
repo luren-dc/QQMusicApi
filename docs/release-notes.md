@@ -21,7 +21,7 @@
 
 ### 文档更新
 
-- API 编写指南 - ([5f23233](https://github.com/luren-dc/QQMusicApi/commit/5f2323373ef3a296556fce38ae7735341ec08633)) by [@luren-dc](https://github.com/luren-dc) 
+- API 编写指南 - ([dff5819](https://github.com/luren-dc/QQMusicApi/commit/dff58197c329ff2e519233d0acb68b7e60b32011)) by [@luren-dc](https://github.com/luren-dc) 
 
 ## [[0.2.2](https://github.com/luren-dc/QQMusicApi/compare/v0.2.1..v0.2.2)] - 2025-01-25
 
