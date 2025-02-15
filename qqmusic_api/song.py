@@ -179,6 +179,7 @@ async def get_song_urls(
             params=params,
             credential=credential,
             exclude_params=["guid"],
+            cacheable=False,
         )
         req.processor = _processor
         rg.add_request(req)
@@ -190,7 +191,12 @@ async def get_song_urls(
     return result
 
 
-@api_request("music.vkey.GetVkey", "UrlGetVkey", exclude_params=["guid"])
+@api_request(
+    "music.vkey.GetVkey",
+    "UrlGetVkey",
+    exclude_params=["guid"],
+    cacheable=False,
+)
 async def get_try_url(mid: str, vs: str):
     """获取试听文件链接
 
