@@ -8,7 +8,7 @@
 
 ### 功能更新
 
-- 缓存功能 - ([d1b1d70](https://github.com/luren-dc/QQMusicApi/commit/d1b1d70cb23b29887f6af96251dd588d65c50a72)) by [@luren-dc](https://github.com/luren-dc) 
+- 缓存功能 - ([4db7ac8](https://github.com/luren-dc/QQMusicApi/commit/4db7ac8ff97052504dba12c2526f6f1894fbf3e6)) by [@luren-dc](https://github.com/luren-dc) 
 - 支持 WEB API - ([2ed9199](https://github.com/luren-dc/QQMusicApi/commit/2ed91995c5d1e906a2951666bb1dd845a35b0e89)) by [@luren-dc](https://github.com/luren-dc) 
 
 ### 功能重构
