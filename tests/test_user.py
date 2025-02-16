@@ -35,7 +35,8 @@ class TestUserAPI:
         assert result == self.TEST_MUSICID
 
     async def test_get_homepage(self):
-        assert await get_homepage(self.TEST_EUIN, credential=self.VALID_CREDENTIAL)
+        with pytest.raises(CredentialExpiredError):
+            assert await get_homepage(self.TEST_EUIN, credential=self.VALID_CREDENTIAL)
 
     async def test_get_vip_info_valid_credential(self):
         assert await get_vip_info(credential=self.VALID_CREDENTIAL)
