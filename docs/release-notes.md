@@ -6,6 +6,10 @@
 
 ## What's Changed
 
+### Bug 修复
+
+- 命名错误 - ([20d8c27](https://github.com/luren-dc/QQMusicApi/commit/20d8c2766b22399bd8f7ad21506d6811981cf47c)) by [@luren-dc](https://github.com/luren-dc) 
+
 ### 功能更新
 
 - 缓存功能 - ([4db7ac8](https://github.com/luren-dc/QQMusicApi/commit/4db7ac8ff97052504dba12c2526f6f1894fbf3e6)) by [@luren-dc](https://github.com/luren-dc) 
