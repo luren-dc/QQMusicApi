@@ -22,9 +22,9 @@ pytestmark = pytest.mark.asyncio(loop_scope="session")
 
 
 class TestUserAPI:
-    TEST_MUSICID = 3308862290
-    TEST_EUIN = "oiozNecsow-qon**"
-    VALID_CREDENTIAL = Credential(musicid=3308862290, musickey="None")
+    TEST_MUSICID = 2680888327
+    TEST_EUIN = "owCFoecFNeoA7z**"
+    VALID_CREDENTIAL = Credential(musicid="owCFoecFNeoA7z**", musickey="None")
 
     async def test_get_euin(self):
         result = await get_euin(self.TEST_MUSICID)

@@ -128,7 +128,7 @@ async def get_song_urls(
 
 async def get_song_urls(
     mid: list[str],
-    file_type: EncryptedSongFileType | SongFileType = SongFileType.MP3_128,
+    file_type: SongFileType | EncryptedSongFileType = SongFileType.MP3_128,
     credential: Credential | None = None,
 ) -> dict[str, str] | dict[str, tuple[str, str]]:
     """获取歌曲文件链接
@@ -137,8 +137,8 @@ async def get_song_urls(
         `ekey` 用于解密加密歌曲
 
     Args:
-        mid:        歌曲 mid
-        file_type:  歌曲文件类型
+        mid: 歌曲 mid
+        file_type: 歌曲文件类型
         credential: 账号凭证
 
     Returns:

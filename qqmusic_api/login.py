@@ -146,7 +146,7 @@ class QR:
     data: bytes
     qr_type: QRLoginType
     mimetype: str
-    identitfier: str
+    identifier: str
 
     def save(self, path: Path | str = "."):
         """保存二维码
@@ -228,7 +228,7 @@ async def check_qrcode(qrcode: QR) -> tuple[QRCodeLoginEvents, Credential | None
 
 
 async def _check_qq_qr(qrcode: QR) -> tuple[QRCodeLoginEvents, Credential | None]:
-    qrsig = qrcode.identitfier
+    qrsig = qrcode.identifier
     try:
         resp = await get_session().get(
             "https://ssl.ptlogin2.qq.com/ptqrlogin",
@@ -273,7 +273,7 @@ async def _check_qq_qr(qrcode: QR) -> tuple[QRCodeLoginEvents, Credential | None
 
 
 async def _check_wx_qr(qrcode: QR) -> tuple[QRCodeLoginEvents, Credential | None]:
-    uuid = qrcode.identitfier
+    uuid = qrcode.identifier
     try:
         resp = await get_session().get(
             "https://lp.open.weixin.qq.com/connect/l/qrconnect",
