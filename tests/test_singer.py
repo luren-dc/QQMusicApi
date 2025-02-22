@@ -9,6 +9,10 @@ async def test_get_singer_list():
     assert await singer.get_singer_list()
 
 
+async def test_get_singer_list_index():
+    assert await singer.get_singer_list_index()
+
+
 async def test_get_info():
     assert await singer.get_info(mid="0025NhlN2yWrP4")
 
