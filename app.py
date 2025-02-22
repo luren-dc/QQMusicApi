@@ -3,6 +3,7 @@
 from datetime import datetime
 from enum import Enum
 from inspect import Parameter, signature
+import types
 from typing import Any, Union, get_args, get_origin
 
 from fastapi import FastAPI, Request, Response
@@ -121,11 +122,6 @@ class Parser:
 
     def _convert_type(self, value: str, target_type: type) -> Any:
         """类型转换逻辑"""
-        # 组合类型判断
-        if  target_type.__args__ == (str, int):
-            if value.isdigit():
-                return int(value)
-            return value
         # 基础类型
         if target_type is str:
             return value
@@ -144,6 +140,11 @@ class Parser:
         if get_origin(target_type) is list:
             item_type = get_args(target_type)[0]
             return [self._convert_type(item, item_type) for item in value.split(",")]
+        # 组合类型判断
+        if get_origin(target_type) is types.UnionType and  target_type.__args__ == (str, int):
+            if value.isdigit():
+                return int(value)
+            return value
         if isinstance(target_type, type) and issubclass(target_type, Enum):
             return target_type[value.upper()]
         raise ValueError(f"不支持的类型: {target_type}")
