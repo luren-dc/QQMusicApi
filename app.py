@@ -121,6 +121,11 @@ class Parser:
 
     def _convert_type(self, value: str, target_type: type) -> Any:
         """类型转换逻辑"""
+        # 组合类型判断
+        if  target_type.__args__ == (str, int):
+            if value.isdigit():
+                return int(value)
+            return value
         # 基础类型
         if target_type is str:
             return value
