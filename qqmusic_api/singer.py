@@ -13,9 +13,8 @@ class AreaType(Enum):
     CHINA = 200
     TAIWAN = 2
     AMERICA = 5
-    EUROPE = 4
-    JAPAN = 3
-    KOREA = 1
+    JAPAN = 4
+    KOREA = 3
 
 
 class GenreType(Enum):
