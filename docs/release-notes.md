@@ -3,8 +3,7 @@
 所有对该项目的重要更改都将记录在此文件中。
 
 ---
-
-## What's Changed
+## [[0.3.0](https://github.com/luren-dc/QQMusicApi/compare/v0.2.2..v0.3.0)] - 2025-02-23
 
 ### Bug 修复
 
