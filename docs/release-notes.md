@@ -8,6 +8,7 @@
 
 ### Bug 修复
 
+- **(singer)** 修复地区代码错误  - ([03023cf](https://github.com/luren-dc/QQMusicApi/commit/03023cf36bf4fef33ec0580ff4e59a437648c570)) by [@liuhangbin](https://github.com/liuhangbin)  in [#127](https://github.com/luren-dc/QQMusicApi/pull/127)
 - 命名错误 - ([20d8c27](https://github.com/luren-dc/QQMusicApi/commit/20d8c2766b22399bd8f7ad21506d6811981cf47c)) by [@luren-dc](https://github.com/luren-dc) 
 
 ### 功能更新
@@ -29,6 +30,7 @@
 - API 编写指南 - ([dff5819](https://github.com/luren-dc/QQMusicApi/commit/dff58197c329ff2e519233d0acb68b7e60b32011)) by [@luren-dc](https://github.com/luren-dc) 
 
 ## New Contributors
+* @liuhangbin made their first contribution in [#127](https://github.com/luren-dc/QQMusicApi/pull/127)
 * @liguobao made their first contribution in [#124](https://github.com/luren-dc/QQMusicApi/pull/124)
 ## [[0.2.2](https://github.com/luren-dc/QQMusicApi/compare/v0.2.1..v0.2.2)] - 2025-01-25
 
