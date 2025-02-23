@@ -13,6 +13,10 @@ async def test_get_singer_list_index():
     assert await singer.get_singer_list_index()
 
 
+async def test_get_singer_list_index_all():
+    assert await singer.get_singer_list_index_all(index = 1, area = 5, sex = 0)
+
+
 async def test_get_info():
     assert await singer.get_info(mid="0025NhlN2yWrP4")
 

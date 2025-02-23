@@ -63,11 +63,28 @@ class TabType(Enum):
         self.tab_name = tab_name
 
 
+# 动态生成 A-Z 的枚举值
+letters = {chr(i): idx for idx, i in enumerate(range(ord('A'), ord('Z') + 1), start=1)}
+letters.update({"ALL": -100, "HASH": 27})
+# 创建枚举类 IndexType
+IndexType = Enum('IndexType', letters)
+
+
+def validate_int_enum(value: int | Enum, enum_type: type[Enum]) -> int:
+    """确保传入的值符合指定的枚举类型"""
+    if isinstance(value, enum_type):
+        return value.value  # 如果是枚举成员，返回对应的整数值
+    elif value in {item.value for item in enum_type}:
+        return value  # 如果是合法整数值，直接返回
+    else:
+        raise ValueError(f"Invalid value: {value} for {enum_type.__name__}")
+
+
 @api_request("music.musichallSinger.SingerList", "GetSingerList")
 async def get_singer_list(
-    area: AreaType = AreaType.ALL,
-    sex: SexType = SexType.ALL,
-    genre: GenreType = GenreType.ALL,
+    area: int | AreaType = AreaType.ALL,
+    sex: int | SexType = SexType.ALL,
+    genre: int | GenreType = GenreType.ALL,
 ):
     """获取歌手列表
 
@@ -76,26 +93,32 @@ async def get_singer_list(
         sex: 性别
         genre: 风格
     """
+
+    area = validate_int_enum(area, AreaType)
+    sex = validate_int_enum(sex, SexType)
+    genre = validate_int_enum(genre, GenreType)
+
     return {
         "hastag": 0,
-        "area": area.value,
-        "sex": sex.value,
-        "genre": genre.value,
+        "area": area,
+        "sex": sex,
+        "genre": genre,
     }, lambda data: cast(
         list[dict[str, Any]],
         data["hotlist"],
     )
 
+
 @api_request("music.musichallSinger.SingerList", "GetSingerListIndex")
-async def get_singer_list_index(
-    area: AreaType = AreaType.ALL,
-    sex: SexType = SexType.ALL,
-    genre: GenreType = GenreType.ALL,
-    index: int = -100,
+async def get_singer_list_index_raw(
+    area: int | AreaType = AreaType.ALL,
+    sex: int | SexType = SexType.ALL,
+    genre: int | GenreType = GenreType.ALL,
+    index: int | IndexType = IndexType.ALL,
     sin: int = 0,
     cur_page: int = 1,
 ):
-    """获取歌手列表
+    """获取歌手列表原始数据
 
     Args:
         area: 地区
@@ -105,17 +128,82 @@ async def get_singer_list_index(
         sin: 跳过数量
         cur_page: 当前页
     """
+
+    area = validate_int_enum(area, AreaType)
+    sex = validate_int_enum(sex, SexType)
+    genre = validate_int_enum(genre, GenreType)
+    index = validate_int_enum(index, IndexType)
+
     return {
-        "area": area.value,
-        "sex": sex.value,
-        "genre": genre.value,
+        "area": area,
+        "sex": sex,
+        "genre": genre,
         "index": index,
         "sin": sin,
         "cur_page": cur_page,
     }, lambda data: cast(
-        list[dict[str, Any]],
-        data["singerlist"],
+        dict[str, Any],
+        data,
     )
+
+
+async def get_singer_list_index(
+    area: int | AreaType = AreaType.ALL,
+    sex: int | SexType = SexType.ALL,
+    genre: int | GenreType = GenreType.ALL,
+    index: int | IndexType = IndexType.ALL,
+    sin: int = 0,
+    cur_page: int = 1,
+):
+    """获取自定义页歌手列表
+    """
+
+    area = validate_int_enum(area, AreaType)
+    sex = validate_int_enum(sex, SexType)
+    genre = validate_int_enum(genre, GenreType)
+    index = validate_int_enum(index, IndexType)
+
+    data = await get_singer_list_index_raw(
+        area = area, sex = sex, genre = genre, index = index, sin = sin, cur_page = cur_page
+    )
+
+    return cast(list[dict[str, Any]], data["singerlist"])
+
+
+async def get_singer_list_index_all(
+    area: int | AreaType = AreaType.ALL,
+    sex: int | SexType = SexType.ALL,
+    genre: int | GenreType = GenreType.ALL,
+    index: int | IndexType = IndexType.ALL,
+):
+    """获取所有歌手列表
+    """
+
+    area = validate_int_enum(area, AreaType)
+    sex = validate_int_enum(sex, SexType)
+    genre = validate_int_enum(genre, GenreType)
+    index = validate_int_enum(index, IndexType)
+
+    data = await get_singer_list_index_raw(
+        area = area, sex = sex, genre = genre, index = index, sin = 0, cur_page = 1
+    )
+
+    singer_list = data["singerlist"]
+    total = data["total"]
+    if total <= 80:
+        return cast(list[dict[str, Any]], singer_list)
+
+    # 每页80个歌手，向下取整
+    pages = total // 80
+    sin = 80
+    for page in range(2, pages + 2):
+        data = await get_singer_list_index_raw(
+            area = area, sex = sex, genre = genre, index = index, sin = sin, cur_page = page
+        )
+        singer_list.extend(data["singerlist"])
+        sin += 80
+
+    return cast(list[dict[str, Any]], singer_list)
 
 
 @api_request("music.UnifiedHomepage.UnifiedHomepageSrv", "GetHomepageHeader")
