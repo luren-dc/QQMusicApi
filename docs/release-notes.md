@@ -13,6 +13,7 @@
 
 ### 功能更新
 
+- **(Singer)** 支持根据首字母来过滤歌手列表  - ([61af369](https://github.com/luren-dc/QQMusicApi/commit/61af3696c551f61912c93775cb9004f05d527c2f)) by [@liuhangbin](https://github.com/liuhangbin)  in [#129](https://github.com/luren-dc/QQMusicApi/pull/129)
 - 新增 `get_singer_list_index` 歌手列表查询  - ([803b486](https://github.com/luren-dc/QQMusicApi/commit/803b486a91bd2f7b100dc211d3b581430ff91b67)) by [@liguobao](https://github.com/liguobao)  in [#124](https://github.com/luren-dc/QQMusicApi/pull/124)
 - 缓存功能 - ([4db7ac8](https://github.com/luren-dc/QQMusicApi/commit/4db7ac8ff97052504dba12c2526f6f1894fbf3e6)) by [@luren-dc](https://github.com/luren-dc) 
 - 支持 WEB API - ([2ed9199](https://github.com/luren-dc/QQMusicApi/commit/2ed91995c5d1e906a2951666bb1dd845a35b0e89)) by [@luren-dc](https://github.com/luren-dc) 
@@ -30,7 +31,7 @@
 - API 编写指南 - ([dff5819](https://github.com/luren-dc/QQMusicApi/commit/dff58197c329ff2e519233d0acb68b7e60b32011)) by [@luren-dc](https://github.com/luren-dc) 
 
 ## New Contributors
-* @liuhangbin made their first contribution in [#127](https://github.com/luren-dc/QQMusicApi/pull/127)
+* @liuhangbin made their first contribution in [#129](https://github.com/luren-dc/QQMusicApi/pull/129)
 * @liguobao made their first contribution in [#124](https://github.com/luren-dc/QQMusicApi/pull/124)
 ## [[0.2.2](https://github.com/luren-dc/QQMusicApi/compare/v0.2.1..v0.2.2)] - 2025-01-25
 
