@@ -306,3 +306,16 @@ async def get_sheet(mid: str):
         mid: 歌曲 mid
     """
     return {"songmid": mid, "scoreType": -1}, _get_extract_func("result")
+
+
+@api_request("music.musicasset.SongFavRead", "GetSongFansNumberById")
+async def get_fav_num(songid: list[int]):
+    """获取歌曲收藏数量
+
+    Args:
+        songid: 歌曲 id 列表
+    """
+    # 返回内容类似
+    # {'m_numbers': {'438910555': 1000001}, 'm_show': {'438910555': '550w+'}}
+    # 暂时选择 m_show 方便阅读
+    return {"v_songId": songid}, _get_extract_func("m_show")

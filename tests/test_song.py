@@ -47,3 +47,7 @@ async def test_get_other_version():
 async def test_get_song_urls():
     assert await song.get_song_urls(["0023CVP23SH17s"])
     assert await song.get_try_url("00041h1u3kgquE", "062sn0lg3VGZad")
+
+
+async def test_get_fav_num():
+    assert await song.get_fav_num(songid = [438910555, 9063002])
