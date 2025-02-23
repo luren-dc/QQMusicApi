@@ -66,6 +66,15 @@ async def main():
 asyncio.run(main())
 ```
 
+## Web API
+```
+docker build . -t qq-music-api
+docker run -d -p 8000:8000 qq-music-api
+```
+
+curl http://127.0.0.1:8000/singer/get_singer_list
+
+
 ## Licence
 
 本项目基于 **[MIT License](https://github.com/luren-dc/QQMusicApi?tab=MIT-1-ov-file)** 许可证发行。

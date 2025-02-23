@@ -87,6 +87,37 @@ async def get_singer_list(
         data["hotlist"],
     )
 
+@api_request("music.musichallSinger.SingerList", "GetSingerListIndex")
+async def get_singer_list_index(
+    area: AreaType = AreaType.ALL,
+    sex: SexType = SexType.ALL,
+    genre: GenreType = GenreType.ALL,
+    index: int = -100,
+    sin: int = 0,
+    cur_page: int = 1,
+):
+    """获取歌手列表
+
+    Args:
+        area: 地区
+        sex: 性别
+        genre: 风格
+        index: 索引
+        sin: 跳过数量
+        cur_page: 当前页
+    """
+    return {
+        "area": area.value,
+        "sex": sex.value,
+        "genre": genre.value,
+        "index": index,
+        "sin": sin,
+        "cur_page": cur_page,
+    }, lambda data: cast(
+        list[dict[str, Any]],
+        data["singerlist"],
+    )
+
 
 @api_request("music.UnifiedHomepage.UnifiedHomepageSrv", "GetHomepageHeader")
 async def get_info(mid: str):
