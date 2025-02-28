@@ -48,27 +48,3 @@ async def test_get_songs_list():
 
 async def test_get_songs_list_all():
     assert await singer.get_songs_list_all(mid="003zdDsO1e1ZXu")
-
-
-async def test_get_album_raw():
-    assert await singer.get_album_raw(mid="003zdDsO1e1ZXu")
-
-
-async def test_get_album_list():
-    assert await singer.get_album_list(mid="003zdDsO1e1ZXu")
-
-
-async def test_get_album_list_all():
-    assert await singer.get_album_list_all(mid="003zdDsO1e1ZXu")
-
-
-async def test_get_mv_raw():
-    assert await singer.get_mv_raw(mid="001orhmd37wwf2")
-
-
-async def test_get_mv_list():
-    assert await singer.get_mv_list(mid="001orhmd37wwf2")
-
-
-async def test_get_mv_list_all():
-    assert await singer.get_mv_list_all(mid="001orhmd37wwf2")

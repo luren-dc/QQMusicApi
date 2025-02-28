@@ -1,5 +1,6 @@
 """歌手相关 API"""
 
+import asyncio
 from enum import Enum
 from typing import Any, Literal, cast
 
@@ -323,9 +324,10 @@ async def get_songs_raw(mid: str, number: int = 10, begin: int = 0):
 
     Args:
         mid: 歌手 mid
-        number: 每次获取数量,最大30
+        number: 每次获取数量，最大30
         begin: 从第几个开始
     """
+
     return {
         "singerMid": mid,
         "order": 1,
@@ -355,131 +357,20 @@ async def get_songs_list_all(mid: str):
     Args:
         mid: 歌手 mid
     """
-    response = await get_songs_raw(mid=mid, number=30, begin=0)
+
+    response = await get_songs_raw(mid = mid, number = 30, begin = 0)
 
     total = response["totalNum"]
     songs = [song["songInfo"] for song in response["songList"]]
     if total <= 30:
         return cast(list[dict[str, Any]], songs)
 
-    rg = RequestGroup()
+    tasks = []
     for num in range(30, total, 30):
-        rg.add_request(get_songs_raw, mid=mid, number=30, begin=num)
+        tasks.append(get_songs_raw(mid = mid, number = 30, begin = num))
 
-    response = await rg.execute()
+    response = await asyncio.gather(*tasks)
     for res in response:
         songs.extend([song["songInfo"] for song in res["songList"]])
 
     return cast(list[dict[str, Any]], songs)
-
-
-@api_request("music.musichallAlbum.AlbumListServer", "GetAlbumList")
-async def get_album_raw(mid: str, number: int = 10, begin: int = 0):
-    """获取歌手专辑原始数据
-
-    Args:
-        mid: 歌手 mid
-        number: 每次获取数量,不足30个的时候直接全部返回
-        begin: 从第几个开始
-    """
-    return {
-        "singerMid": mid,
-        "order": 1,
-        "number": number,
-        "begin": begin,
-    }, lambda data: cast(
-        dict[str, Any],
-        data,
-    )
-
-
-async def get_album_list(mid: str, number: int = 10, begin: int = 0):
-    """获取歌手专辑列表
-
-    Args:
-        mid: 歌手 mid
-        number: 每次获取数量,不足30个的时候直接全部返回
-        begin: 从第几个开始
-    """
-    data = await get_album_raw(mid=mid, number=number, begin=begin)
-    return cast(list[dict[str, Any]], data["albumList"])
-
-
-async def get_album_list_all(mid: str):
-    """获取歌手所有专辑列表
-
-    Args:
-        mid: 歌手 mid
-    """
-    response = await get_album_raw(mid=mid, number=30, begin=0)
-
-    total = response["total"]
-    albums = response["albumList"]
-    if total <= 30:
-        return cast(list[dict[str, Any]], albums)
-
-    rg = RequestGroup()
-    for num in range(30, total, 30):
-        rg.add_request(get_album_raw, mid=mid, number=30, begin=num)
-
-    response = await rg.execute()
-    for res in response:
-        albums.extend(res.get("albumList", []))
-
-    return cast(list[dict[str, Any]], albums)
-
-
-@api_request("MvService.MvInfoProServer", "GetSingerMvList")
-async def get_mv_raw(mid: str, number: int = 10, begin: int = 0):
-    """获取歌手mv原始数据
-
-    Args:
-        mid: 歌手 mid
-        number: 每次获取数量,每次最大100
-        begin: 从第几个开始
-    """
-    return {
-        "singermid": mid,
-        "order": 1,
-        "count": number,
-        "start": begin,
-    }, lambda data: cast(
-        dict[str, Any],
-        data,
-    )
-
-
-async def get_mv_list(mid: str, number: int = 10, begin: int = 0):
-    """获取歌手mv原始数据
-
-    Args:
-        mid: 歌手 mid
-        number: 每次获取数量,每次最大100
-        begin: 从第几个开始
-    """
-    data = await get_mv_raw(mid=mid, number=number, begin=begin)
-    return cast(list[dict[str, Any]], data["list"])
-
-
-async def get_mv_list_all(mid: str):
-    """获取歌手所有专辑列表
-
-    Args:
-        mid: 歌手 mid
-    """
-    response = await get_mv_raw(mid=mid, number=100, begin=0)
-
-    total = response["total"]
-    mvs = response["list"]
-    if total <= 100:
-        return cast(list[dict[str, Any]], mvs)
-
-    rg = RequestGroup()
-    for num in range(100, total, 100):
-        rg.add_request(get_mv_raw, mid=mid, number=100, begin=num)
-
-    response = await rg.execute()
-    for res in response:
-        mvs.extend(res.get("list", []))
-
-    return cast(list[dict[str, Any]], mvs)
