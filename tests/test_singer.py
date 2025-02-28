@@ -36,3 +36,15 @@ async def test_get_similar():
 
 async def test_get_song():
     assert await singer.get_songs(mid="0025NhlN2yWrP4")
+
+
+async def test_get_songs_raw():
+    assert await singer.get_songs_raw(mid="003zdDsO1e1ZXu", number=30, begin=0)
+
+
+async def test_get_songs_list():
+    assert await singer.get_songs_list(mid="003zdDsO1e1ZXu", number=20, begin=0)
+
+
+async def test_get_songs_list_all():
+    assert await singer.get_songs_list_all(mid="003zdDsO1e1ZXu")

@@ -3,7 +3,7 @@
 from enum import Enum
 from typing import Any, Literal, cast
 
-from .utils.network import api_request
+from .utils.network import RequestGroup, api_request
 
 
 class AreaType(Enum):
@@ -315,3 +315,59 @@ async def get_songs(
         num:  返回数量
     """
     return await get_tab_detail(mid, tab_type, page, num)
+
+
+@api_request("musichall.song_list_server", "GetSingerSongList")
+async def get_songs_raw(mid: str, number: int = 10, begin: int = 0):
+    """获取歌手歌曲原始数据
+
+    Args:
+        mid: 歌手 mid
+        number: 每次获取数量,最大30
+        begin: 从第几个开始
+    """
+    return {
+        "singerMid": mid,
+        "order": 1,
+        "number": number,
+        "begin": begin,
+    }, lambda data: cast(
+        dict[str, Any],
+        data,
+    )
+
+
+async def get_songs_list(mid: str, number: int = 10, begin: int = 0):
+    """获取歌手歌曲列表
+
+    Args:
+        mid: 歌手 mid
+        number: 每次获取数量,最大30
+        begin: 从第几个开始
+    """
+    data = await get_songs_raw(mid=mid, number=number, begin=begin)
+    return cast(list[dict[str, Any]], data["songList"])
+
+
+async def get_songs_list_all(mid: str):
+    """获取歌手所有歌曲列表
+
+    Args:
+        mid: 歌手 mid
+    """
+    response = await get_songs_raw(mid=mid, number=30, begin=0)
+
+    total = response["totalNum"]
+    songs = [song["songInfo"] for song in response["songList"]]
+    if total <= 30:
+        return cast(list[dict[str, Any]], songs)
+
+    rg = RequestGroup()
+    for num in range(30, total, 30):
+        rg.add_request(get_songs_raw, mid=mid, number=30, begin=num)
+
+    response = await rg.execute()
+    for res in response:
+        songs.extend([song["songInfo"] for song in res["songList"]])
+
+    return cast(list[dict[str, Any]], songs)
