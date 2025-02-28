@@ -111,7 +111,7 @@ async def get_singer_list(
     sex: int | SexType = SexType.ALL,
     genre: int | GenreType = GenreType.ALL,
 ):
-    """获取歌手列表
+    """获取热门歌手列表
 
     Args:
         area: 地区
@@ -178,7 +178,16 @@ async def get_singer_list_index(
     sin: int = 0,
     cur_page: int = 1,
 ):
-    """获取自定义页歌手列表"""
+    """获取自定义页歌手列表
+
+    Args:
+        area: 地区
+        sex: 性别
+        genre: 风格
+        index: 索引
+        sin: 跳过数量
+        cur_page: 当前页
+    """
     area = validate_int_enum(area, AreaType)
     sex = validate_int_enum(sex, SexType)
     genre = validate_int_enum(genre, GenreType)
@@ -195,7 +204,14 @@ async def get_singer_list_index_all(
     genre: int | GenreType = GenreType.ALL,
     index: int | IndexType = IndexType.ALL,
 ):
-    """获取所有歌手列表"""
+    """获取所有歌手列表
+
+    Args:
+        area: 地区
+        sex: 性别
+        genre: 风格
+        index: 索引
+    """
     area = validate_int_enum(area, AreaType)
     sex = validate_int_enum(sex, SexType)
     genre = validate_int_enum(genre, GenreType)
