@@ -371,3 +371,59 @@ async def get_songs_list_all(mid: str):
         songs.extend([song["songInfo"] for song in res["songList"]])
 
     return cast(list[dict[str, Any]], songs)
+
+
+@api_request("music.musichallAlbum.AlbumListServer", "GetAlbumList")
+async def get_album_raw(mid: str, number: int = 10, begin: int = 0):
+    """获取歌手专辑原始数据
+
+    Args:
+        mid: 歌手 mid
+        number: 每次获取数量,不足30个的时候直接全部返回
+        begin: 从第几个开始
+    """
+    return {
+        "singerMid": mid,
+        "order": 1,
+        "number": number,
+        "begin": begin,
+    }, lambda data: cast(
+        dict[str, Any],
+        data,
+    )
+
+
+async def get_album_list(mid: str, number: int = 10, begin: int = 0):
+    """获取歌手专辑列表
+
+    Args:
+        mid: 歌手 mid
+        number: 每次获取数量,不足30个的时候直接全部返回
+        begin: 从第几个开始
+    """
+    data = await get_album_raw(mid=mid, number=number, begin=begin)
+    return cast(list[dict[str, Any]], data["albumList"])
+
+
+async def get_album_list_all(mid: str):
+    """获取歌手所有专辑列表
+
+    Args:
+        mid: 歌手 mid
+    """
+    response = await get_album_raw(mid=mid, number=30, begin=0)
+
+    total = response["total"]
+    albums = response["albumList"]
+    if total <= 30:
+        return cast(list[dict[str, Any]], albums)
+
+    rg = RequestGroup()
+    for num in range(30, total, 30):
+        rg.add_request(get_album_raw, mid=mid, number=30, begin=num)
+
+    response = await rg.execute()
+    for res in response:
+        albums.extend(res.get("albumList", []))
+
+    return cast(list[dict[str, Any]], albums)
