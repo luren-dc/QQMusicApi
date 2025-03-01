@@ -1,0 +1,34 @@
+name: 提交需求/新功能
+description: 使用该模板进行提交需求/新功能
+title: "[Feature]:"
+labels: ["feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您进行功能请求。请起一个能够清晰描述您的请求的标题，便于开发者完成您的请求。
+
+  - type: textarea
+    id: describe
+    attributes:
+      label: 功能描述
+      description: 描述请求的功能
+    validations:
+      required: true
+
+  - type: textarea
+    id: expect
+    attributes:
+      label: 预期结果
+      description: 想要实现的功能效果
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: revision
+    attributes:
+      label: 最后一步
+      description: 回顾您的回答
+      options:
+        - label: 我认为上述的描述已经足以详细，以允许开发人员能完成功能。如果我的 Issue 没有按照上述的要求填写，可能会被 **无条件关闭**。
+          required: true

@@ -1,0 +1,71 @@
+name: Bug 反馈
+description: 在使用过程中遇到了 Bug
+title: "[BUG]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢您进行 Bug 反馈。请起一个能够清晰描述您的问题的标题，便于开发者解决您的问题。
+
+  - type: markdown
+    attributes:
+      value: |
+        ## Bug 信息
+
+        描述您遇到的 Bug。您可以附上截图、相关代码、堆栈跟踪等材料，便于开发者追踪问题。
+
+  - type: textarea
+    id: about_code
+    attributes:
+      label: 相关代码
+      description: 发生报错的相关代码（请注意隐藏隐私信息）
+      render: python
+    validations:
+      required: false
+
+  - type: textarea
+    id: stacktrace
+    attributes:
+      label: 堆栈跟踪
+      description: 请将产生的堆栈跟踪信息粘贴到此处，便于开发者定位 Bug。
+      render: shell
+
+  - type: input
+    id: python_version
+    attributes:
+      label: Python 版本
+      description: 您当前使用的 Python 版本号
+      placeholder: 如：0.3.0
+    validations:
+      required: true
+
+  - type: input
+    id: library_version
+    attributes:
+      label: 模块版本
+      description: 您当前使用的模块版本号
+      placeholder: 如：0.3.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: runtime_environment
+    attributes:
+      label: 运行环境
+      description: 程序运行环境
+      options:
+        - Windows
+        - MacOS
+        - Linux
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: revision
+    attributes:
+      label: 最后一步
+      description: 回顾您的回答
+      options:
+        - label: 我认为上述的描述已经足以详细，以允许开发人员能复现该问题。如果我的 Issue 没有按照上述的要求填写，可能会被 **无条件关闭**。
+          required: true
