@@ -3,6 +3,17 @@
 所有对该项目的重要更改都将记录在此文件中。
 
 ---
+
+## What's Changed
+
+### Bug 修复
+
+- RequestGroup 解析数据错误 - ([257f28f](https://github.com/luren-dc/QQMusicApi/commit/257f28f2a6c3b8b5353d04aad3b3c28b1b16b9f9)) by [@luren-dc](https://github.com/luren-dc) 
+
+### 功能更新
+
+- 使用 OrJson 加快 json 解析 - ([fe1c430](https://github.com/luren-dc/QQMusicApi/commit/fe1c430cf6b3423a83a980800e211893bd17030e)) by [@luren-dc](https://github.com/luren-dc) 
+
 ## [[0.3.0](https://github.com/luren-dc/QQMusicApi/compare/v0.2.2..v0.3.0)] - 2025-02-23
 
 ### Bug 修复
