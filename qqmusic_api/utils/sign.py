@@ -1,7 +1,8 @@
 """QQ音乐 sign"""
 
 import base64
-import json
+
+import orjson as json
 
 from .common import calc_md5
 
@@ -56,7 +57,7 @@ def sign(request: dict) -> str:
     Returns:
         签名结果
     """
-    md5_str = calc_md5(json.dumps(request, ensure_ascii=False, separators=(",", ":"))).upper().encode("utf-8")
+    md5_str = calc_md5(json.dumps(request)).upper().encode("utf-8")
 
     h = _head(md5_str)
     e = _tail(md5_str)

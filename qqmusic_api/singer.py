@@ -63,21 +63,46 @@ class TabType(Enum):
         self.tab_name = tab_name
 
 
-# 动态生成 A-Z 的枚举值
-letters = {chr(i): idx for idx, i in enumerate(range(ord('A'), ord('Z') + 1), start=1)}
-letters.update({"ALL": -100, "HASH": 27})
-# 创建枚举类 IndexType
-IndexType = Enum('IndexType', letters)
+class IndexType(Enum):
+    """首字母索引枚举"""
+
+    A = 1
+    B = 2
+    C = 3
+    D = 4
+    E = 5
+    F = 6
+    G = 7
+    H = 8
+    I = 9  # noqa: E741
+    J = 10
+    K = 11
+    L = 12
+    M = 13
+    N = 14
+    O = 15  # noqa: E741
+    P = 16
+    Q = 17
+    R = 18
+    S = 19
+    T = 20
+    U = 21
+    V = 22
+    W = 23
+    X = 24
+    Y = 25
+    Z = 26
+    ALL = -100
+    HASH = 27
 
 
 def validate_int_enum(value: int | Enum, enum_type: type[Enum]) -> int:
     """确保传入的值符合指定的枚举类型"""
     if isinstance(value, enum_type):
-        return value.value  # 如果是枚举成员，返回对应的整数值
-    elif value in {item.value for item in enum_type}:
-        return value  # 如果是合法整数值，直接返回
-    else:
-        raise ValueError(f"Invalid value: {value} for {enum_type.__name__}")
+        return value.value  # 如果是枚举成员,返回对应的整数值
+    if value in {item.value for item in enum_type}:
+        return cast(int, value)  # 如果是合法整数值,直接返回
+    raise ValueError(f"Invalid value: {value} for {enum_type.__name__}")
 
 
 @api_request("music.musichallSinger.SingerList", "GetSingerList")
@@ -93,7 +118,6 @@ async def get_singer_list(
         sex: 性别
         genre: 风格
     """
-
     area = validate_int_enum(area, AreaType)
     sex = validate_int_enum(sex, SexType)
     genre = validate_int_enum(genre, GenreType)
@@ -128,7 +152,6 @@ async def get_singer_list_index_raw(
         sin: 跳过数量
         cur_page: 当前页
     """
-
     area = validate_int_enum(area, AreaType)
     sex = validate_int_enum(sex, SexType)
     genre = validate_int_enum(genre, GenreType)
@@ -155,17 +178,13 @@ async def get_singer_list_index(
     sin: int = 0,
     cur_page: int = 1,
 ):
-    """获取自定义页歌手列表
-    """
-
+    """获取自定义页歌手列表"""
     area = validate_int_enum(area, AreaType)
     sex = validate_int_enum(sex, SexType)
     genre = validate_int_enum(genre, GenreType)
     index = validate_int_enum(index, IndexType)
 
-    data = await get_singer_list_index_raw(
-        area = area, sex = sex, genre = genre, index = index, sin = sin, cur_page = cur_page
-    )
+    data = await get_singer_list_index_raw(area=area, sex=sex, genre=genre, index=index, sin=sin, cur_page=cur_page)
 
     return cast(list[dict[str, Any]], data["singerlist"])
 
@@ -176,30 +195,24 @@ async def get_singer_list_index_all(
     genre: int | GenreType = GenreType.ALL,
     index: int | IndexType = IndexType.ALL,
 ):
-    """获取所有歌手列表
-    """
-
+    """获取所有歌手列表"""
     area = validate_int_enum(area, AreaType)
     sex = validate_int_enum(sex, SexType)
     genre = validate_int_enum(genre, GenreType)
     index = validate_int_enum(index, IndexType)
 
-    data = await get_singer_list_index_raw(
-        area = area, sex = sex, genre = genre, index = index, sin = 0, cur_page = 1
-    )
+    data = await get_singer_list_index_raw(area=area, sex=sex, genre=genre, index=index, sin=0, cur_page=1)
 
     singer_list = data["singerlist"]
     total = data["total"]
     if total <= 80:
         return cast(list[dict[str, Any]], singer_list)
 
-    # 每页80个歌手，向下取整
+    # 每页80个歌手,向下取整
     pages = total // 80
     sin = 80
     for page in range(2, pages + 2):
-        data = await get_singer_list_index_raw(
-            area = area, sex = sex, genre = genre, index = index, sin = sin, cur_page = page
-        )
+        data = await get_singer_list_index_raw(area=area, sex=sex, genre=genre, index=index, sin=sin, cur_page=page)
         singer_list.extend(data["singerlist"])
         sin += 80
 

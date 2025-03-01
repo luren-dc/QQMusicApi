@@ -1,9 +1,10 @@
 """凭据类,用于请求验证"""
 
-import json
 import sys
 from dataclasses import asdict, dataclass, field
 from typing import Any
+
+import orjson as json
 
 if sys.version_info >= (3, 11):
     from typing import Self
@@ -102,7 +103,7 @@ class Credential:
         """获取凭据 JSON 字符串"""
         data = self.as_dict()
         data.update(data.pop("extra_fields"))
-        return json.dumps(data, indent=4, ensure_ascii=False)
+        return json.dumps(data).decode()
 
     @classmethod
     def from_cookies_dict(cls, cookies: dict[str, Any]) -> Self:

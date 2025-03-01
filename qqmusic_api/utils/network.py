@@ -1,6 +1,5 @@
 """网络请求"""
 
-import json
 import logging
 from abc import ABC, abstractmethod
 from collections import defaultdict
@@ -8,6 +7,7 @@ from collections.abc import Callable, Coroutine
 from typing import Any, ClassVar, Generic, ParamSpec, TypedDict, TypeVar, cast
 
 import httpx
+import orjson as json
 from typing_extensions import override
 
 from ..exceptions import CredentialExpiredError, ResponseCodeError, SignInvalidError
@@ -246,7 +246,7 @@ class ApiRequest(BaseRequest, Generic[_P, _R]):
             params.pop(key, None)
         if self.credential:
             params["credential"] = f"{self.credential.musicid}{self.credential.musickey}"
-        sorted_params = json.dumps(params, sort_keys=True, ensure_ascii=False)
+        sorted_params = json.dumps(params, option=json.OPT_SORT_KEYS)
         return calc_md5(sorted_params)
 
     @override
@@ -255,7 +255,7 @@ class ApiRequest(BaseRequest, Generic[_P, _R]):
         if not resp.content:
             return {}
         try:
-            data = resp.json()
+            data = json.loads(resp.content)
         except json.JSONDecodeError:
             return {"data": resp.text}
         req_data = data.get(f"{self.module}.{self.method}", {})
@@ -358,7 +358,7 @@ class RequestGroup(BaseRequest):
             if not resp.content:
                 return []
 
-            res_data = resp.json()
+            res_data = json.loads(resp.content)
 
             for req_item in self._requests:
                 req = req_item["request"]

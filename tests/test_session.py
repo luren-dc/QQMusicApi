@@ -41,7 +41,7 @@ def test_same_thread_different_loops():
 
     async def use_session(session):
         assert global_session == session
-        await session.get("https://baidu.com")
+        await session.get("https://m.baidu.com/")
 
     loop = asyncio.new_event_loop()
     try:
