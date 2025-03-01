@@ -358,11 +358,11 @@ class RequestGroup(BaseRequest):
             if not resp.content:
                 return []
 
-            data = resp.json()
+            res_data = resp.json()
 
             for req_item in self._requests:
                 req = req_item["request"]
-                req_data = data.get(req_item["key"], {})
+                req_data = res_data.get(req_item["key"], {})
                 req._validate_response(req_data)
                 if req_item["processor"]:
                     data = req_item["processor"](req_data.get("data", req_data))
