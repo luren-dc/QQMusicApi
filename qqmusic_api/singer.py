@@ -265,6 +265,17 @@ async def get_desc(mids: list[str]):
     return {"singer_mids": mids, "groups": 1, "wikis": 1}, lambda data: cast(list[dict[str, Any]], data["singer_list"])
 
 
+@api_request("music.SimilarSingerSvr", "GetSimilarSingerList")
+async def get_similar(mid: str, number: int = 10):
+    """获取类似歌手列表
+
+    Args:
+        mid: 歌手 mid
+        number: 类似歌手数量
+    """
+    return {"singerMid": mid, "number": number}, lambda data: cast(list[dict[str, Any]], data["singerlist"])
+
+
 async def get_songs(
     mid: str,
     tab_type: Literal[

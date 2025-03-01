@@ -30,5 +30,9 @@ async def test_get_desc():
     assert await singer.get_desc(mids=["0025NhlN2yWrP4"])
 
 
+async def test_get_similar():
+    assert await singer.get_similar(mid="003zdDsO1e1ZXu")
+
+
 async def test_get_song():
     assert await singer.get_songs(mid="0025NhlN2yWrP4")
