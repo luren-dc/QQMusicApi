@@ -111,7 +111,7 @@ async def get_singer_list(
     sex: int | SexType = SexType.ALL,
     genre: int | GenreType = GenreType.ALL,
 ):
-    """获取热门歌手列表
+    """获取歌手列表
 
     Args:
         area: 地区
