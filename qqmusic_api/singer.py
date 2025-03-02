@@ -427,3 +427,59 @@ async def get_album_list_all(mid: str):
         albums.extend(res.get("albumList", []))
 
     return cast(list[dict[str, Any]], albums)
+
+
+@api_request("MvService.MvInfoProServer", "GetSingerMvList")
+async def get_mv_raw(mid: str, number: int = 10, begin: int = 0):
+    """获取歌手mv原始数据
+
+    Args:
+        mid: 歌手 mid
+        number: 每次获取数量,每次最大100
+        begin: 从第几个开始
+    """
+    return {
+        "singermid": mid,
+        "order": 1,
+        "count": number,
+        "start": begin,
+    }, lambda data: cast(
+        dict[str, Any],
+        data,
+    )
+
+
+async def get_mv_list(mid: str, number: int = 10, begin: int = 0):
+    """获取歌手mv原始数据
+
+    Args:
+        mid: 歌手 mid
+        number: 每次获取数量,每次最大100
+        begin: 从第几个开始
+    """
+    data = await get_mv_raw(mid=mid, number=number, begin=begin)
+    return cast(list[dict[str, Any]], data["list"])
+
+
+async def get_mv_list_all(mid: str):
+    """获取歌手所有专辑列表
+
+    Args:
+        mid: 歌手 mid
+    """
+    response = await get_mv_raw(mid=mid, number=100, begin=0)
+
+    total = response["total"]
+    mvs = response["list"]
+    if total <= 100:
+        return cast(list[dict[str, Any]], mvs)
+
+    rg = RequestGroup()
+    for num in range(100, total, 100):
+        rg.add_request(get_mv_raw, mid=mid, number=100, begin=num)
+
+    response = await rg.execute()
+    for res in response:
+        mvs.extend(res.get("list", []))
+
+    return cast(list[dict[str, Any]], mvs)
