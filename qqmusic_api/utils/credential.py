@@ -2,6 +2,7 @@
 
 import sys
 from dataclasses import asdict, dataclass, field
+from time import time
 from typing import Any
 
 import orjson as json
@@ -88,6 +89,12 @@ class Credential:
 
     async def is_expired(self) -> bool:
         """判断 credential 是否过期"""
+        if "musickeyCreateTime" in self.extra_fields and "keyExpiresIn" in self.extra_fields:
+            expired_time_stamp = self.extra_fields["musickeyCreateTime"] + self.extra_fields["keyExpiresIn"]
+            if expired_time_stamp >= time():
+                return True
+            return False
+
         from ..login import check_expired
 
         return await check_expired(self)
