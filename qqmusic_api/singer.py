@@ -134,7 +134,7 @@ async def get_singer_list(
 
 
 @api_request("music.musichallSinger.SingerList", "GetSingerListIndex")
-async def get_singer_list_index_raw(
+async def get_singer_list_index(
     area: int | AreaType = AreaType.ALL,
     sex: int | SexType = SexType.ALL,
     genre: int | GenreType = GenreType.ALL,
@@ -170,34 +170,6 @@ async def get_singer_list_index_raw(
     )
 
 
-async def get_singer_list_index(
-    area: int | AreaType = AreaType.ALL,
-    sex: int | SexType = SexType.ALL,
-    genre: int | GenreType = GenreType.ALL,
-    index: int | IndexType = IndexType.ALL,
-    sin: int = 0,
-    cur_page: int = 1,
-):
-    """获取自定义页歌手列表
-
-    Args:
-        area: 地区
-        sex: 性别
-        genre: 风格
-        index: 索引
-        sin: 跳过数量
-        cur_page: 当前页
-    """
-    area = validate_int_enum(area, AreaType)
-    sex = validate_int_enum(sex, SexType)
-    genre = validate_int_enum(genre, GenreType)
-    index = validate_int_enum(index, IndexType)
-
-    data = await get_singer_list_index_raw(area=area, sex=sex, genre=genre, index=index, sin=sin, cur_page=cur_page)
-
-    return cast(list[dict[str, Any]], data["singerlist"])
-
-
 async def get_singer_list_index_all(
     area: int | AreaType = AreaType.ALL,
     sex: int | SexType = SexType.ALL,
@@ -217,7 +189,7 @@ async def get_singer_list_index_all(
     genre = validate_int_enum(genre, GenreType)
     index = validate_int_enum(index, IndexType)
 
-    data = await get_singer_list_index_raw(area=area, sex=sex, genre=genre, index=index, sin=0, cur_page=1)
+    data = await get_singer_list_index(area=area, sex=sex, genre=genre, index=index, sin=0, cur_page=1)
 
     singer_list = data["singerlist"]
     total = data["total"]
@@ -227,11 +199,13 @@ async def get_singer_list_index_all(
     # 每页80个歌手,向下取整
     pages = total // 80
     sin = 80
+    rg = RequestGroup()
     for page in range(2, pages + 2):
-        data = await get_singer_list_index_raw(area=area, sex=sex, genre=genre, index=index, sin=sin, cur_page=page)
-        singer_list.extend(data["singerlist"])
+        rg.add_request(get_singer_list_index, area=area, sex=sex, genre=genre, index=index, sin=sin, cur_page=page)
         sin += 80
 
+    for data in await rg.execute():
+        singer_list.extend(data["singerlist"])
     return cast(list[dict[str, Any]], singer_list)
 
 
