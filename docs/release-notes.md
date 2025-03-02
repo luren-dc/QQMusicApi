@@ -3,12 +3,25 @@
 所有对该项目的重要更改都将记录在此文件中。
 
 ---
+
+## What's Changed
+
+### 文档更新
+
+- 修改 changelog 生成规则 - ([da3e829](https://github.com/luren-dc/QQMusicApi/commit/da3e829f5d1934ceb09bf6c97c84250f6bede07e)) by [@luren-dc](https://github.com/luren-dc) 
+
+## 贡献者
+* @luren-dc
+* @github-actions[bot]
 ## [[0.3.2](https://github.com/luren-dc/QQMusicApi/compare/v0.3.1..v0.3.2)] - 2025-03-02
 
 ### Bug 修复
 
 - comm 参数未合并 - ([d8cac55](https://github.com/luren-dc/QQMusicApi/commit/d8cac55c1d1a27d0f08ed9027139265cd97e8626)) by [@luren-dc](https://github.com/luren-dc) 
 
+## 贡献者
+* @github-actions[bot]
+* @luren-dc
 ## [[0.3.1](https://github.com/luren-dc/QQMusicApi/compare/v0.3.0..v0.3.1)] - 2025-03-02
 
 ### Bug 修复
@@ -34,6 +47,11 @@
 - 补充代理配置 - ([9977ec9](https://github.com/luren-dc/QQMusicApi/commit/9977ec960418e108880cbdbe54dd6cebc25df36b)) by [@luren-dc](https://github.com/luren-dc) 
 - 更新文档 - ([c4312ae](https://github.com/luren-dc/QQMusicApi/commit/c4312ae1a8d0045442fb8e91bd9d0109429e59e1)) by [@luren-dc](https://github.com/luren-dc) 
 
+## 贡献者
+* @luren-dc
+* @github-actions[bot]
+* @renovate[bot] [#132](https://github.com/luren-dc/QQMusicApi/pull/132)
+* @liuhangbin [#140](https://github.com/luren-dc/QQMusicApi/pull/140)
 ## [[0.3.0](https://github.com/luren-dc/QQMusicApi/compare/v0.2.2..v0.3.0)] - 2025-02-23
 
 ### Bug 修复
@@ -62,15 +80,21 @@
 
 - API 编写指南 - ([dff5819](https://github.com/luren-dc/QQMusicApi/commit/dff58197c329ff2e519233d0acb68b7e60b32011)) by [@luren-dc](https://github.com/luren-dc) 
 
-## New Contributors
-* @liuhangbin made their first contribution in [#135](https://github.com/luren-dc/QQMusicApi/pull/135)
-* @liguobao made their first contribution in [#124](https://github.com/luren-dc/QQMusicApi/pull/124)
+## 贡献者
+* @luren-dc
+* @github-actions[bot]
+* @liuhangbin [#135](https://github.com/luren-dc/QQMusicApi/pull/135)
+* @liguobao [#124](https://github.com/luren-dc/QQMusicApi/pull/124)
+* @renovate[bot] [#118](https://github.com/luren-dc/QQMusicApi/pull/118)
 ## [[0.2.2](https://github.com/luren-dc/QQMusicApi/compare/v0.2.1..v0.2.2)] - 2025-01-25
 
 ### Bug 修复
 
 - 逐字歌词丢失换行符 - ([6a5072e](https://github.com/luren-dc/QQMusicApi/commit/6a5072e5e424ce79635bbf937032256494f8172c)) by [@luren-dc](https://github.com/luren-dc) 
 
+## 贡献者
+* @github-actions[bot]
+* @luren-dc
 ## [[0.2.1](https://github.com/luren-dc/QQMusicApi/compare/v0.2.0..v0.2.1)] - 2025-01-04
 
 ### Bug 修复
@@ -85,6 +109,10 @@
 
 - 修改字体链接 - ([9bd6ea2](https://github.com/luren-dc/QQMusicApi/commit/9bd6ea2b97b648e5306de3eb889012b1774aa945)) by [@luren-dc](https://github.com/luren-dc) 
 
+## 贡献者
+* @luren-dc
+* @github-actions[bot]
+* @renovate[bot] [#99](https://github.com/luren-dc/QQMusicApi/pull/99)
 ## [[0.2.0](https://github.com/luren-dc/QQMusicApi/compare/v0.1.11..v0.2.0)] - 2024-12-28
 
 ### Bug 修复
@@ -111,14 +139,19 @@
 - 从 PDM 迁移到 UV  - ([804c992](https://github.com/luren-dc/QQMusicApi/commit/804c992ebc1573fe1520846b9a7c90f41b83c144)) by [@luren-dc](https://github.com/luren-dc)  in [#78](https://github.com/luren-dc/QQMusicApi/pull/78)
 - Update pdm.lock  - ([e977b5b](https://github.com/luren-dc/QQMusicApi/commit/e977b5b4765a731700470486438b364c889526f9)) by [@github-actions[bot]](https://github.com/github-actions[bot])  in [#76](https://github.com/luren-dc/QQMusicApi/pull/76)
 
-## New Contributors
-* @renovate[bot] made their first contribution in [#91](https://github.com/luren-dc/QQMusicApi/pull/91)
+## 贡献者
+* @luren-dc
+* @github-actions[bot]
+* @renovate[bot] [#91](https://github.com/luren-dc/QQMusicApi/pull/91)
 ## [[0.1.11](https://github.com/luren-dc/QQMusicApi/compare/v0.1.10..v0.1.11)] - 2024-11-10
 
 ### Bug 修复
 
 - 单次获取歌曲链接过多报错 - ([e366f6d](https://github.com/luren-dc/QQMusicApi/commit/e366f6d842abe94be264bc3e9d62b663cb9afdcc)) by [@luren-dc](https://github.com/luren-dc) 
 
+## 贡献者
+* @luren-dc
+* @github-actions[bot]
 ## [[0.1.10](https://github.com/luren-dc/QQMusicApi/compare/v0.1.9..v0.1.10)] - 2024-11-09
 
 ### 功能更新
@@ -129,6 +162,9 @@
 
 - Update pdm.lock  - ([299299b](https://github.com/luren-dc/QQMusicApi/commit/299299b907ccdf3f5b9ac7052bd207e45bf24c0a)) by [@github-actions[bot]](https://github.com/github-actions[bot])  in [#74](https://github.com/luren-dc/QQMusicApi/pull/74)
 
+## 贡献者
+* @luren-dc
+* @github-actions[bot] [#74](https://github.com/luren-dc/QQMusicApi/pull/74)
 ## [[0.1.9](https://github.com/luren-dc/QQMusicApi/compare/v0.1.8..v0.1.9)] - 2024-10-26
 
 ### Bug 修复
@@ -154,8 +190,9 @@
 
 - 更新依赖版本 - ([1a42f97](https://github.com/luren-dc/QQMusicApi/commit/1a42f9707939ec86f0d0544ef771875018589782)) by [@luren-dc](https://github.com/luren-dc) 
 
-## New Contributors
-* @github-actions[bot] made their first contribution
+## 贡献者
+* @luren-dc
+* @github-actions[bot]
 ## [[0.1.8](https://github.com/luren-dc/QQMusicApi/compare/v0.1.7..v0.1.8)] - 2024-10-05
 
 ### 功能更新
@@ -170,6 +207,8 @@
 
 - 重构 ApiException  - ([11298e9](https://github.com/luren-dc/QQMusicApi/commit/11298e9c3f225b280ad654ab0b63d4c7455dc895)) by [@luren-dc](https://github.com/luren-dc)  in [#64](https://github.com/luren-dc/QQMusicApi/pull/64)
 
+## 贡献者
+* @luren-dc
 ## [[0.1.7](https://github.com/luren-dc/QQMusicApi/compare/v0.1.6..v0.1.7)] - 2024-09-15
 
 ### 功能更新
@@ -182,6 +221,8 @@
 
 - 简化贡献文档  - ([3bae431](https://github.com/luren-dc/QQMusicApi/commit/3bae4311368f557d3f83e1b34a9efbe84c43b046)) by [@luren-dc](https://github.com/luren-dc)  in [#54](https://github.com/luren-dc/QQMusicApi/pull/54)
 
+## 贡献者
+* @luren-dc [#57](https://github.com/luren-dc/QQMusicApi/pull/57)
 ## [[0.1.6](https://github.com/luren-dc/QQMusicApi/compare/v0.1.5..v0.1.6)] - 2024-08-25
 
 ### Bug 修复
@@ -201,6 +242,8 @@
 - 优化贡献文档 - ([68c23c3](https://github.com/luren-dc/QQMusicApi/commit/68c23c32dd98596f67bdc91aeea12892680aa49c)) by [@luren-dc](https://github.com/luren-dc) 
 - 更新贡献指南 - ([d04053b](https://github.com/luren-dc/QQMusicApi/commit/d04053b13d1776054429f5477a6be3aadeef1d16)) by [@luren-dc](https://github.com/luren-dc) 
 
+## 贡献者
+* @luren-dc [#48](https://github.com/luren-dc/QQMusicApi/pull/48)
 ## [[0.1.5](https://github.com/luren-dc/QQMusicApi/compare/v0.1.4..v0.1.5)] - 2024-08-03
 
 ### Bug 修复
@@ -217,12 +260,16 @@
 
 - 更新 readme - ([a454e21](https://github.com/luren-dc/QQMusicApi/commit/a454e21183277e0ebf7420cbee76bd549c73c7f0)) by [@luren-dc](https://github.com/luren-dc) 
 
+## 贡献者
+* @luren-dc
 ## [[0.1.4](https://github.com/luren-dc/QQMusicApi/compare/v0.1.3..v0.1.4)] - 2024-07-28
 
 ### 构建配置
 
 - 更新 pyproject.toml - ([aad543b](https://github.com/luren-dc/QQMusicApi/commit/aad543b58fe73f46d0eaf6f552dd9a82ad7ca0c5)) by [@luren-dc](https://github.com/luren-dc) 
 
+## 贡献者
+* @luren-dc [#41](https://github.com/luren-dc/QQMusicApi/pull/41)
 ## [[0.1.3](https://github.com/luren-dc/QQMusicApi/compare/v0.1.2..v0.1.3)] - 2024-07-27
 
 ### 文档更新
@@ -233,6 +280,8 @@
 
 - 迁移依赖管理工具为 PDM  - ([9262b5c](https://github.com/luren-dc/QQMusicApi/commit/9262b5c65ec757329fd729308da28bf47e059951)) by [@luren-dc](https://github.com/luren-dc)  in [#35](https://github.com/luren-dc/QQMusicApi/pull/35)
 
+## 贡献者
+* @luren-dc
 ## [[0.1.2](https://github.com/luren-dc/QQMusicApi/compare/v0.1.1..v0.1.2)] - 2024-07-21
 
 ### Bug 修复
@@ -262,6 +311,8 @@
 
 - 移除不必要的开发依赖 - ([3d1dd29](https://github.com/luren-dc/QQMusicApi/commit/3d1dd292e87dd17c5be4e95d5d50ca23b60e40b7)) by [@luren-dc](https://github.com/luren-dc) 
 
+## 贡献者
+* @luren-dc [#34](https://github.com/luren-dc/QQMusicApi/pull/34)
 ## [[0.1.1](https://github.com/luren-dc/QQMusicApi/compare/v0.1.0..v0.1.1)] - 2024-07-14
 
 ### Bug 修复
@@ -289,6 +340,8 @@
 - 添加 API 文档 - ([b2d2a8e](https://github.com/luren-dc/QQMusicApi/commit/b2d2a8eecd2a763ca27d94aa222526b7d08c2a8b)) by [@luren-dc](https://github.com/luren-dc) 
 - 更新 TODO - ([5b72d8d](https://github.com/luren-dc/QQMusicApi/commit/5b72d8da90401644e0224b9c1d9a6dd08eec0c57)) by [@luren-dc](https://github.com/luren-dc) 
 
+## 贡献者
+* @luren-dc [#21](https://github.com/luren-dc/QQMusicApi/pull/21)
 ## [0.1.0] - 2024-06-07
 
 ### Init
@@ -313,6 +366,6 @@
 
 - update pyproject.toml - ([6320fdb](https://github.com/luren-dc/QQMusicApi/commit/6320fdbf491f926eb9ce673c5349b8638d64ee75)) by [@luren-dc](https://github.com/luren-dc) 
 
-## New Contributors
-* @luren-dc made their first contribution
+## 贡献者
+* @luren-dc
 <!-- generated by git-cliff -->
