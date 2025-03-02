@@ -8,6 +8,7 @@
 
 ### Bug 修复
 
+- `RequsetGroup` 请求数量过多报错 - ([ff2c65b](https://github.com/luren-dc/QQMusicApi/commit/ff2c65b3b5d40d4d208b9d03edd38b580fc3ec7a)) by [@luren-dc](https://github.com/luren-dc) 
 - RequestGroup 解析数据错误 - ([257f28f](https://github.com/luren-dc/QQMusicApi/commit/257f28f2a6c3b8b5353d04aad3b3c28b1b16b9f9)) by [@luren-dc](https://github.com/luren-dc) 
 
 ### 功能更新
