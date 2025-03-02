@@ -4,7 +4,7 @@ from . import album, login, lyric, mv, search, singer, song, songlist, top, user
 from .utils.credential import Credential
 from .utils.session import Session, get_session, set_session
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 logger = logging.getLogger("qqmusicapi")
 
