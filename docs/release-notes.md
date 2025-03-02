@@ -15,6 +15,8 @@
 ### 功能更新
 
 - **(singer)** 添加获取全部歌曲，专辑，MV调用  - ([fe48011](https://github.com/luren-dc/QQMusicApi/commit/fe4801156d3938b84ada827a1e253b00cc9555d9)) by [@liuhangbin](https://github.com/liuhangbin)  in [#140](https://github.com/luren-dc/QQMusicApi/pull/140)
+- 默认开启 Http2 - ([b6ea59e](https://github.com/luren-dc/QQMusicApi/commit/b6ea59ec71ce669fe6f47e7c45017d0d0eb13d4d)) by [@luren-dc](https://github.com/luren-dc) 
+- 手动清除API缓存 - ([4ad301f](https://github.com/luren-dc/QQMusicApi/commit/4ad301f5e4f6d079cc15b87e84fdc58161461f51)) by [@luren-dc](https://github.com/luren-dc) 
 - 优先通过 Credential 字段判断是否过期 - ([e6dd11d](https://github.com/luren-dc/QQMusicApi/commit/e6dd11d5200950b51feb73b855edd5942251fdb8)) by [@luren-dc](https://github.com/luren-dc) 
 - 使用 OrJson 加快 json 解析 - ([fe1c430](https://github.com/luren-dc/QQMusicApi/commit/fe1c430cf6b3423a83a980800e211893bd17030e)) by [@luren-dc](https://github.com/luren-dc) 
 
