@@ -19,6 +19,10 @@
 
 - **(singer)** 优化请求性能 - ([4245dd9](https://github.com/luren-dc/QQMusicApi/commit/4245dd928843b0e89c6c7b15e4b399376eeb59f2)) by [@luren-dc](https://github.com/luren-dc) 
 
+### 文档更新
+
+- 更新文档 - ([c4312ae](https://github.com/luren-dc/QQMusicApi/commit/c4312ae1a8d0045442fb8e91bd9d0109429e59e1)) by [@luren-dc](https://github.com/luren-dc) 
+
 ## [[0.3.0](https://github.com/luren-dc/QQMusicApi/compare/v0.2.2..v0.3.0)] - 2025-02-23
 
 ### Bug 修复
