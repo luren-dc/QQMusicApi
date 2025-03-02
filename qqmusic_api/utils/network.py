@@ -110,7 +110,7 @@ class BaseRequest(ABC):
         self._common = value
 
     def _build_common_params(self, credential: Credential) -> dict[str, Any]:
-        config = (self.session).api_config
+        config = self.session.api_config
         common = {
             "cv": config["version_code"],
             "v": config["version_code"],
@@ -223,8 +223,7 @@ class ApiRequest(BaseRequest, Generic[_P, _R]):
 
     @override
     def build_request_data(self) -> dict[str, Any]:
-        common = self._build_common_params(self.credential)
-        return {"comm": common, f"{self.module}.{self.method}": self.data}
+        return {"comm": self.common, f"{self.module}.{self.method}": self.data}
 
     @property
     def data(self) -> dict[str, Any]:
@@ -388,9 +387,8 @@ class RequestGroup(BaseRequest):
     @override
     def build_request_data(self):
         """构建请求"""
-        common = self._build_common_params(self.credential)
         merged_data = {req["key"]: req["request"].data for req in self._requests}
-        data = {"comm": common}
+        data = {"comm": self.common}
         data.update(merged_data)
         return data
 
