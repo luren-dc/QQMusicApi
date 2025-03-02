@@ -8,6 +8,7 @@
 
 ### Bug 修复
 
+- Cookies 导入为 Credential 时错误 - ([30e40e3](https://github.com/luren-dc/QQMusicApi/commit/30e40e3ece7ea61117d59bdef73d857451f5e495)) by [@luren-dc](https://github.com/luren-dc) 
 - `RequsetGroup` 请求数量过多报错 - ([ff2c65b](https://github.com/luren-dc/QQMusicApi/commit/ff2c65b3b5d40d4d208b9d03edd38b580fc3ec7a)) by [@luren-dc](https://github.com/luren-dc) 
 - RequestGroup 解析数据错误 - ([257f28f](https://github.com/luren-dc/QQMusicApi/commit/257f28f2a6c3b8b5353d04aad3b3c28b1b16b9f9)) by [@luren-dc](https://github.com/luren-dc) 
 
