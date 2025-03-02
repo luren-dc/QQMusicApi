@@ -3,7 +3,7 @@
 from enum import Enum
 from typing import Any, Literal, cast
 
-from .utils.network import api_request
+from .utils.network import RequestGroup, api_request
 
 
 class AreaType(Enum):
@@ -178,7 +178,16 @@ async def get_singer_list_index(
     sin: int = 0,
     cur_page: int = 1,
 ):
-    """获取自定义页歌手列表"""
+    """获取自定义页歌手列表
+
+    Args:
+        area: 地区
+        sex: 性别
+        genre: 风格
+        index: 索引
+        sin: 跳过数量
+        cur_page: 当前页
+    """
     area = validate_int_enum(area, AreaType)
     sex = validate_int_enum(sex, SexType)
     genre = validate_int_enum(genre, GenreType)
@@ -195,7 +204,14 @@ async def get_singer_list_index_all(
     genre: int | GenreType = GenreType.ALL,
     index: int | IndexType = IndexType.ALL,
 ):
-    """获取所有歌手列表"""
+    """获取所有歌手列表
+
+    Args:
+        area: 地区
+        sex: 性别
+        genre: 风格
+        index: 索引
+    """
     area = validate_int_enum(area, AreaType)
     sex = validate_int_enum(sex, SexType)
     genre = validate_int_enum(genre, GenreType)
@@ -265,6 +281,17 @@ async def get_desc(mids: list[str]):
     return {"singer_mids": mids, "groups": 1, "wikis": 1}, lambda data: cast(list[dict[str, Any]], data["singer_list"])
 
 
+@api_request("music.SimilarSingerSvr", "GetSimilarSingerList")
+async def get_similar(mid: str, number: int = 10):
+    """获取类似歌手列表
+
+    Args:
+        mid: 歌手 mid
+        number: 类似歌手数量
+    """
+    return {"singerMid": mid, "number": number}, lambda data: cast(list[dict[str, Any]], data["singerlist"])
+
+
 async def get_songs(
     mid: str,
     tab_type: Literal[
@@ -288,3 +315,135 @@ async def get_songs(
         num:  返回数量
     """
     return await get_tab_detail(mid, tab_type, page, num)
+
+
+@api_request("musichall.song_list_server", "GetSingerSongList")
+async def get_songs_list(mid: str, number: int = 10, begin: int = 0):
+    """获取歌手歌曲原始数据
+
+    Args:
+        mid: 歌手 mid
+        number: 每次获取数量,最大30
+        begin: 从第几个开始
+    """
+    return {
+        "singerMid": mid,
+        "order": 1,
+        "number": number,
+        "begin": begin,
+    }, lambda data: cast(
+        dict[str, Any],
+        data,
+    )
+
+
+async def get_songs_list_all(mid: str):
+    """获取歌手所有歌曲列表
+
+    Args:
+        mid: 歌手 mid
+    """
+    response = await get_songs_list(mid=mid, number=30, begin=0)
+
+    total = response["totalNum"]
+    songs = [song["songInfo"] for song in response["songList"]]
+    if total <= 30:
+        return cast(list[dict[str, Any]], songs)
+
+    rg = RequestGroup()
+    for num in range(30, total, 30):
+        rg.add_request(get_songs_list, mid=mid, number=30, begin=num)
+
+    response = await rg.execute()
+    for res in response:
+        songs.extend([song["songInfo"] for song in res["songList"]])
+
+    return cast(list[dict[str, Any]], songs)
+
+
+@api_request("music.musichallAlbum.AlbumListServer", "GetAlbumList")
+async def get_album_list(mid: str, number: int = 10, begin: int = 0):
+    """获取歌手专辑
+
+    Args:
+        mid: 歌手 mid
+        number: 每次获取数量,不足30个的时候直接全部返回
+        begin: 从第几个开始
+    """
+    return {
+        "singerMid": mid,
+        "order": 1,
+        "number": number,
+        "begin": begin,
+    }, lambda data: cast(
+        dict[str, Any],
+        data,
+    )
+
+
+async def get_album_list_all(mid: str):
+    """获取歌手所有专辑列表
+
+    Args:
+        mid: 歌手 mid
+    """
+    response = await get_album_list(mid=mid, number=30, begin=0)
+
+    total = response["total"]
+    albums = response["albumList"]
+    if total <= 30:
+        return cast(list[dict[str, Any]], albums)
+
+    rg = RequestGroup()
+    for num in range(30, total, 30):
+        rg.add_request(get_album_list, mid=mid, number=30, begin=num)
+
+    response = await rg.execute()
+    for res in response:
+        albums.extend(res["albumList"])
+
+    return cast(list[dict[str, Any]], albums)
+
+
+@api_request("MvService.MvInfoProServer", "GetSingerMvList")
+async def get_mv_list(mid: str, number: int = 10, begin: int = 0):
+    """获取歌手mv原始数据
+
+    Args:
+        mid: 歌手 mid
+        number: 每次获取数量,每次最大100
+        begin: 从第几个开始
+    """
+    return {
+        "singermid": mid,
+        "order": 1,
+        "count": number,
+        "start": begin,
+    }, lambda data: cast(
+        dict[str, Any],
+        data,
+    )
+
+
+async def get_mv_list_all(mid: str):
+    """获取歌手所有专辑列表
+
+    Args:
+        mid: 歌手 mid
+    """
+    response = await get_mv_list(mid=mid, number=100, begin=0)
+
+    total = response["total"]
+    mvs = response["list"]
+    if total <= 100:
+        return cast(list[dict[str, Any]], mvs)
+
+    rg = RequestGroup()
+    for num in range(100, total, 100):
+        rg.add_request(get_mv_list, mid=mid, number=100, begin=num)
+
+    response = await rg.execute()
+    for res in response:
+        mvs.extend(res["list"])
+
+    return cast(list[dict[str, Any]], mvs)
