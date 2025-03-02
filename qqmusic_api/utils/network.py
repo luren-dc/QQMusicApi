@@ -327,9 +327,11 @@ class RequestGroup(BaseRequest):
         self,
         common: dict[str, Any] | None = None,
         credential: Credential | None = None,
+        limit: int = 30,
     ):
         super().__init__(common, credential)
         self._requests: list[RequestItem] = []
+        self.limit = limit
         self._key_counter = defaultdict(int)
         self._results = []
 
@@ -403,7 +405,7 @@ class RequestGroup(BaseRequest):
                 remove_index.append(idx)
         self._requests = [req for idx, req in enumerate(self._requests) if idx not in remove_index]
 
-    async def execute(self) -> list[Any]:
+    async def _execute(self) -> list[Any]:
         """执行合并请求并返回各请求结果"""
         if not self._requests:
             return []
@@ -418,3 +420,33 @@ class RequestGroup(BaseRequest):
         resp = await self.request()
         await self._process_response(resp)
         return self._results
+
+    async def execute(self) -> list[Any]:
+        """执行合并请求"""
+        if not self._requests:
+            return []
+
+        # 未设置 limit 或请求数未超过 limit 时直接处理
+        if self.limit <= 0 or len(self._requests) <= self.limit:
+            return await self._execute()
+
+        # 分批次处理
+        batches = [self._requests[i : i + self.limit] for i in range(0, len(self._requests), self.limit)]
+        all_results = []
+
+        for batch in batches:
+            # 创建新 RequestGroup 处理当前批次
+            batch_group = RequestGroup(
+                common=self.common.copy(),
+                credential=self.credential,
+            )
+
+            # 添加当前批次的请求
+            for req_item in batch:
+                batch_group.add_request(req_item["request"], *req_item["args"], **req_item["kwargs"])
+
+            # 执行并收集结果
+            batch_results = await batch_group._execute()
+            all_results.extend(batch_results)
+
+        return all_results
