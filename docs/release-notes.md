@@ -12,6 +12,7 @@
 
 ### 功能更新
 
+- **(singer)** 添加获取全部歌曲，专辑，MV调用  - ([fe48011](https://github.com/luren-dc/QQMusicApi/commit/fe4801156d3938b84ada827a1e253b00cc9555d9)) by [@liuhangbin](https://github.com/liuhangbin)  in [#140](https://github.com/luren-dc/QQMusicApi/pull/140)
 - 使用 OrJson 加快 json 解析 - ([fe1c430](https://github.com/luren-dc/QQMusicApi/commit/fe1c430cf6b3423a83a980800e211893bd17030e)) by [@luren-dc](https://github.com/luren-dc) 
 
 ## [[0.3.0](https://github.com/luren-dc/QQMusicApi/compare/v0.2.2..v0.3.0)] - 2025-02-23
