@@ -3,7 +3,7 @@
         <img src="https://socialify.git.ci/luren-dc/QQMusicApi/image?description=1&font=Source%20Code%20Pro&language=1&logo=https%3A%2F%2Fy.qq.com%2Fmediastyle%2Fmod%2Fmobile%2Fimg%2Flogo.svg&name=1&pattern=Overlapping%20Hexagons&theme=Auto">
     </a>
     <a href="https://www.python.org">
-        <img src="https://img.shields.io/badge/Python-3.10|3.11|3.12-blue" alt="Python">
+        <img src="https://img.shields.io/badge/Python-3.10|3.11|3.12|3.13-blue" alt="Python">
     </a>
     <a href="https://github.com/luren-dc/QQMusicApi?tab=MIT-1-ov-file">
         <img src="https://img.shields.io/github/license/luren-dc/QQMusicApi" alt="GitHub license">
