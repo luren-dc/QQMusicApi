@@ -4,8 +4,9 @@ import contextvars
 from typing import TypedDict
 
 import httpx
+import orjson as json
 from aiocache import Cache
-from aiocache.serializers import JsonSerializer
+from aiocache.serializers import BaseSerializer
 
 from .credential import Credential
 from .qimei import get_qimei
@@ -19,6 +20,20 @@ class ApiConfig(TypedDict):
     enable_sign: bool
     endpoint: str
     enc_endpoint: str
+
+
+class ORJsonSerializer(BaseSerializer):
+    """Transform data to json string with json.dumps and json.loads to retrieve it back."""
+
+    def dumps(self, value):
+        """Serialize the received value using ``json.dumps``."""
+        return json.dumps(value).decode()
+
+    def loads(self, value):
+        """Deserialize value using ``json.loads``."""
+        if value is None:
+            return None
+        return json.loads(value)
 
 
 class Session(httpx.AsyncClient):
@@ -59,8 +74,14 @@ class Session(httpx.AsyncClient):
             enc_endpoint="https://u.y.qq.com/cgi-bin/musics.fcg",
         )
         self.enable_cache = enable_cache
-        self._cache = Cache(serializer=JsonSerializer(), ttl=cache_ttl)
+        self._cache = Cache(serializer=ORJsonSerializer(), ttl=cache_ttl)
         self.qimei = get_qimei(self.api_config["version"])["q36"]
+
+    async def clear_cache(self):
+        """清除API请求缓存"""
+        if not self.enable_cache:
+            return
+        await self._cache.clear()
 
     async def __aenter__(self) -> "Session":
         """进入 async with 上下文时调用"""
