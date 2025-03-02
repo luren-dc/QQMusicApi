@@ -103,8 +103,6 @@ class QRCodeLoginEvents(Enum):
                 return member
         return cls.OTHER
 
-    ""
-
 
 class PhoneLoginEvents(Enum):
     """手机登录状态

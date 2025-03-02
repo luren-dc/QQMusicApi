@@ -113,7 +113,7 @@ class Credential:
             refresh_token=cookies.pop("refresh_token", ""),
             access_token=cookies.pop("access_token", ""),
             expired_at=cookies.pop("expired_at", 0),
-            musicid=cookies.pop("musicid", 0),
+            musicid=int(cookies.pop("musicid", 0)),
             musickey=cookies.pop("musickey", ""),
             unionid=cookies.pop("unionid", ""),
             str_musicid=cookies.pop(
