@@ -47,11 +47,11 @@ async def test_get_songs_list_all():
 
 
 async def test_get_album_list():
-    assert await singer.get_album_list(mid="003zdDsO1e1ZXu")
+    assert await singer.get_album_list(mid="0025NhlN2yWrP4")
 
 
 async def test_get_album_list_all():
-    assert await singer.get_album_list_all(mid="003zdDsO1e1ZXu")
+    assert await singer.get_album_list_all(mid="0025NhlN2yWrP4")
 
 
 async def test_get_mv_list():
