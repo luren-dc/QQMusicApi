@@ -17,7 +17,7 @@ repos:
         args: [--autofix, --no-ensure-ascii, --no-sort-keys]
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
-        exclude: \.(html|svg)$
+        exclude: \.(html|svg|md)$
 
   - repo: https://github.com/commitizen-tools/commitizen
     rev: v4.2.2
