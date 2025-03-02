@@ -27,7 +27,7 @@ class ORJsonSerializer(BaseSerializer):
 
     def dumps(self, value):
         """Serialize the received value using ``json.dumps``."""
-        return json.dumps(value).decode()
+        return json.dumps(value, option=json.OPT_NON_STR_KEYS).decode()
 
     def loads(self, value):
         """Deserialize value using ``json.loads``."""
@@ -56,9 +56,10 @@ class Session(httpx.AsyncClient):
         enable_sign: bool = False,
         enable_cache: bool = True,
         cache_ttl: int = 120,
+        http2: bool = True,
         **kwargs,
     ) -> None:
-        super().__init__(**kwargs)
+        super().__init__(**kwargs, http2=http2)
         self.credential = credential
         self.headers.update(
             {
