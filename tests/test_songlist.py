@@ -12,3 +12,7 @@ async def test_get_detail():
         tag=True,
         userinfo=True,
     )
+
+
+async def test_get_songlist():
+    assert await songlist.get_songlist(songlist_id=9069454203)

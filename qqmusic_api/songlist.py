@@ -1,8 +1,8 @@
 """歌单相关 API"""
 
-from typing import Any
+from typing import Any, cast
 
-from .utils.network import api_request
+from .utils.network import RequestGroup, api_request
 
 
 @api_request("music.srfDissInfo.DissInfo", "CgiGetDiss")
@@ -47,3 +47,31 @@ async def get_detail(
         "orderlist": True,
         "onlysonglist": onlysong,
     }, _processsor
+
+
+async def get_songlist(
+    songlist_id: int,
+    dirid: int = 0,
+):
+    """获取歌单中所有歌曲列表
+
+    Args:
+        songlist_id: 歌单 ID
+        dirid: 歌单 dirid
+    """
+    response = await get_detail(songlist_id=songlist_id, dirid=dirid, onlysong=True)
+
+    total = response["total_song_num"]
+    songs = response["songlist"]
+    if total <= 100:
+        return cast(list[dict[str, Any]], songs)
+
+    rg = RequestGroup()
+    for p, num in enumerate(range(100, total, 100), start=2):
+        rg.add_request(get_detail, songlist_id=songlist_id, dirid=dirid, num=100, page=p, onlysong=True)
+
+    response = await rg.execute()
+    for res in response:
+        songs.extend(res["songlist"])
+
+    return cast(list[dict[str, Any]], songs)
