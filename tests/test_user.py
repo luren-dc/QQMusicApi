@@ -1,5 +1,6 @@
 import pytest
 
+from qqmusic_api import songlist
 from qqmusic_api.exceptions import CredentialExpiredError
 from qqmusic_api.user import (
     Credential,
@@ -68,3 +69,18 @@ class TestUserAPI:
         """测试获取好友列表"""
         with pytest.raises(CredentialExpiredError):
             assert await get_friend(page=1, num=10, credential=self.VALID_CREDENTIAL)
+
+    async def test_create_songlist(self):
+        """测试创建歌单"""
+        with pytest.raises(CredentialExpiredError):
+            result = await songlist.create(dirname="test", credential=self.VALID_CREDENTIAL)
+
+            if not result or "dirId" not in result or not result["dirId"]:
+                pytest.fail(f"创建歌单失败, result 无效: {result}")
+
+            dir_id = result["dirId"]
+            assert await songlist.add_songs(
+                dirid=dir_id, song_ids=[438910555, 9063002], credential=self.VALID_CREDENTIAL
+            )
+            assert await songlist.del_songs(dirid=dir_id, song_ids=[438910555], credential=self.VALID_CREDENTIAL)
+            assert await songlist.delete(dirid=dir_id, credential=self.VALID_CREDENTIAL)
