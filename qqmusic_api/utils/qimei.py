@@ -112,7 +112,7 @@ def random_payload_by_device(device: Device, version: str) -> dict:
         "packageId": "com.tencent.qqmusic",
         "deviceType": "Phone",
         "sdkName": "",
-        "reserved": json.dumps(reserved),
+        "reserved": json.dumps(reserved).decode(),
     }
 
 
@@ -158,7 +158,7 @@ def get_qimei(version: str) -> QimeiResult:
         device.qimei = data["q36"]
         save_device(device)
         return QimeiResult(q16=data["q16"], q36=data["q36"])
-    except Exception:
+    except httpx.HTTPError:
         if device.qimei:
             return QimeiResult(q16="", q36=device.qimei)
         logger.exception("获取 QIMEI 失败,使用默认 QIMEI")
