@@ -8,6 +8,7 @@
 
 ### Bug 修复
 
+- 修复`get_singer_list_index`返回为空报错 - ([f9993a9](https://github.com/luren-dc/QQMusicApi/commit/f9993a908f2dd1a56acbd6fce926049aa9a99b3b)) by [@luren-dc](https://github.com/luren-dc) 
 - Docker 运行出错 - ([47295db](https://github.com/luren-dc/QQMusicApi/commit/47295db3b1fd03b23c29ae750fc71c2ddf3e575b)) by [@luren-dc](https://github.com/luren-dc) 
 - 修复qimei请求失败 - ([0a781dd](https://github.com/luren-dc/QQMusicApi/commit/0a781dd8b6b76d6abc4bbd6fc6709676a525c667)) by [@luren-dc](https://github.com/luren-dc) 
 
@@ -16,8 +17,8 @@
 - 修改 changelog 生成规则 - ([da3e829](https://github.com/luren-dc/QQMusicApi/commit/da3e829f5d1934ceb09bf6c97c84250f6bede07e)) by [@luren-dc](https://github.com/luren-dc) 
 
 ## 贡献者
-* @github-actions[bot]
 * @luren-dc
+* @github-actions[bot]
 ## [[0.3.2](https://github.com/luren-dc/QQMusicApi/compare/v0.3.1..v0.3.2)] - 2025-03-02
 
 ### Bug 修复
