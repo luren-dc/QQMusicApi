@@ -15,15 +15,16 @@
 ### 功能更新
 
 - **(Songlist)** 添加歌单处理函数  - ([49eeafd](https://github.com/luren-dc/QQMusicApi/commit/49eeafdfff58451a010b949f61d7af0e8d72afd8)) by [@liuhangbin](https://github.com/liuhangbin)  in [#144](https://github.com/luren-dc/QQMusicApi/pull/144)
+- 优化返回注释 - ([0f5da78](https://github.com/luren-dc/QQMusicApi/commit/0f5da78aad5221fce49b249e988d2740b861e17c)) by [@luren-dc](https://github.com/luren-dc) 
 
 ### 文档更新
 
 - 修改 changelog 生成规则 - ([da3e829](https://github.com/luren-dc/QQMusicApi/commit/da3e829f5d1934ceb09bf6c97c84250f6bede07e)) by [@luren-dc](https://github.com/luren-dc) 
 
 ## 贡献者
+* @luren-dc
 * @github-actions[bot]
 * @liuhangbin [#144](https://github.com/luren-dc/QQMusicApi/pull/144)
-* @luren-dc
 ## [[0.3.2](https://github.com/luren-dc/QQMusicApi/compare/v0.3.1..v0.3.2)] - 2025-03-02
 
 ### Bug 修复
