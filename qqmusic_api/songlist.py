@@ -60,7 +60,7 @@ async def get_songlist(
         songlist_id: 歌单 ID
         dirid: 歌单 dirid
     """
-    response = await get_detail(songlist_id=songlist_id, dirid=dirid, onlysong=True)
+    response = await get_detail(songlist_id=songlist_id, dirid=dirid, num=100, onlysong=True)
 
     total = response["total_song_num"]
     songs = response["songlist"]
