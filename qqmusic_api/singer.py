@@ -3,7 +3,7 @@
 from enum import Enum
 from typing import Any, Literal, cast
 
-from .utils.network import RequestGroup, api_request
+from .utils.network import NO_PROCESSOR, RequestGroup, api_request
 
 
 class AreaType(Enum):
@@ -133,7 +133,7 @@ async def get_singer_list(
     )
 
 
-@api_request("music.musichallSinger.SingerList", "GetSingerListIndex")
+@api_request("music.musichallSinger.SingerList", "GetSingerListIndex", catch_error_code=[104500])
 async def get_singer_list_index(
     area: int | AreaType = AreaType.ALL,
     sex: int | SexType = SexType.ALL,
@@ -164,10 +164,7 @@ async def get_singer_list_index(
         "index": index,
         "sin": sin,
         "cur_page": cur_page,
-    }, lambda data: cast(
-        dict[str, Any],
-        data,
-    )
+    }, NO_PROCESSOR
 
 
 async def get_singer_list_index_all(
@@ -175,7 +172,7 @@ async def get_singer_list_index_all(
     sex: int | SexType = SexType.ALL,
     genre: int | GenreType = GenreType.ALL,
     index: int | IndexType = IndexType.ALL,
-):
+) -> list[dict[str, Any]]:
     """获取所有歌手列表
 
     Args:
@@ -206,7 +203,7 @@ async def get_singer_list_index_all(
 
     for data in await rg.execute():
         singer_list.extend(data["singerlist"])
-    return cast(list[dict[str, Any]], singer_list)
+    return singer_list
 
 
 @api_request("music.UnifiedHomepage.UnifiedHomepageSrv", "GetHomepageHeader")
@@ -216,7 +213,7 @@ async def get_info(mid: str):
     Args:
         mid: 歌手 mid
     """
-    return {"SingerMid": mid}, lambda data: data
+    return {"SingerMid": mid}, NO_PROCESSOR
 
 
 @api_request("music.UnifiedHomepage.UnifiedHomepageSrv", "GetHomepageTabDetail")
@@ -305,13 +302,10 @@ async def get_songs_list(mid: str, number: int = 10, begin: int = 0):
         "order": 1,
         "number": number,
         "begin": begin,
-    }, lambda data: cast(
-        dict[str, Any],
-        data,
-    )
+    }, NO_PROCESSOR
 
 
-async def get_songs_list_all(mid: str):
+async def get_songs_list_all(mid: str) -> list[dict[str, Any]]:
     """获取歌手所有歌曲列表
 
     Args:
@@ -332,7 +326,7 @@ async def get_songs_list_all(mid: str):
     for res in response:
         songs.extend([song["songInfo"] for song in res["songList"]])
 
-    return cast(list[dict[str, Any]], songs)
+    return songs
 
 
 @api_request("music.musichallAlbum.AlbumListServer", "GetAlbumList")
@@ -349,13 +343,10 @@ async def get_album_list(mid: str, number: int = 10, begin: int = 0):
         "order": 1,
         "number": number,
         "begin": begin,
-    }, lambda data: cast(
-        dict[str, Any],
-        data,
-    )
+    }, NO_PROCESSOR
 
 
-async def get_album_list_all(mid: str):
+async def get_album_list_all(mid: str) -> list[dict[str, Any]]:
     """获取歌手所有专辑列表
 
     Args:
@@ -376,7 +367,7 @@ async def get_album_list_all(mid: str):
     for res in response:
         albums.extend(res["albumList"])
 
-    return cast(list[dict[str, Any]], albums)
+    return albums
 
 
 @api_request("MvService.MvInfoProServer", "GetSingerMvList")
@@ -393,13 +384,10 @@ async def get_mv_list(mid: str, number: int = 10, begin: int = 0):
         "order": 1,
         "count": number,
         "start": begin,
-    }, lambda data: cast(
-        dict[str, Any],
-        data,
-    )
+    }, NO_PROCESSOR
 
 
-async def get_mv_list_all(mid: str):
+async def get_mv_list_all(mid: str) -> list[dict[str, Any]]:
     """获取歌手所有专辑列表
 
     Args:
@@ -420,4 +408,4 @@ async def get_mv_list_all(mid: str):
     for res in response:
         mvs.extend(res["list"])
 
-    return cast(list[dict[str, Any]], mvs)
+    return mvs

@@ -39,6 +39,7 @@ def api_request(
     cache_ttl: int | None = None,
     cacheable: bool = True,
     exclude_params: list[str] = [],
+    catch_error_code: list[int] = [],
 ):
     """API请求"""
 
@@ -55,6 +56,7 @@ def api_request(
             cacheable=cacheable,
             cache_ttl=cache_ttl,
             exclude_params=exclude_params,
+            catch_error_code=catch_error_code,
         )
 
     return decorator
@@ -189,7 +191,7 @@ class ApiRequest(BaseRequest, Generic[_P, _R]):
         cache_ttl: int | None = None,
         cacheable: bool = True,
         exclude_params: list[str] = [],
-        **kwargs,
+        catch_error_code: list[int] = [],
     ) -> None:
         super().__init__(common, credential, verify, ignore_code)
         self.module = module
@@ -201,6 +203,7 @@ class ApiRequest(BaseRequest, Generic[_P, _R]):
         self.cacheable = cacheable
         self.cache_ttl = cache_ttl
         self.exclude_params = exclude_params
+        self.catch_error_code = catch_error_code
 
     def copy(self) -> "ApiRequest[_P, _R]":
         """创建当前 ApiRequest 实例的副本"""
@@ -217,6 +220,7 @@ class ApiRequest(BaseRequest, Generic[_P, _R]):
             cacheable=self.cacheable,
             cache_ttl=self.cache_ttl,
             exclude_params=self.exclude_params.copy(),
+            catch_error_code=self.catch_error_code,
         )
         req.processor = self.processor
         return req
@@ -273,7 +277,7 @@ class ApiRequest(BaseRequest, Generic[_P, _R]):
             code,
         )
 
-        if code == 0:
+        if code == 0 or code in self.catch_error_code:
             return
 
         if code == 2000:
