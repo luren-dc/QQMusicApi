@@ -1,8 +1,9 @@
 """歌单相关 API"""
 
-from typing import Any
+from typing import Any, cast
 
-from .utils.network import api_request
+from .utils.credential import Credential
+from .utils.network import RequestGroup, api_request
 
 
 @api_request("music.srfDissInfo.DissInfo", "CgiGetDiss")
@@ -47,3 +48,99 @@ async def get_detail(
         "orderlist": True,
         "onlysonglist": onlysong,
     }, _processsor
+
+
+async def get_songlist(
+    songlist_id: int,
+    dirid: int = 0,
+):
+    """获取歌单中所有歌曲列表
+
+    Args:
+        songlist_id: 歌单 ID
+        dirid: 歌单 dirid
+    """
+    response = await get_detail(songlist_id=songlist_id, dirid=dirid, onlysong=True)
+
+    total = response["total_song_num"]
+    songs = response["songlist"]
+    if total <= 100:
+        return cast(list[dict[str, Any]], songs)
+
+    rg = RequestGroup()
+    for p, num in enumerate(range(100, total, 100), start=2):
+        rg.add_request(get_detail, songlist_id=songlist_id, dirid=dirid, num=100, page=p, onlysong=True)
+
+    response = await rg.execute()
+    for res in response:
+        songs.extend(res["songlist"])
+
+    return cast(list[dict[str, Any]], songs)
+
+
+@api_request("music.musicasset.PlaylistBaseWrite", "AddPlaylist")
+async def create(dirname: str, credential: Credential | None = None):
+    """添加歌单, 重名会在名称后面添加时间戳
+
+    Args:
+        dirname: 歌单名称
+        credential: 凭证
+
+    Returns:
+        创建的歌单基本信息
+    """
+    return {
+        "dirName": dirname,
+    }, lambda data: cast(dict[str, Any], data["result"])
+
+
+@api_request("music.musicasset.PlaylistBaseWrite", "DelPlaylist")
+async def delete(dirid: int, credential: Credential | None = None):
+    """删除歌单
+
+    Args:
+        dirid: 歌单id
+        credential: 凭证
+
+    Returns:
+        是否删除成功若不存在则返回False
+    """
+    return {
+        "dirId": dirid,
+    }, lambda data: data["result"]["dirId"] == dirid
+
+
+@api_request("music.musicasset.PlaylistDetailWrite", "AddSonglist")
+async def add_songs(dirid: int = 1, song_ids: list[int] = [], credential: Credential | None = None):
+    """添加歌曲到歌单
+
+    Args:
+        dirid: 歌单 dirid
+        song_ids: 歌曲 ID 列表
+        credential: 凭证
+
+    Returns:
+        是否添加成功, 歌曲已存在返回False
+    """
+    return {
+        "dirId": dirid,
+        "v_songInfo": [{"songType": 0, "songId": songid} for songid in song_ids],
+    }, lambda data: bool(data["result"]["updateTime"])
+
+
+@api_request("music.musicasset.PlaylistDetailWrite", "DelSonglist")
+async def del_songs(dirid: int = 1, song_ids: list[int] = [], credential: Credential | None = None):
+    """删除歌单歌曲
+
+    Args:
+        dirid: 歌单 dirid
+        song_ids: 歌曲 ID 列表
+        credential: 凭证
+
+    Returns:
+        是否删除成功, 歌曲不存在返回False
+    """
+    return {
+        "dirId": dirid,
+        "v_songInfo": [{"songType": 0, "songId": songid} for songid in song_ids],
+    }, lambda data: bool(data["result"]["updateTime"])
