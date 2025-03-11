@@ -39,8 +39,10 @@
 
 ## 依赖
 
-- [Cryptography](https://cryptography.io/)
-- [HTTPX](https://github.com/encode/httpx/)
+- Cryptography
+- HTTPX
+- aiocache
+- orjson
 
 ## 快速上手
 
