@@ -32,7 +32,7 @@ async def get_musicid(euin: str):
     )
 
 
-@api_request("music.UnifiedHomepage.UnifiedHomepageSrv", "GetHomepageHeader")
+@api_request("music.UnifiedHomepage.UnifiedHomepageSrv", "GetHomepageHeader", cacheable=False)
 async def get_homepage(euin: str, *, credential: Credential | None = None):
     """获取用户主页信息(包含音乐基因、歌单等)
 
@@ -49,7 +49,7 @@ async def get_vip_info(*, credential: Credential | None = None):
     return {}, NO_PROCESSOR
 
 
-@api_request("music.concern.RelationList", "GetFollowSingerList", verify=True)
+@api_request("music.concern.RelationList", "GetFollowSingerList", verify=True, cacheable=False)
 async def get_follow_singers(euin: str, page: int = 1, num: int = 10, *, credential: Credential | None = None):
     """获取关注歌手列表
 
@@ -65,7 +65,7 @@ async def get_follow_singers(euin: str, page: int = 1, num: int = 10, *, credent
     }
 
 
-@api_request("music.concern.RelationList", "GetFansList", verify=True)
+@api_request("music.concern.RelationList", "GetFansList", verify=True, cacheable=False)
 async def get_fans(euin: str, page: int = 1, num: int = 10, *, credential: Credential | None = None):
     """获取粉丝列表
 
@@ -81,7 +81,7 @@ async def get_fans(euin: str, page: int = 1, num: int = 10, *, credential: Crede
     }
 
 
-@api_request("music.homepage.Friendship", "GetFriendList", verify=True)
+@api_request("music.homepage.Friendship", "GetFriendList", verify=True, cacheable=False)
 async def get_friend(page: int = 1, num: int = 10, *, credential: Credential | None = None):
     """获取好友列表
 
@@ -96,7 +96,7 @@ async def get_friend(page: int = 1, num: int = 10, *, credential: Credential | N
     }, lambda data: {"total": data.get("Total", 0), "list": data.get("List", [])}
 
 
-@api_request("music.concern.RelationList", "GetFollowUserList", verify=True)
+@api_request("music.concern.RelationList", "GetFollowUserList", verify=True, cacheable=False)
 async def get_follow_user(euin: str, page: int = 1, num: int = 10, *, credential: Credential | None = None):
     """获取关注用户列表
 
@@ -112,7 +112,7 @@ async def get_follow_user(euin: str, page: int = 1, num: int = 10, *, credential
     }
 
 
-@api_request("music.musicasset.PlaylistBaseRead", "GetPlaylistByUin")
+@api_request("music.musicasset.PlaylistBaseRead", "GetPlaylistByUin", cacheable=False)
 async def get_created_songlist(uin: str, *, credential: Credential | None = None):
     """获取创建的歌单
 
@@ -123,7 +123,7 @@ async def get_created_songlist(uin: str, *, credential: Credential | None = None
     return {"uin": uin}, lambda data: cast(list[dict[str, Any]], data.get("v_playlist", []))
 
 
-@api_request("music.srfDissInfo.DissInfo", "CgiGetDiss")
+@api_request("music.srfDissInfo.DissInfo", "CgiGetDiss", cacheable=False)
 async def get_fav_song(euin: str, page: int = 1, num: int = 10, *, credential: Credential | None = None):
     """获取收藏歌曲
 
@@ -156,7 +156,7 @@ async def get_fav_song(euin: str, page: int = 1, num: int = 10, *, credential: C
     }, _processsor
 
 
-@api_request("music.musicasset.PlaylistFavRead", "CgiGetPlaylistFavInfo")
+@api_request("music.musicasset.PlaylistFavRead", "CgiGetPlaylistFavInfo", cacheable=False)
 async def get_fav_songlist(euin: str, page: int = 1, num: int = 10, *, credential: Credential | None = None):
     """获取收藏歌单
 
@@ -169,7 +169,7 @@ async def get_fav_songlist(euin: str, page: int = 1, num: int = 10, *, credentia
     return {"uin": euin, "offset": (page - 1) * num, "size": num}, NO_PROCESSOR
 
 
-@api_request("music.musicasset.AlbumFavRead", "CgiGetAlbumFavInfo")
+@api_request("music.musicasset.AlbumFavRead", "CgiGetAlbumFavInfo", cacheable=False)
 async def get_fav_album(euin: str, page: int = 1, num: int = 10, *, credential: Credential | None = None):
     """获取收藏专辑
 
@@ -182,7 +182,7 @@ async def get_fav_album(euin: str, page: int = 1, num: int = 10, *, credential: 
     return {"euin": euin, "offset": (page - 1) * num, "size": num}, NO_PROCESSOR
 
 
-@api_request("music.musicasset.MVFavRead", "getMyFavMV_v2", verify=True)
+@api_request("music.musicasset.MVFavRead", "getMyFavMV_v2", verify=True, cacheable=False)
 async def get_fav_mv(euin: str, page: int = 1, num: int = 10, *, credential: Credential | None = None):
     """获取收藏 MV
 
@@ -195,7 +195,7 @@ async def get_fav_mv(euin: str, page: int = 1, num: int = 10, *, credential: Cre
     return {"encuin": euin, "pagesize": num, "num": page - 1}, NO_PROCESSOR
 
 
-@api_request("music.recommend.UserProfileSettingSvr", "GetProfileReport")
+@api_request("music.recommend.UserProfileSettingSvr", "GetProfileReport", cacheable=False)
 async def get_music_gene(euin: str, *, credential: Credential | None = None):
     """获取音乐基因数据
 
