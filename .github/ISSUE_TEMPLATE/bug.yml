@@ -16,6 +16,14 @@ body:
         描述您遇到的 Bug。您可以附上截图、相关代码、堆栈跟踪等材料，便于开发者追踪问题。
 
   - type: textarea
+    id: about_info
+    attributes:
+      label: 相关信息
+      description: 报错信息
+    validations:
+      required: true
+
+  - type: textarea
     id: about_code
     attributes:
       label: 相关代码
