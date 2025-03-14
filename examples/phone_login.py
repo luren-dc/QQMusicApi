@@ -10,7 +10,7 @@ from qqmusic_api.login import (
 
 async def phone_login_example():
     """手机验证码登录示例"""
-    phone = 17385716326
+    phone = 17385716325
     country_code = 86
 
     try:
