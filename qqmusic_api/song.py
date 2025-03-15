@@ -114,6 +114,7 @@ class EncryptedSongFileType(BaseSongFileType):
 async def get_song_urls(
     mid: list[str],
     file_type: SongFileType = SongFileType.MP3_128,
+    *,
     credential: Credential | None = None,
 ) -> dict[str, str]: ...
 
@@ -122,6 +123,7 @@ async def get_song_urls(
 async def get_song_urls(
     mid: list[str],
     file_type: EncryptedSongFileType,
+    *,
     credential: Credential | None = None,
 ) -> dict[str, tuple[str, str]]: ...
 
@@ -129,6 +131,7 @@ async def get_song_urls(
 async def get_song_urls(
     mid: list[str],
     file_type: SongFileType | EncryptedSongFileType = SongFileType.MP3_128,
+    *,
     credential: Credential | None = None,
 ) -> dict[str, str] | dict[str, tuple[str, str]]:
     """获取歌曲文件链接
