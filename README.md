@@ -68,11 +68,7 @@ async def main():
 asyncio.run(main())
 ```
 
-## Web API
-```
-docker build . -t qq-music-api
-docker run -d -p 8000:8000 qq-music-api
-```
+## [Web API](./web/README.md)
 
 ## Licence
 

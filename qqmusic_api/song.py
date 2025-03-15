@@ -16,7 +16,7 @@ def _get_extract_func(key: str):
 
 
 @api_request("music.trackInfo.UniformRuleCtrl", "CgiGetTrackInfo")
-async def query_song(value: list[str] | list[int]):
+async def query_song(value: list[int] | list[str]):
     """根据 id 或 mid 获取歌曲信息
 
     Args:
