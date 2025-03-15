@@ -1,6 +1,7 @@
 """请求 Session 管理"""
 
 import contextvars
+import logging
 from typing import TypedDict
 
 import httpx
@@ -10,6 +11,10 @@ from aiocache.serializers import BaseSerializer
 
 from .credential import Credential
 from .qimei import get_qimei
+
+# 配置日志记录器
+logger = logging.getLogger(__name__)
+_session_counter = 0
 
 
 class ApiConfig(TypedDict):
@@ -102,6 +107,7 @@ def get_session() -> Session:
     """获取当前上下文的 Session"""
     session = _session_context.get()
     if session is None:
+        logger.info("创建新的默认Session")
         session = Session()
         _session_context.set(session)
     return session
@@ -109,12 +115,15 @@ def get_session() -> Session:
 
 def set_session(session: Session) -> None:
     """设置当前上下文的 Session"""
+    logger.info("设置新的Session到上下文")
     _session_context.set(session)
 
 
 def clear_session() -> None:
     """清除当前上下文的 Session"""
+    logger.info("清除当前上下文的Session")
     try:
         _session_context.set(None)
     except LookupError:
+        logger.warning("尝试清除不存在的Session上下文")
         pass
