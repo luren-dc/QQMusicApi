@@ -9,6 +9,7 @@
 ### Bug 修复
 
 - **(songlist)** 第一次获取最大歌曲量  - ([a3bc27e](https://github.com/luren-dc/QQMusicApi/commit/a3bc27ebf4be16868f9047639ea94c01dc0bbcd8)) by [@liuhangbin](https://github.com/liuhangbin)  in [#147](https://github.com/luren-dc/QQMusicApi/pull/147)
+- 修复设置全局Session未生效 - ([73e8cba](https://github.com/luren-dc/QQMusicApi/commit/73e8cba4b466ab6ee4550264f32149cecd99e692)) by [@luren-dc](https://github.com/luren-dc) 
 - 部分API使用缓存 - ([cd58f01](https://github.com/luren-dc/QQMusicApi/commit/cd58f01a605a6599de6d88b08d073b6d21b29b72)) by [@luren-dc](https://github.com/luren-dc) 
 - 修复`get_singer_list_index`返回为空报错 - ([f9993a9](https://github.com/luren-dc/QQMusicApi/commit/f9993a908f2dd1a56acbd6fce926049aa9a99b3b)) by [@luren-dc](https://github.com/luren-dc) 
 - Docker 运行出错 - ([47295db](https://github.com/luren-dc/QQMusicApi/commit/47295db3b1fd03b23c29ae750fc71c2ddf3e575b)) by [@luren-dc](https://github.com/luren-dc) 
@@ -17,6 +18,7 @@
 ### 功能更新
 
 - **(Songlist)** 添加歌单处理函数  - ([49eeafd](https://github.com/luren-dc/QQMusicApi/commit/49eeafdfff58451a010b949f61d7af0e8d72afd8)) by [@liuhangbin](https://github.com/liuhangbin)  in [#144](https://github.com/luren-dc/QQMusicApi/pull/144)
+- 添加日志记录功能以跟踪Session的创建、设置和清除 - ([d89e046](https://github.com/luren-dc/QQMusicApi/commit/d89e046520def6586dfef4aa93f2c39d7c32865e)) by [@luren-dc](https://github.com/luren-dc) 
 - 优化返回注释 - ([0f5da78](https://github.com/luren-dc/QQMusicApi/commit/0f5da78aad5221fce49b249e988d2740b861e17c)) by [@luren-dc](https://github.com/luren-dc) 
 
 ### 文档更新
@@ -25,8 +27,8 @@
 - 修改 changelog 生成规则 - ([da3e829](https://github.com/luren-dc/QQMusicApi/commit/da3e829f5d1934ceb09bf6c97c84250f6bede07e)) by [@luren-dc](https://github.com/luren-dc) 
 
 ## 贡献者
-* @github-actions[bot]
 * @luren-dc
+* @github-actions[bot]
 * @liuhangbin [#147](https://github.com/luren-dc/QQMusicApi/pull/147)
 ## [[0.3.2](https://github.com/luren-dc/QQMusicApi/compare/v0.3.1..v0.3.2)] - 2025-03-02
 
