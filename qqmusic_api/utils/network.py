@@ -13,7 +13,7 @@ from typing_extensions import override
 from ..exceptions import CredentialExpiredError, ResponseCodeError, SignInvalidError
 from .common import calc_md5
 from .credential import Credential
-from .session import get_session
+from .session import Session, get_session
 from .sign import sign
 
 _P = ParamSpec("_P")
@@ -82,7 +82,6 @@ class BaseRequest(ABC):
         verify: bool = False,
         ignore_code: bool = False,
     ) -> None:
-        self.session = get_session()
         self._common = common or {}
         self._credential = credential
         self.verify = verify
@@ -90,9 +89,14 @@ class BaseRequest(ABC):
         self.cache = self.session._cache
 
     @property
+    def session(self) -> Session:
+        """获取请求会话"""
+        return get_session()
+
+    @property
     def credential(self) -> Credential:
         """获取请求凭证"""
-        return self._credential or (self.session).credential or Credential()
+        return self._credential or self.session.credential or Credential()
 
     @credential.setter
     def credential(self, value: Credential):
@@ -116,7 +120,7 @@ class BaseRequest(ABC):
         common = {
             "cv": config["version_code"],
             "v": config["version_code"],
-            "QIMEI36": (self.session).qimei,
+            "QIMEI36": self.session.qimei,
         }
         common.update(self.COMMON_DEFAULTS)
         if credential.has_musicid() and credential.has_musickey():
