@@ -93,7 +93,7 @@ async def get_friend(page: int = 1, num: int = 10, *, credential: Credential | N
     return {
         "PageSize": num,
         "Page": page - 1,
-    }, lambda data: {"total": data.get("Total", 0), "list": data.get("List", [])}
+    }, lambda data: {"total": len(data.get("Friends", [])), "list": data.get("Friends", [])}
 
 
 @api_request("music.concern.RelationList", "GetFollowUserList", verify=True, cacheable=False)
