@@ -8,6 +8,7 @@
 
 ### Bug 修复
 
+- modify fields to filter of `get_friend`  - ([660ca49](https://github.com/luren-dc/QQMusicApi/commit/660ca4991afac86afabfb45ce966a50e5416f7b9)) by [@aurora0x27](https://github.com/aurora0x27)  in [#151](https://github.com/luren-dc/QQMusicApi/pull/151)
 - `credential` 未强制为关键字参数 - ([147ab2d](https://github.com/luren-dc/QQMusicApi/commit/147ab2d118e3aa3aaa2c99fa0ce48ddddb166527)) by [@luren-dc](https://github.com/luren-dc) 
 
 ### 功能重构
@@ -19,6 +20,7 @@
 - Web Port 文档 - ([ffc8842](https://github.com/luren-dc/QQMusicApi/commit/ffc884230ab7c12b6d392923474394ca7b0aa9de)) by [@luren-dc](https://github.com/luren-dc) 
 
 ## 贡献者
+* @aurora0x27 [#151](https://github.com/luren-dc/QQMusicApi/pull/151)
 * @github-actions[bot]
 * @luren-dc
 * @renovate[bot] [#142](https://github.com/luren-dc/QQMusicApi/pull/142)
