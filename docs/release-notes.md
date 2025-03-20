@@ -21,8 +21,8 @@
 - Web Port 文档 - ([ffc8842](https://github.com/luren-dc/QQMusicApi/commit/ffc884230ab7c12b6d392923474394ca7b0aa9de)) by [@luren-dc](https://github.com/luren-dc) 
 
 ## 贡献者
-* @luren-dc
 * @github-actions[bot]
+* @luren-dc
 * @aurora0x27 [#151](https://github.com/luren-dc/QQMusicApi/pull/151)
 * @renovate[bot] [#142](https://github.com/luren-dc/QQMusicApi/pull/142)
 ## [[0.3.3](https://github.com/luren-dc/QQMusicApi/compare/v0.3.2..v0.3.3)] - 2025-03-15
