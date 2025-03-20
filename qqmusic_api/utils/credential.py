@@ -84,16 +84,14 @@ class Credential:
         if not self.has_musicid() or not self.has_musickey():
             return False
         if await self.is_expired():
-            return bool(self.refresh_key) and bool(self.refresh_token)
+            return bool(self.refresh_key)
         return True
 
     async def is_expired(self) -> bool:
         """判断 credential 是否过期"""
         if "musickeyCreateTime" in self.extra_fields and "keyExpiresIn" in self.extra_fields:
             expired_time_stamp = self.extra_fields["musickeyCreateTime"] + self.extra_fields["keyExpiresIn"]
-            if expired_time_stamp >= time():
-                return True
-            return False
+            return expired_time_stamp <= time()
 
         from ..login import check_expired
 
