@@ -8,6 +8,7 @@
 
 ### Bug 修复
 
+- `is_expired` 和 `can_refresh` 判断错误 - ([a28a473](https://github.com/luren-dc/QQMusicApi/commit/a28a47371380942d45c8b565acb38083e45ac8f0)) by [@luren-dc](https://github.com/luren-dc) 
 - modify fields to filter of `get_friend`  - ([660ca49](https://github.com/luren-dc/QQMusicApi/commit/660ca4991afac86afabfb45ce966a50e5416f7b9)) by [@aurora0x27](https://github.com/aurora0x27)  in [#151](https://github.com/luren-dc/QQMusicApi/pull/151)
 - `credential` 未强制为关键字参数 - ([147ab2d](https://github.com/luren-dc/QQMusicApi/commit/147ab2d118e3aa3aaa2c99fa0ce48ddddb166527)) by [@luren-dc](https://github.com/luren-dc) 
 
@@ -20,9 +21,9 @@
 - Web Port 文档 - ([ffc8842](https://github.com/luren-dc/QQMusicApi/commit/ffc884230ab7c12b6d392923474394ca7b0aa9de)) by [@luren-dc](https://github.com/luren-dc) 
 
 ## 贡献者
+* @luren-dc
 * @github-actions[bot]
 * @aurora0x27 [#151](https://github.com/luren-dc/QQMusicApi/pull/151)
-* @luren-dc
 * @renovate[bot] [#142](https://github.com/luren-dc/QQMusicApi/pull/142)
 ## [[0.3.3](https://github.com/luren-dc/QQMusicApi/compare/v0.3.2..v0.3.3)] - 2025-03-15
 
