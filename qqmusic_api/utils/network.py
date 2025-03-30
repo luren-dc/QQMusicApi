@@ -353,7 +353,7 @@ class RequestGroup(BaseRequest):
 
         self._requests.append(
             RequestItem(
-                id=len(self._requests) - 1,
+                id=len(self._requests),
                 key=unique_key,
                 request=request,
                 args=args,
@@ -422,7 +422,6 @@ class RequestGroup(BaseRequest):
 
         if not self._requests:
             return self._results
-
         resp = await self.request()
         await self._process_response(resp)
         return self._results
