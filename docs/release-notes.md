@@ -12,7 +12,7 @@
 
 ## 贡献者
 * @github-actions[bot]
-* @renovate[bot] [#152](https://github.com/luren-dc/QQMusicApi/pull/152)
+* @renovate[bot] [#154](https://github.com/luren-dc/QQMusicApi/pull/154)
 * @luren-dc
 ## [[0.3.4](https://github.com/luren-dc/QQMusicApi/compare/v0.3.3..v0.3.4)] - 2025-03-20
 
