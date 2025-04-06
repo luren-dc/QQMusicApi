@@ -11,8 +11,8 @@
 - 'RequestGroup' 返回数据序号错误 - ([17fbd53](https://github.com/luren-dc/QQMusicApi/commit/17fbd53cce7bc34cc071080d02ed8cad2bd7d1a3)) by [@luren-dc](https://github.com/luren-dc) 
 
 ## 贡献者
-* @renovate[bot] [#155](https://github.com/luren-dc/QQMusicApi/pull/155)
 * @github-actions[bot]
+* @renovate[bot] [#155](https://github.com/luren-dc/QQMusicApi/pull/155)
 * @luren-dc
 ## [[0.3.4](https://github.com/luren-dc/QQMusicApi/compare/v0.3.3..v0.3.4)] - 2025-03-20
 
