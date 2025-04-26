@@ -1,6 +1,5 @@
 """评论 API"""
 
-import json
 from typing import Any
 
 from qqmusic_api.utils.network import api_request
