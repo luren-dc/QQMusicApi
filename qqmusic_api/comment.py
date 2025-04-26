@@ -61,9 +61,6 @@ async def get_hot_comments(
 
             result.append(item)
 
-        # 输出为 JSON 格式字符串
-        json_output = json.dumps(result, ensure_ascii=False, indent=2)
-        print(json_output)
         return result
 
     return params, _processor
