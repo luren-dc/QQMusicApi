@@ -32,6 +32,32 @@ async def get_hot_comments(
     }
 
     def _processor(data: dict[str, Any]):
+        """处理并返回结构化评论数据:
+
+        返回结构:
+        [
+            {
+                "Avatar": str,          # 用户头像 URL
+                "CmId": str,            # 评论 ID (后续需要获取全部子评论时需用到)
+                "PraiseNum": int,       # 点赞数
+                "Nick": str,            # 昵称
+                "Pic": str,             # 评论配图 (可能为空)
+                "Content": str,         # 评论内容
+                "SeqNo": str,           # 评论序号 ID 可以用于传递给 参数: last_comment_seq_no
+                "SubComments": [        # 子评论列表
+                    {
+                        "Avatar": str,
+                        "Nick": str,
+                        "Content": str,
+                        "Pic": str,
+                        "PraiseNum": int,
+                        "SeqNo": str
+                    }
+                ]
+            },
+            ...
+        ]
+        """
         comments = data.get("CommentList", {}).get("Comments", [])
         result = []
 
