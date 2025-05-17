@@ -20,7 +20,7 @@ repos:
         exclude: \.(html|svg|md)$
 
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v4.4.1
+    rev: v4.6.0
     hooks:
       - id: commitizen
         additional_dependencies: [cz-conventional-gitmoji]
@@ -31,13 +31,13 @@ repos:
       - id: conventional-gitmoji
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.4
+    rev: v0.11.8
     hooks:
       - id: ruff
         args: [--fix]
       - id: ruff-format
 
   - repo: https://github.com/DetachHead/basedpyright-pre-commit-mirror
-    rev: 1.28.4
+    rev: 1.29.1
     hooks:
     - id: basedpyright
