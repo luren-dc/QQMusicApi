@@ -8,12 +8,22 @@
 
 ### Bug 修复
 
+- **(login)** “限制设备数量”导致无法登录时无任何提示 - ([faeca45](https://github.com/luren-dc/QQMusicApi/commit/faeca45381bd3bcc1efbc8d92fbfc86bdfda9baa)) by [@luren-dc](https://github.com/luren-dc) 
 - 'RequestGroup' 返回数据序号错误 - ([17fbd53](https://github.com/luren-dc/QQMusicApi/commit/17fbd53cce7bc34cc071080d02ed8cad2bd7d1a3)) by [@luren-dc](https://github.com/luren-dc) 
 
+### 功能更新
+
+- 添加获取精彩评论（歌曲热评）的能力  - ([99947c8](https://github.com/luren-dc/QQMusicApi/commit/99947c84bbd42eb5d5100567dd59ec7c6ea6bfdc)) by [@Aas-ee](https://github.com/Aas-ee)  in [#161](https://github.com/luren-dc/QQMusicApi/pull/161)
+
+### 文档更新
+
+- **(comment)** 增加歌曲热评返回参数注释  - ([418b032](https://github.com/luren-dc/QQMusicApi/commit/418b0324d7638f28a69e74b0318c1f2f43d8496c)) by [@Aas-ee](https://github.com/Aas-ee)  in [#164](https://github.com/luren-dc/QQMusicApi/pull/164)
+
 ## 贡献者
-* @github-actions[bot]
-* @renovate[bot] [#155](https://github.com/luren-dc/QQMusicApi/pull/155)
 * @luren-dc
+* @renovate[bot] [#166](https://github.com/luren-dc/QQMusicApi/pull/166)
+* @Aas-ee [#164](https://github.com/luren-dc/QQMusicApi/pull/164)
+* @github-actions[bot]
 ## [[0.3.4](https://github.com/luren-dc/QQMusicApi/compare/v0.3.3..v0.3.4)] - 2025-03-20
 
 ### Bug 修复
