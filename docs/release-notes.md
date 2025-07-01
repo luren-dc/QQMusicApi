@@ -20,10 +20,10 @@
 - **(comment)** 增加歌曲热评返回参数注释  - ([418b032](https://github.com/luren-dc/QQMusicApi/commit/418b0324d7638f28a69e74b0318c1f2f43d8496c)) by [@Aas-ee](https://github.com/Aas-ee)  in [#164](https://github.com/luren-dc/QQMusicApi/pull/164)
 
 ## 贡献者
+* @github-actions[bot]
 * @luren-dc
 * @renovate[bot] [#166](https://github.com/luren-dc/QQMusicApi/pull/166)
 * @Aas-ee [#164](https://github.com/luren-dc/QQMusicApi/pull/164)
-* @github-actions[bot]
 ## [[0.3.4](https://github.com/luren-dc/QQMusicApi/compare/v0.3.3..v0.3.4)] - 2025-03-20
 
 ### Bug 修复
