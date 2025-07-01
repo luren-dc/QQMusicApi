@@ -12,7 +12,7 @@ from uuid import uuid4
 
 import httpx
 
-from .exceptions.api_exception import CredentialExpiredError, LoginError
+from .exceptions.api_exception import CredentialExpiredError, LoginError, ResponseCodeError
 from .utils.common import hash33
 from .utils.credential import Credential
 from .utils.network import ApiRequest
@@ -368,6 +368,10 @@ async def _authorize_qq_qr(uin: str, sigx: str) -> Credential:
         return Credential.from_cookies_dict(await api())
     except CredentialExpiredError:
         raise LoginError("[QQLogin] 无法重复鉴权")
+    except ResponseCodeError as e:
+        if e.code == 20274:
+            raise LoginError("[QQLogin] 设备数量限制")
+        raise LoginError(f"[QQLogin] 未知错误: {e.code} - {e.message}")
 
 
 async def _authorize_wx_qr(code: str) -> Credential:
@@ -431,6 +435,8 @@ async def phone_authorize(phone: int, auth_code: int, country_code: int = 86) ->
         cacheable=False,
     )()
     match resp["code"]:
+        case 20274:
+            raise LoginError("[PhoneLogin] 设备数量限制")
         case 20271:
             raise LoginError("[PhoneLogin] 验证码错误或已鉴权")
         case 0:
