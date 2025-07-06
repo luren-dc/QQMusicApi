@@ -339,7 +339,7 @@ async def _authorize_qq_qr(uin: str, sigx: str) -> Credential:
         data={
             "response_type": "code",
             "client_id": "100497308",
-            "redirect_uri": "https://y.qq.com/portal/wx_redirect.html?login_type=1&surl=https%3A%252F%252Fy.qq.com%252F",
+            "redirect_uri": "https://y.qq.com/portal/wx_redirect.html?login_type=1&surl=https://y.qq.com/",
             "scope": "get_user_info,get_app_friends",
             "state": "state",
             "switch": "",
@@ -359,8 +359,8 @@ async def _authorize_qq_qr(uin: str, sigx: str) -> Credential:
         raise LoginError("[QQLogin] 获取 code 失败")
     try:
         api = ApiRequest[[], dict[str, Any]](
-            "music.login.LoginServer",
-            "Login",
+            "QQConnectLogin.LoginServer",
+            "QQLogin",
             common={"tmeLoginType": "2"},
             params={"code": code},
             cacheable=False,
