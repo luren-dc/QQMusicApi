@@ -22,9 +22,9 @@
 
 ## 贡献者
 * @github-actions[bot]
+* @renovate[bot] [#167](https://github.com/luren-dc/QQMusicApi/pull/167)
 * @aynakeya [#178](https://github.com/luren-dc/QQMusicApi/pull/178)
 * @luren-dc
-* @renovate[bot] [#166](https://github.com/luren-dc/QQMusicApi/pull/166)
 * @Aas-ee [#164](https://github.com/luren-dc/QQMusicApi/pull/164)
 ## [[0.3.4](https://github.com/luren-dc/QQMusicApi/compare/v0.3.3..v0.3.4)] - 2025-03-20
 
