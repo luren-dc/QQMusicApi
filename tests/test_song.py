@@ -50,4 +50,4 @@ async def test_get_song_urls():
 
 
 async def test_get_fav_num():
-    assert await song.get_fav_num(songid = [438910555, 9063002])
+    assert await song.get_fav_num(songid=[438910555, 9063002])

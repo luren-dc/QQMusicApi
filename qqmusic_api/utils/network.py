@@ -38,8 +38,8 @@ def api_request(
     process_bool: bool = True,
     cache_ttl: int | None = None,
     cacheable: bool = True,
-    exclude_params: list[str] = [],
-    catch_error_code: list[int] = [],
+    exclude_params: list[str] | None = None,
+    catch_error_code: list[int] | None = None,
 ):
     """API请求"""
 
@@ -111,7 +111,7 @@ class BaseRequest(ABC):
         return common
 
     @common.setter
-    def commom(self, value: dict[str, Any]):
+    def common(self, value: dict[str, Any]):
         """设置公共参数"""
         self._common = value
 
@@ -194,8 +194,8 @@ class ApiRequest(BaseRequest, Generic[_P, _R]):
         process_bool: bool = True,
         cache_ttl: int | None = None,
         cacheable: bool = True,
-        exclude_params: list[str] = [],
-        catch_error_code: list[int] = [],
+        exclude_params: list[str] | None = None,
+        catch_error_code: list[int] | None = None,
     ) -> None:
         super().__init__(common, credential, verify, ignore_code)
         self.module = module
@@ -206,8 +206,8 @@ class ApiRequest(BaseRequest, Generic[_P, _R]):
         self.processor: Callable[[dict[str, Any]], Any] = NO_PROCESSOR
         self.cacheable = cacheable
         self.cache_ttl = cache_ttl
-        self.exclude_params = exclude_params
-        self.catch_error_code = catch_error_code
+        self.exclude_params = exclude_params or []
+        self.catch_error_code = catch_error_code or []
 
     def copy(self) -> "ApiRequest[_P, _R]":
         """创建当前 ApiRequest 实例的副本"""
