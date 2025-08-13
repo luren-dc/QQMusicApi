@@ -25,3 +25,15 @@ async def get_guess_recommend():
         "ext": {"bluetooth": ""},
         "should_count_down": 1,
     }, NO_PROCESSOR
+
+
+@api_request("music.playlist.PlaylistSquare", "GetRecommendFeed")
+async def get_recommend_songlist():
+    """获取推荐歌单"""
+    return {"From": 0, "Size": 25}, NO_PROCESSOR
+
+
+@api_request("newsong.NewSongServer", "get_new_song_info")
+async def get_recommend_newsong():
+    """获取推荐新歌"""
+    return {"type": 5}, NO_PROCESSOR
