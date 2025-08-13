@@ -1,51 +1,17 @@
 """QQ音乐 sign"""
 
-import base64
+import re
+from base64 import b64encode
+from hashlib import sha1
 
 import orjson as json
 
-from .common import calc_md5
+PART_1_INDEXES = [23, 14, 6, 36, 16, 40, 7, 19]
+PART_2_INDEXES = [16, 1, 32, 12, 19, 27, 8, 5]
+SCRAMBLE_VALUES = [89, 39, 179, 150, 218, 82, 58, 252, 177, 52, 186, 123, 120, 64, 242, 133, 143, 161, 121, 179]
 
-
-def _head(b: bytes) -> list:
-    p = [21, 4, 9, 26, 16, 20, 27, 30]
-    return [b[x] for x in p]
-
-
-def _tail(b: bytes) -> list:
-    p = [18, 11, 3, 2, 1, 7, 6, 25]
-    return [b[x] for x in p]
-
-
-def _middle(b: bytes) -> list:
-    zd = {
-        "0": 0,
-        "1": 1,
-        "2": 2,
-        "3": 3,
-        "4": 4,
-        "5": 5,
-        "6": 6,
-        "7": 7,
-        "8": 8,
-        "9": 9,
-        "A": 10,
-        "B": 11,
-        "C": 12,
-        "D": 13,
-        "E": 14,
-        "F": 15,
-    }
-    ol = [212, 45, 80, 68, 195, 163, 163, 203, 157, 220, 254, 91, 204, 79, 104, 6]
-    res = []
-    j = 0
-    for i in range(0, len(b), 2):
-        one = zd[chr(b[i])]
-        two = zd[chr(b[i + 1])]
-        r = one * 16 ^ two
-        res.append(r ^ ol[j])
-        j += 1
-    return res
+# JavaScript quirks emulation
+PART_1_INDEXES = filter(lambda x: x < 40, PART_1_INDEXES)
 
 
 def sign(request: dict) -> str:
@@ -57,12 +23,14 @@ def sign(request: dict) -> str:
     Returns:
         签名结果
     """
-    md5_str = calc_md5(json.dumps(request)).upper().encode("utf-8")
+    hash = sha1(json.dumps(request)).hexdigest().upper()
 
-    h = _head(md5_str)
-    e = _tail(md5_str)
-    ls = _middle(md5_str)
-    m = base64.b64encode(bytes(ls)).decode("utf-8")
+    part1 = "".join(hash[i] for i in PART_1_INDEXES)
+    part2 = "".join(hash[i] for i in PART_2_INDEXES)
 
-    res = "zzb" + "".join(map(chr, h)) + m + "".join(map(chr, e))
-    return res.lower().replace("/", "").replace("+", "").replace("=", "")
+    part3 = bytearray(20)
+    for i, v in enumerate(SCRAMBLE_VALUES):
+        value = v ^ int(hash[i * 2 : i * 2 + 2], 16)
+        part3[i] = value
+    b64_part = re.sub(rb"[\\/+=]", b"", b64encode(part3)).decode("utf-8")
+    return f"zzc{part1}{b64_part}{part2}".lower()
