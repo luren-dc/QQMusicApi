@@ -3,6 +3,18 @@
 所有对该项目的重要更改都将记录在此文件中。
 
 ---
+
+## What's Changed
+
+### 功能更新
+
+- 升级加密算法 - ([2f01428](https://github.com/luren-dc/QQMusicApi/commit/2f01428c3b23ec29691100c9417bba205ae04f83)) by [@luren-dc](https://github.com/luren-dc) 
+- 支持主页推荐，猜你喜欢获取 - ([64469cc](https://github.com/luren-dc/QQMusicApi/commit/64469ccfaa1404b7e43a66e3ad3927908df35f11)) by [@luren-dc](https://github.com/luren-dc) 
+
+## 贡献者
+* @luren-dc
+* @renovate[bot] [#184](https://github.com/luren-dc/QQMusicApi/pull/184)
+* @github-actions[bot]
 ## [[0.3.5](https://github.com/luren-dc/QQMusicApi/compare/v0.3.4..v0.3.5)] - 2025-07-29
 
 ### Bug 修复
