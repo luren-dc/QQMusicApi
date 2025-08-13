@@ -12,9 +12,9 @@
 - 支持主页推荐，猜你喜欢获取 - ([64469cc](https://github.com/luren-dc/QQMusicApi/commit/64469ccfaa1404b7e43a66e3ad3927908df35f11)) by [@luren-dc](https://github.com/luren-dc) 
 
 ## 贡献者
+* @github-actions[bot]
 * @luren-dc
 * @renovate[bot] [#184](https://github.com/luren-dc/QQMusicApi/pull/184)
-* @github-actions[bot]
 ## [[0.3.5](https://github.com/luren-dc/QQMusicApi/compare/v0.3.4..v0.3.5)] - 2025-07-29
 
 ### Bug 修复
