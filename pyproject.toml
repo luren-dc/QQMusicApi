@@ -81,7 +81,7 @@ web = [
 [tool.commitizen]
 name = "cz_gitmoji"
 
-[tool.basedpyright]
+[tool.pyright]
 venvPath = "."
 venv = ".venv"
 include = ["qqmusic_api"]

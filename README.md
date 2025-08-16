@@ -70,7 +70,7 @@ asyncio.run(main())
 
 ## [Web API](./web/README.md)
 
-## Licence
+## License
 
 本项目基于 **[MIT License](https://github.com/luren-dc/QQMusicApi?tab=MIT-1-ov-file)** 许可证发行。
 
