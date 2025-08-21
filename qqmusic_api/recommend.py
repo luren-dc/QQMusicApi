@@ -27,6 +27,19 @@ async def get_guess_recommend():
     }, NO_PROCESSOR
 
 
+@api_request("music.recommend.TrackRelationServer", "GetRadarSong")
+async def get_radar_recommend():
+    """获取雷达推荐"""
+    return {
+        "Page": 1,
+        # "LastToastTime": 1755782480,
+        "ReqType": 0,
+        "FavSongs": [],
+        "EntranceSongs": [],
+        # "ext": {"bluetooth": ""},
+    }, NO_PROCESSOR
+
+
 @api_request("music.playlist.PlaylistSquare", "GetRecommendFeed")
 async def get_recommend_songlist():
     """获取推荐歌单"""

@@ -55,7 +55,7 @@ path = "qqmusic_api/__init__.py"
 packages = ["qqmusic_api"]
 
 [tool.hatch.build.targets.sdist]
-include = ["/qqmusic_api", "/tests", "LISENCE", "README.md"]
+include = ["/qqmusic_api", "/tests", "LICENSE", "README.md"]
 
 [dependency-groups]
 testing = [
@@ -92,8 +92,6 @@ typeCheckingMode = "standard"
 [tool.ruff]
 line-length = 120
 extend-exclude = ["docs"]
-
-[tool.ruff.lint]
 extend-select = [
   "Q",
   "RUF",
@@ -104,13 +102,12 @@ extend-select = [
   "ASYNC",
   "C4",
   "FURB",
-  "R",
   "PERF",
 ]
-ignore = ["D105", "D107", "D205", "D415"]
+ignore = ["D105", "D107", "D205", "D415", "RUF029"]
 pydocstyle = { convention = "google" }
 
-[tool.ruff.lint.per-file-ignores]
+[tool.ruff.per-file-ignores]
 "tests/*" = ["D"]
 "examples/*" = ["D", "T"]
 "qqmusic_api/__init__.py" = ["F405", "D"]
