@@ -1,8 +1,24 @@
 """评论 API"""
 
-from typing import Any
+from typing import Any, cast
 
-from qqmusic_api.utils.network import api_request
+from .utils.network import api_request
+
+
+@api_request("music.globalComment.CommentCountSrv", "GetCmCount")
+async def get_comment_count(biz_id: str):
+    """获取歌曲评论数量
+
+    Args:
+        biz_id: 歌曲 ID
+    """
+    return {
+        "request": {
+            "biz_id": biz_id,
+            "biz_type": 1,
+            "biz_sub_type": 2,
+        },
+    }, lambda data: cast(dict[str, Any], data.get("response", {}))
 
 
 @api_request("music.globalComment.CommentRead", "GetHotCommentList")
