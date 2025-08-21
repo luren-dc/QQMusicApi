@@ -182,6 +182,7 @@ async def get_song_urls(
             params=params,
             credential=credential,
             exclude_params=["guid"],
+            cacheable=False,
         )
         req.processor = _processor
         rg.add_request(req)
