@@ -23,12 +23,13 @@
 
 ### 文档更新
 
+- **(contributing)** 更新贡献文档 - ([e834b32](https://github.com/luren-dc/QQMusicApi/commit/e834b325215be02caef1883e767a03b95aeeca6b)) by [@luren-dc](https://github.com/luren-dc) 
 - 修改文档错误 - ([a01cf0f](https://github.com/luren-dc/QQMusicApi/commit/a01cf0f36c0edaf610d1b435c154c1f33b4493d8)) by [@luren-dc](https://github.com/luren-dc) 
 
 ## 贡献者
+* @luren-dc
 * @github-actions[bot]
 * @renovate[bot] [#188](https://github.com/luren-dc/QQMusicApi/pull/188)
-* @luren-dc
 ## [[0.3.5](https://github.com/luren-dc/QQMusicApi/compare/v0.3.4..v0.3.5)] - 2025-07-29
 
 ### Bug 修复
