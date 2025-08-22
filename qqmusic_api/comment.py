@@ -141,3 +141,43 @@ async def get_new_comments(
     }
 
     return params, _processor
+
+
+@api_request("music.globalComment.CommentRead", "GetRecCommentList")
+async def get_recommend_comments(
+    biz_id: str,
+    page_num: int = 1,
+    page_size: int = 15,
+    last_comment_seq_no: str = "",
+):
+    """获取歌曲推荐评论
+
+    Args:
+        biz_id: 歌曲 ID
+        page_num: 页码
+        page_size: 每页数量
+        last_comment_seq_no: 上一页最后一条评论 ID(可选)
+    """
+    params = {
+        # "FromParentCmId": "",
+        # "LastRspVer": "1755834843787200911",
+        # "LastTotalVer": "1755834843679664122",
+        # "RecOffset": 0,
+        # "LastHotScore": "",
+        # "FromCommentId": "",
+        # "HashTagID": "",
+        # "CommentIds": [],
+        # "LastRecScore": "",
+        # "LastTotal": 325,
+        "PageSize": page_size,
+        "PageNum": page_num - 1,
+        "BizType": 1,
+        "PicEnable": 1,
+        "Flag": 1,
+        "LastCommentSeqNo": last_comment_seq_no,
+        "CmListUIVer": 1,
+        "BizId": biz_id,
+        "AudioEnable": 1,
+    }
+
+    return params, _processor
