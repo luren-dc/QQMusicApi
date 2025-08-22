@@ -4,7 +4,7 @@
 
 ## 先决条件
 
-- **Python 3.9+**
+- **Python 3.10+**
 - **git**
 - [**uv**](https://docs.astral.sh/uv/)
 - [**pre-commit**](https://pre-commit.com/)
@@ -25,6 +25,10 @@ cd QQMusicApi
 # 安装开发依赖
 python install-dev.py
 ```
+
+### API 编写
+
+查看[**编写指南**](coding.md)
 
 ### 构建文档
 
