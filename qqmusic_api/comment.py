@@ -99,7 +99,7 @@ async def get_hot_comments(
         "BizId": biz_id,
         "LastCommentSeqNo": last_comment_seq_no,
         "PageSize": page_size,
-        "PageNum": page_num,
+        "PageNum": page_num - 1,
         "HotType": 1,
         "WithAirborne": 0,
         "PicEnable": 1,
