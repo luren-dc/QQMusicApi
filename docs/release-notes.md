@@ -8,10 +8,12 @@
 
 ### Bug 修复
 
+- **(comment)** 获取歌曲热评时页码错误 - ([b8d2d3d](https://github.com/luren-dc/QQMusicApi/commit/b8d2d3dfc117b74d0d209b697288dafe1f98d360)) by [@luren-dc](https://github.com/luren-dc) 
 - 错误地将歌曲链接缓存 - ([eec0100](https://github.com/luren-dc/QQMusicApi/commit/eec01001e24d7fa8135b40296b300657a75e5c17)) by [@luren-dc](https://github.com/luren-dc) 
 
 ### 功能更新
 
+- **(comment)** 获取歌曲最新评论 - ([1ae5875](https://github.com/luren-dc/QQMusicApi/commit/1ae58759d771d9fbfd7e4431cf55525a58cf0463)) by [@luren-dc](https://github.com/luren-dc) 
 - 获取歌曲评论数量 - ([f484e7f](https://github.com/luren-dc/QQMusicApi/commit/f484e7f9dc8c2911fe404f843161e717aa615184)) by [@luren-dc](https://github.com/luren-dc) 
 - 获取雷达推荐歌曲 - ([04b5923](https://github.com/luren-dc/QQMusicApi/commit/04b59238b2d9a5af3533844b178a990b0a1b550e)) by [@luren-dc](https://github.com/luren-dc) 
 - 支持获取推荐歌单，推荐新歌 - ([460be11](https://github.com/luren-dc/QQMusicApi/commit/460be1125af242c409ff91d06038b25f305702fd)) by [@luren-dc](https://github.com/luren-dc) 
@@ -23,8 +25,8 @@
 - 修改文档错误 - ([a01cf0f](https://github.com/luren-dc/QQMusicApi/commit/a01cf0f36c0edaf610d1b435c154c1f33b4493d8)) by [@luren-dc](https://github.com/luren-dc) 
 
 ## 贡献者
-* @github-actions[bot]
 * @luren-dc
+* @github-actions[bot]
 * @renovate[bot] [#187](https://github.com/luren-dc/QQMusicApi/pull/187)
 ## [[0.3.5](https://github.com/luren-dc/QQMusicApi/compare/v0.3.4..v0.3.5)] - 2025-07-29
 
