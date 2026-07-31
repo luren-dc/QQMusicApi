@@ -103,20 +103,20 @@ async def quick_search(self, keyword: str) -> dict[str, Any]:
 
 ### `_build_request` 参数说明
 
-| 参数             | 类型                        | 说明                                                      |
-|------------------|-----------------------------|-----------------------------------------------------------|
-| `module`         | `str`                       | 接口所属模块名                                            |
-| `method`         | `str`                       | 方法名                                                    |
-| `param`          | `dict`                      | 业务参数                                                  |
-| `response_model` | `type[BaseModel]` 或 `None` | 响应模型，为 None 时返回原始 dict                         |
-| `comm`           | `dict` 或 `None`            | 附加的公共参数                                            |
-| `override_comm`  | `bool`                      | 为 True 时 `comm` 完全替代自动生成的参数；为 False 时合并 |
-| `credential`     | `Credential` 或 `None`      | 覆盖本次请求的凭证                                        |
-| `platform`       | `Platform` 或 `None`        | 覆盖本次请求的平台                                        |
-| `preserve_bool`  | `bool`                      | 是否保留布尔值原样（默认转为 0/1 整型）                   |
-| `sign`           | `bool`                      | 是否对请求进行签名                                        |
-| `pager_meta`     | `PagerMeta` 或 `None`       | 分页元数据，提供后返回 `PaginatedRequest`                 |
-| `refresh_meta`   | `RefreshMeta` 或 `None`     | 换一批元数据，提供后返回 `RefreshableRequest`             |
+| 参数               | 类型                          | 说明                                                      |
+|--------------------|-------------------------------|-----------------------------------------------------------|
+| `module`           | `str`                         | 接口所属模块名                                            |
+| `method`           | `str`                         | 方法名                                                    |
+| `param`            | `dict`                        | 业务参数                                                  |
+| `response_model`   | `type[BaseModel]` 或 `None`   | 响应模型，为 None 时返回原始 dict                         |
+| `comm`             | `dict` 或 `None`              | 附加的公共参数                                            |
+| `override_comm`    | `bool`                        | 为 True 时 `comm` 完全替代自动生成的参数；为 False 时合并 |
+| `credential`       | `Credential` 或 `None`        | 覆盖本次请求的凭证                                        |
+| `platform`         | `Platform` 或 `None`          | 覆盖本次请求的平台                                        |
+| `preserve_bool`    | `bool`                        | 是否保留布尔值原样（默认转为 0/1 整型）                   |
+| `sign`             | `bool`                        | 是否对请求进行签名                                        |
+| `pager_strategy`   | `PagerStrategy` 或 `None`     | 分页策略，提供后返回 `PaginatedRequest`                   |
+| `refresh_strategy` | `RefresherStrategy` 或 `None` | 换一批策略，提供后返回 `RefreshableRequest`               |
 
 ### `client.request` 参数说明
 
@@ -174,6 +174,17 @@ class MyResponse(Response):
 ```
 
 `Response` 基类配置了 `frozen=True`（不可变）和 `extra="ignore"`（忽略多余字段）。
+
+!!! warning "Pydantic 默认值规范"
+
+    定义模型时应避免使用 `None` 作为隐式兜底默认值。如果字段可选或为空，应当使用显式的空标量，或通过 `Field(default_factory=...)` 声明：
+    ```python
+    class Album(Response):
+        name: str = ""
+        publish_time: str = ""
+        # 列表必须使用 default_factory
+        singers: list[Singer] = Field(default_factory=list)
+    ```
 
 ### JSONPath 字段映射
 
@@ -242,10 +253,12 @@ def get_vip_info(self, *, credential: Credential | None = None):
 
 ### 连续翻页
 
-通过 `pager_meta` 声明连续翻页能力，返回的请求对象会暴露 `.paginate()`：
+通过 `pager_strategy` 声明连续翻页能力，建议配合显示 Generic 标注（形如 `OffsetStrategy[Any, GetSonglistDetailResponse]`）以确保 IDE 的类型推断能力：
 
 ```python
-from ..core.pagination import OffsetStrategy, PagerMeta, ResponseAdapter
+from typing import Any
+
+from ..core.pagination import OffsetStrategy
 
 
 def get_detail(self, songlist_id: int, num: int = 10, page: int = 1):
@@ -259,23 +272,25 @@ def get_detail(self, songlist_id: int, num: int = 10, page: int = 1):
             "song_num": num,
         },
         response_model=GetSonglistDetailResponse,
-        pager_meta=PagerMeta(
-            strategy=OffsetStrategy(offset_key="song_begin", page_size_key="song_num"),
-            adapter=ResponseAdapter(
-                has_more_flag="hasmore",
-                total="total",
-                count=lambda response: len(response.songs),
-            ),
+        pager_strategy=OffsetStrategy[Any, GetSonglistDetailResponse](
+            offset_key="song_begin",
+            page_size_key="song_num",
+            has_more_extractor=lambda response: bool(response.hasmore),
+            total_extractor=lambda response: response.total,
+            count_extractor=lambda response: len(response.songs),
+            items_extractor=lambda response: response.songs,
         ),
     )
 ```
 
 ### 换一批
 
-通过 `refresh_meta` 声明换一批能力，返回的请求对象会暴露 `.refresh()`：
+通过 `refresh_strategy` 声明换一批能力：
 
 ```python
-from ..core.pagination import BatchRefreshStrategy, RefreshMeta, ResponseAdapter
+from typing import Any
+
+from ..core.pagination import BatchRefreshStrategy
 
 
 def get_related_mv(self, songid: int, last_mvid: str | None = None):
@@ -285,12 +300,11 @@ def get_related_mv(self, songid: int, last_mvid: str | None = None):
         method="GetSongRelatedMv",
         param={"songid": str(songid), "songtype": 1, "lastmvid": last_mvid or 0},
         response_model=GetRelatedMvResponse,
-        refresh_meta=RefreshMeta(
-            strategy=BatchRefreshStrategy(refresh_key="lastmvid"),
-            adapter=ResponseAdapter(
-                has_more_flag="has_more",
-                cursor=lambda response: response.mv[-1].id if response.mv else None,
-            ),
+        refresh_strategy=BatchRefreshStrategy[Any, GetRelatedMvResponse](
+            refresh_key="lastmvid",
+            cursor_extractor=lambda response: response.mv[-1].id if response.mv else None,
+            has_more_extractor=lambda response: bool(response.has_more),
+            items_extractor=lambda response: response.mv,
         ),
     )
 ```
@@ -305,7 +319,7 @@ def get_related_mv(self, songid: int, last_mvid: str | None = None):
 | `MultiFieldContinuationStrategy` |   多字段续翻 | 自定义 `build_next_params` 函数 |
 | `BatchRefreshStrategy`           |       换一批 | `refresh_key`                   |
 
-`pager_meta` 与 `refresh_meta` 不能同时声明。
+`pager_strategy` 与 `refresh_strategy` 不能同时声明。
 
 ## 请求签名
 
@@ -354,6 +368,19 @@ self._build_request(
 )
 ```
 
+## 异常处理
+
+在抛出或处理异常时，应使用项目统一的基于领域驱动（DDD）风格的异常类（继承自 `BaseApiException` 或 `ApiException`）。在包装底层异常时，必须使用原生异常链（`raise ... from exc`）保留堆栈追踪：
+
+```python
+from ..core.exceptions import ApiDataError
+
+try:
+    # ...
+except KeyError as e:
+    raise ApiDataError("无法解析歌曲信息") from e
+```
+
 ## 编写测试
 
 测试文件放在 `tests/` 下，按模块命名（如 `test_song.py`）。
@@ -380,8 +407,15 @@ async def test_query_song(client: Client) -> None:
 ```python
 @pytest.mark.parametrize("page", [1, 2])
 async def test_general_search(client: Client, page: int) -> None:
-    """测试综合搜索翻页."""
-    result = await client.search.general_search("周杰伦", page=page)
+    """测试综合搜索翻页逻辑."""
+    try:
+        result = await client.search.general_search("周杰伦", page=page)
+    except Exception as e:
+        # 示例：优雅处理网络风控或限流 (需根据实际异常类型调整)
+        if "limit" in str(e).lower() or "risk" in str(e).lower():
+            pytest.skip(f"Triggered rate limit or risk control: {e}")
+        raise
+        
     assert result.song.items is not None
 ```
 
@@ -401,7 +435,7 @@ async def test_get_vip_info(authenticated_client: Client) -> None:
 ```python
 async def test_search_paginate(client: Client) -> None:
     """测试搜索分页."""
-    pager = client.search.search_by_type("周杰伦", num=5).paginate(limit=2)
+    pager = client.search.search_by_type("周杰伦", num=5).pager(limit=2)
 
     assert pager.has_more() is True
     first_page = await pager.next()
