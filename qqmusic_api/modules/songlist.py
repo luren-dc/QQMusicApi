@@ -66,6 +66,7 @@ class SonglistApi(ApiModule):
                 offset_key="song_begin",
                 page_size_key="song_num",
                 has_more_extractor=lambda response: bool(response.hasmore),
+                items_extractor=lambda response: response.songs,
                 total_extractor=lambda response: response.total,
                 count_extractor=lambda response: len(response.songs),
             ),

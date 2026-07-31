@@ -60,6 +60,7 @@ class AlbumApi(ApiModule):
             pager_strategy=OffsetStrategy[Any, GetAlbumSongResponse](
                 offset_key="begin",
                 page_size_key="num",
+                items_extractor=lambda response: response.song_list,
                 total_extractor=lambda response: response.total_num,
                 count_extractor=lambda response: len(response.song_list),
             ),
@@ -81,6 +82,7 @@ class AlbumApi(ApiModule):
             pager_strategy=OffsetStrategy[Any, GetNewAlbumResponse](
                 offset_key="start",
                 page_size_key="num",
+                items_extractor=lambda response: response.albums,
                 total_extractor=lambda response: response.total,
                 count_extractor=lambda response: len(response.albums),
             ),

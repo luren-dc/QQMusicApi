@@ -383,6 +383,7 @@ class SongApi(ApiModule):
                 cursor_extractor=lambda response: (
                     [playlist.id for playlist in response.songlist] if response.songlist else None
                 ),
+                items_extractor=lambda response: response.songlist,
             ),
         )
 
@@ -402,6 +403,7 @@ class SongApi(ApiModule):
                 refresh_key="lastmvid",
                 has_more_extractor=lambda response: bool(response.has_more),
                 cursor_extractor=lambda response: response.mv[-1].id if response.mv else None,
+                items_extractor=lambda response: response.mv,
             ),
         )
 

@@ -90,6 +90,7 @@ class PrivateMessageApi(ApiModule):
             pager_strategy=MultiFieldContinuationStrategy[Any, PrivateSessionListResponse](
                 _build_session_list_next_params,
                 has_more_extractor=lambda response: response.has_more == 1,
+                items_extractor=lambda response: response.sessions,
                 context_name="private_message_session_list",
             ),
         )
@@ -162,6 +163,7 @@ class PrivateMessageApi(ApiModule):
             pager_strategy=MultiFieldContinuationStrategy[Any, PrivateMessageListResponse](
                 _build_message_list_next_params,
                 has_more_extractor=lambda response: response.has_more == 1,
+                items_extractor=lambda response: response.messages,
                 context_name="private_message_list",
             ),
         )

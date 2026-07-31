@@ -101,6 +101,7 @@ class UserApi(ApiModule):
                 offset_key="From",
                 page_size_key="Size",
                 has_more_extractor=lambda response: bool(response.has_more),
+                items_extractor=lambda response: response.users,
                 total_extractor=lambda response: getattr(response, "total", None),
                 count_extractor=lambda response: len(response.users),
             ),
@@ -133,6 +134,7 @@ class UserApi(ApiModule):
                 offset_key="From",
                 page_size_key="Size",
                 has_more_extractor=lambda response: bool(response.has_more),
+                items_extractor=lambda response: response.users,
                 total_extractor=lambda response: getattr(response, "total", None),
                 count_extractor=lambda response: len(response.users),
             ),
@@ -164,6 +166,7 @@ class UserApi(ApiModule):
                 page_size=num,
                 start_page=page - 1,
                 has_more_extractor=lambda response: bool(response.has_more),
+                items_extractor=lambda response: response.friends,
             ),
         )
 
@@ -194,6 +197,7 @@ class UserApi(ApiModule):
                 offset_key="From",
                 page_size_key="Size",
                 has_more_extractor=lambda response: bool(response.has_more),
+                items_extractor=lambda response: response.users,
                 total_extractor=lambda response: getattr(response, "total", None),
                 count_extractor=lambda response: len(response.users),
             ),
@@ -249,6 +253,7 @@ class UserApi(ApiModule):
                 offset_key="song_begin",
                 page_size_key="song_num",
                 has_more_extractor=lambda response: bool(getattr(response, "hasmore", 0)),
+                items_extractor=lambda response: response.songs,
                 total_extractor=lambda response: getattr(response, "total", None),
                 count_extractor=lambda response: len(response.songs),
             ),
@@ -280,6 +285,7 @@ class UserApi(ApiModule):
                 offset_key="offset",
                 page_size_key="size",
                 has_more_extractor=lambda response: bool(getattr(response, "hasmore", 0)),
+                items_extractor=lambda response: response.playlists,
                 total_extractor=lambda response: getattr(response, "total", None),
                 count_extractor=lambda response: len(response.playlists),
             ),
@@ -349,6 +355,7 @@ class UserApi(ApiModule):
                 offset_key="offset",
                 page_size_key="size",
                 has_more_extractor=lambda response: bool(getattr(response, "hasmore", 0)),
+                items_extractor=lambda response: response.albums,
                 total_extractor=lambda response: getattr(response, "total", None),
                 count_extractor=lambda response: len(response.albums),
             ),
@@ -434,6 +441,7 @@ class UserApi(ApiModule):
                     if (r.singers or r.songs or r.styles)
                     else None
                 ),
+                items_extractor=lambda response: response.songs or response.singers or response.styles,
             ),
         )
 

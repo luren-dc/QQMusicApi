@@ -190,6 +190,7 @@ class SingerApi(ApiModule):
                         "cur_page": cast("dict[str, int]", params)["cur_page"] + 1,
                     }
                 ),
+                items_extractor=lambda response: response.singerlist,
                 context_name="singer_list_index",
             ),
         )
@@ -242,6 +243,9 @@ class SingerApi(ApiModule):
                 page_size=num,
                 start_page=page - 1,
                 has_more_extractor=lambda response: bool(response.has_more),
+                items_extractor=lambda response: (
+                    response.song_tab or response.album_tab or response.video_tab or response.introduction_tab
+                ),
             ),
         )
 
@@ -290,6 +294,7 @@ class SingerApi(ApiModule):
                 page_size_key="number",
                 total_extractor=lambda response: response.total_num,
                 count_extractor=lambda response: len(response.song_list),
+                items_extractor=lambda response: response.song_list,
             ),
         )
 
@@ -311,6 +316,7 @@ class SingerApi(ApiModule):
                 page_size_key="number",
                 total_extractor=lambda response: response.total,
                 count_extractor=lambda response: len(response.album_list),
+                items_extractor=lambda response: response.album_list,
             ),
         )
 
@@ -332,5 +338,6 @@ class SingerApi(ApiModule):
                 page_size_key="count",
                 total_extractor=lambda response: response.total,
                 count_extractor=lambda response: len(response.mv_list),
+                items_extractor=lambda response: response.mv_list,
             ),
         )

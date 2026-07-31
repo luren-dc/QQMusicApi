@@ -52,6 +52,7 @@ class TopApi(ApiModule):
             pager_strategy=OffsetStrategy[Any, TopDetailResponse](
                 offset_key="offset",
                 page_size_key="num",
+                items_extractor=lambda response: response.songs,
                 total_extractor=lambda response: response.info.total_num,
                 count_extractor=lambda response: len(response.songs),
             ),

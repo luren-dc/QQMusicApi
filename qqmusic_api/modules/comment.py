@@ -38,6 +38,7 @@ def _build_comment_pager_strategy() -> MultiFieldContinuationStrategy[Any, Comme
     return MultiFieldContinuationStrategy(
         build_next_params,
         has_more_extractor=lambda response: bool(response.has_more),
+        items_extractor=lambda response: response.comments,
         context_name="comment_list",
     )
 
@@ -231,6 +232,7 @@ class CommentApi(ApiModule):
                 cursor_key="LastPos",
                 has_more_extractor=lambda response: bool(response.has_more),
                 cursor_extractor=lambda response: response.next_pos,
+                items_extractor=lambda response: response.comments,
             ),
         )
 

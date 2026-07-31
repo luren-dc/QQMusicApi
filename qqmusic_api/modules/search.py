@@ -127,6 +127,14 @@ class SearchApi(ApiModule):
                     "page_start": response.nextpage_start,
                 },
                 has_more_extractor=lambda response: response.nextpage != -1,
+                items_extractor=lambda response: [
+                    *(response.song.items if response.song else []),
+                    *(response.singer.items if response.singer else []),
+                    *(response.album.items if response.album else []),
+                    *(response.songlist.items if response.songlist else []),
+                    *(response.mv.items if response.mv else []),
+                    *(response.audio.items if response.audio else []),
+                ],
                 context_name="general_search",
             ),
         )
@@ -182,5 +190,8 @@ class SearchApi(ApiModule):
                 start_page=page,
                 has_more_extractor=lambda r: getattr(r, "nextpage", -1) != -1,
                 total_extractor=lambda r: getattr(r, "total_num", None),
+                items_extractor=lambda r: (
+                    r.song or r.singer or r.album or r.songlist or r.mv or r.user or r.audio_alum or []
+                ),
             ),
         )

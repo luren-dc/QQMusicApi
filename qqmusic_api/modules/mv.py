@@ -97,6 +97,7 @@ class MvApi(ApiModule):
             pager_strategy=OffsetStrategy[Any, GetMvListResponse](
                 offset_key="start",
                 page_size_key="size",
+                items_extractor=lambda response: response.items,
                 total_extractor=lambda response: response.total,
                 count_extractor=lambda response: len(response.items),
             ),
