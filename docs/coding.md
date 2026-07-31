@@ -253,7 +253,7 @@ def get_vip_info(self, *, credential: Credential | None = None):
 
 ### 连续翻页
 
-通过 `pager_strategy` 声明连续翻页能力，建议配合显示 Generic 标注（形如 `OffsetStrategy[Any, GetSonglistDetailResponse]`）以确保 IDE 的类型推断能力：
+通过 `pager_strategy` 声明连续翻页能力，建议配合显示 Generic 标注（形如 `OffsetStrategy[Any, GetSonglistDetailResponse, Song]`）以确保 IDE 的类型推断能力：
 
 ```python
 from typing import Any
@@ -272,7 +272,7 @@ def get_detail(self, songlist_id: int, num: int = 10, page: int = 1):
             "song_num": num,
         },
         response_model=GetSonglistDetailResponse,
-        pager_strategy=OffsetStrategy[Any, GetSonglistDetailResponse](
+        pager_strategy=OffsetStrategy[Any, GetSonglistDetailResponse, Song](
             offset_key="song_begin",
             page_size_key="song_num",
             has_more_extractor=lambda response: bool(response.hasmore),
@@ -300,7 +300,7 @@ def get_related_mv(self, songid: int, last_mvid: str | None = None):
         method="GetSongRelatedMv",
         param={"songid": str(songid), "songtype": 1, "lastmvid": last_mvid or 0},
         response_model=GetRelatedMvResponse,
-        refresh_strategy=BatchRefreshStrategy[Any, GetRelatedMvResponse](
+        refresh_strategy=BatchRefreshStrategy[Any, GetRelatedMvResponse, Mv](
             refresh_key="lastmvid",
             cursor_extractor=lambda response: response.mv[-1].id if response.mv else None,
             has_more_extractor=lambda response: bool(response.has_more),

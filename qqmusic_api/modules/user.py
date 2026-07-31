@@ -440,14 +440,14 @@ class UserApi(ApiModule):
                     {
                         **cast("dict[str, Any]", p),
                         "Page": cast("dict[str, Any]", p)["Page"] + 1,
-                        "SongLastid": r.songs[-1].id,
-                        "SingersLastid": r.singers[-1].id,
-                        "StyleLastid": r.styles[-1].id,
+                        "SongLastid": r.songs[-1].id if r.songs else 0,
+                        "SingersLastid": r.singers[-1].id if r.singers else 0,
+                        "StyleLastid": r.styles[-1].id if r.styles else 0,
                     }
                     if (r.singers or r.songs or r.styles)
                     else None
                 ),
-                items_extractor=lambda response: response.songs or response.singers or response.styles,
+                items_extractor=lambda response: response.songs + response.singers + response.styles,
             ),
         )
 

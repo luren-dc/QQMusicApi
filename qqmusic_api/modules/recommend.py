@@ -8,12 +8,13 @@ from ..core.pagination import (
     PageStrategy,
     PaginationParams,
 )
-from ..models.base import SongList
+from ..models.base import Song, SongList
 from ..models.recommend import (
     GuessRecommendResponse,
     RadarRecommendResponse,
     RecommendFeedCardResponse,
     RecommendNewSongResponse,
+    RecommendShelf,
     RecommendSonglistResponse,
 )
 from ..models.request import Credential
@@ -23,20 +24,25 @@ from ._base import ApiModule
 class RecommendApi(ApiModule):
     """推荐 API."""
 
-    def get_home_feed(self, data: dict[str, Any] | None = None):
+    def get_home_feed(self, page: int = 1, direction: int = 0, s_num: int = 0, v_cache: list[str] | None = None):
         """获取首页推荐 Feed.
 
         Args:
-            data: 自定义请求参数. 若未传则构造初始化参数.
+            page: 页码.
+            direction: 翻页方向, 0=首屏, 1=向后翻页.
+            s_num: 已拉取的楼层数量累加值.
+            v_cache: 已经拉取过的楼层 ID 缓存列表.
         """
-        data = data or {
-            "direction": 0,
-            "page": 1,
-            "s_num": 0,
-            "v_cache": [],
+        data: dict[str, Any] = {
+            "direction": direction,
+            "page": page,
+            "s_num": s_num,
+            "v_cache": v_cache or [],
         }
 
-        def _build_home_feed_next_params(params: PaginationParams, response: RecommendFeedCardResponse):
+        def _build_home_feed_next_params(
+            params: PaginationParams, response: RecommendFeedCardResponse
+        ) -> PaginationParams | None:
             shelf_count = len(response.shelves)
             if shelf_count == 0:
                 return None
@@ -59,8 +65,9 @@ class RecommendApi(ApiModule):
             "get_recommend_feed",
             data,
             response_model=RecommendFeedCardResponse,
-            pager_strategy=MultiFieldContinuationStrategy[Any, RecommendFeedCardResponse](
+            pager_strategy=MultiFieldContinuationStrategy[Any, RecommendFeedCardResponse, RecommendShelf](
                 _build_home_feed_next_params,
+                items_extractor=lambda response: response.shelves,
                 context_name="recommend_home_feed",
             ),
         )
@@ -103,10 +110,11 @@ class RecommendApi(ApiModule):
             "GetRadarSong",
             data,
             response_model=RadarRecommendResponse,
-            pager_strategy=PageStrategy[Any, RadarRecommendResponse](
+            pager_strategy=PageStrategy[Any, RadarRecommendResponse, Song](
                 page_key="Page",
                 start_page=page,
                 has_more_extractor=lambda response: bool(response.has_more),
+                items_extractor=lambda response: response.songs,
             ),
         )
 

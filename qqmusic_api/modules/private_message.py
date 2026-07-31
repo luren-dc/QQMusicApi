@@ -24,7 +24,9 @@ PRIVATE_MSG_READ_MODULE = "music.privateMsg.PrivateMsgRead"
 PRIVATE_MSG_WRITE_MODULE = "music.privateMsg.PrivateMsgWrite"
 
 
-def _build_session_list_next_params(params: dict[Any, Any], response: PrivateSessionListResponse):
+def _build_session_list_next_params(
+    params: dict[str, Any], response: PrivateSessionListResponse
+) -> dict[str, Any] | None:
     """根据最后一个会话构造会话列表下一页参数."""
     if not response.sessions:
         return None
@@ -32,7 +34,9 @@ def _build_session_list_next_params(params: dict[Any, Any], response: PrivateSes
     return {**params, "last_id": last_session.session_id, "last_time": last_session.sort_time}
 
 
-def _build_message_list_next_params(params: dict[Any, Any], response: PrivateMessageListResponse):
+def _build_message_list_next_params(
+    params: dict[str, Any], response: PrivateMessageListResponse
+) -> dict[str, Any] | None:
     """根据最后一条消息构造消息列表下一页参数."""
     if not response.messages:
         return None

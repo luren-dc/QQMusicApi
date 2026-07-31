@@ -27,8 +27,8 @@ AllowErrorCodes = Literal["all"] | set[int] | frozenset[int] | tuple[int, ...]
 @overload
 def _build_result(
     raw: dict[str, Any],
-    response_model: type["ResponseModel"],
-) -> "ResponseModel": ...
+    response_model: type[ResponseModel],
+) -> ResponseModel: ...
 
 
 @overload
@@ -114,7 +114,7 @@ class PaginatedRequest(Request[RequestResultT], Generic[RequestResultT, ItemT_co
 
     pager_strategy: PagerStrategy[Any, RequestResultT, ItemT_co]
 
-    def next_request(self, previous_response: RequestResultT) -> "PaginatedRequest[RequestResultT, ItemT_co] | None":
+    def next_request(self, previous_response: RequestResultT) -> Self | None:
         """根据上一次请求的响应, 构建下一次翻页的请求.
 
         Args:
@@ -280,7 +280,7 @@ class RefreshableRequest(Request[RequestResultT], Generic[RequestResultT, ItemT_
         """
         return [item async for item in self.iter_items(limit=limit)]
 
-    def next_request(self, previous_response: RequestResultT) -> "RefreshableRequest[RequestResultT] | None":
+    def next_request(self, previous_response: RequestResultT) -> Self | None:
         """根据上一次请求的响应, 构建下一次换一批的请求.
 
         Args:

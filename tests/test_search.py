@@ -91,3 +91,10 @@ async def test_search_by_type_with_selectors(client: Client) -> None:
     selectors = [SearchSelector(id=4558, name="默认", type=0)]
     result = await client.search.search_by_type("周杰伦", search_type=SearchType.SONG, num=5, selectors=selectors)
     assert result.song is not None
+
+
+async def test_search_by_type_iter_items(client: Client) -> None:
+    """测试搜索按条目迭代 (iter_items)."""
+    req = client.search.search_by_type("周杰伦", search_type=SearchType.SONG, num=5)
+    songs = [song async for song in req.iter_items(limit=10)]
+    assert len(songs) > 5
