@@ -188,8 +188,8 @@ class SearchApi(ApiModule):
                 page_key="page_num",
                 page_size=num,
                 start_page=page,
-                has_more_extractor=lambda r: getattr(r, "nextpage", -1) != -1,
-                total_extractor=lambda r: getattr(r, "total_num", None),
+                has_more_extractor=lambda r: r.nextpage != -1,
+                total_extractor=lambda r: r.total_num,
                 items_extractor=lambda r: (
                     r.song or r.singer or r.album or r.songlist or r.mv or r.user or r.audio_alum or []
                 ),

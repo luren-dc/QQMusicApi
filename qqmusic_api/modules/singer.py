@@ -182,8 +182,7 @@ class SingerApi(ApiModule):
                 lambda params, response: (
                     None
                     if not response.singerlist
-                    or cast("dict[str, int]", params)["sin"] + len(response.singerlist)
-                    >= (getattr(response, "total", 0) or 0)
+                    or cast("dict[str, int]", params)["sin"] + len(response.singerlist) >= (response.total or 0)
                     else {
                         **cast("dict[str, int]", params),
                         "sin": cast("dict[str, int]", params)["sin"] + len(response.singerlist),

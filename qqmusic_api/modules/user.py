@@ -102,7 +102,7 @@ class UserApi(ApiModule):
                 page_size_key="Size",
                 has_more_extractor=lambda response: bool(response.has_more),
                 items_extractor=lambda response: response.users,
-                total_extractor=lambda response: getattr(response, "total", None),
+                total_extractor=lambda response: response.total,
                 count_extractor=lambda response: len(response.users),
             ),
         )
@@ -135,7 +135,7 @@ class UserApi(ApiModule):
                 page_size_key="Size",
                 has_more_extractor=lambda response: bool(response.has_more),
                 items_extractor=lambda response: response.users,
-                total_extractor=lambda response: getattr(response, "total", None),
+                total_extractor=lambda response: response.total,
                 count_extractor=lambda response: len(response.users),
             ),
         )
@@ -198,7 +198,7 @@ class UserApi(ApiModule):
                 page_size_key="Size",
                 has_more_extractor=lambda response: bool(response.has_more),
                 items_extractor=lambda response: response.users,
-                total_extractor=lambda response: getattr(response, "total", None),
+                total_extractor=lambda response: response.total,
                 count_extractor=lambda response: len(response.users),
             ),
         )
@@ -252,9 +252,9 @@ class UserApi(ApiModule):
             pager_strategy=OffsetStrategy[Any, GetSonglistDetailResponse](
                 offset_key="song_begin",
                 page_size_key="song_num",
-                has_more_extractor=lambda response: bool(getattr(response, "hasmore", 0)),
+                has_more_extractor=lambda response: bool(response.hasmore),
                 items_extractor=lambda response: response.songs,
-                total_extractor=lambda response: getattr(response, "total", None),
+                total_extractor=lambda response: response.total,
                 count_extractor=lambda response: len(response.songs),
             ),
         )
@@ -284,9 +284,9 @@ class UserApi(ApiModule):
             pager_strategy=OffsetStrategy[Any, UserFavSonglistResponse](
                 offset_key="offset",
                 page_size_key="size",
-                has_more_extractor=lambda response: bool(getattr(response, "hasmore", 0)),
+                has_more_extractor=lambda response: bool(response.hasmore),
                 items_extractor=lambda response: response.playlists,
-                total_extractor=lambda response: getattr(response, "total", None),
+                total_extractor=lambda response: response.total,
                 count_extractor=lambda response: len(response.playlists),
             ),
         )
@@ -354,9 +354,9 @@ class UserApi(ApiModule):
             pager_strategy=OffsetStrategy[Any, UserFavAlbumResponse](
                 offset_key="offset",
                 page_size_key="size",
-                has_more_extractor=lambda response: bool(getattr(response, "hasmore", 0)),
+                has_more_extractor=lambda response: bool(response.hasmore),
                 items_extractor=lambda response: response.albums,
-                total_extractor=lambda response: getattr(response, "total", None),
+                total_extractor=lambda response: response.total,
                 count_extractor=lambda response: len(response.albums),
             ),
         )
