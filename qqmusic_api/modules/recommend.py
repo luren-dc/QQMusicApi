@@ -8,6 +8,7 @@ from ..core.pagination import (
     PageStrategy,
     PaginationParams,
 )
+from ..models.base import SongList
 from ..models.recommend import (
     GuessRecommendResponse,
     RadarRecommendResponse,
@@ -60,7 +61,6 @@ class RecommendApi(ApiModule):
             response_model=RecommendFeedCardResponse,
             pager_strategy=MultiFieldContinuationStrategy[Any, RecommendFeedCardResponse](
                 _build_home_feed_next_params,
-                items_extractor=lambda response: response.shelves,
                 context_name="recommend_home_feed",
             ),
         )
@@ -107,7 +107,6 @@ class RecommendApi(ApiModule):
                 page_key="Page",
                 start_page=page,
                 has_more_extractor=lambda response: bool(response.has_more),
-                items_extractor=lambda response: response.songs,
             ),
         )
 
@@ -124,7 +123,7 @@ class RecommendApi(ApiModule):
             "GetRecommendFeed",
             data,
             response_model=RecommendSonglistResponse,
-            pager_strategy=CursorStrategy[Any, RecommendSonglistResponse](
+            pager_strategy=CursorStrategy[Any, RecommendSonglistResponse, SongList](
                 cursor_key="From",
                 has_more_extractor=lambda response: bool(response.has_more),
                 cursor_extractor=lambda response: response.from_limit,

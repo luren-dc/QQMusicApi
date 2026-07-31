@@ -9,6 +9,7 @@ from ..core.pagination import (
     OffsetStrategy,
     PageStrategy,
 )
+from ..models.base import MV, Album, Singer, Song
 from ..models.singer import (
     HomepageHeaderResponse,
     HomepageTabDetailResponse,
@@ -178,7 +179,7 @@ class SingerApi(ApiModule):
                 "cur_page": page,
             },
             response_model=SingerIndexPageResponse,
-            pager_strategy=MultiFieldContinuationStrategy[Any, SingerIndexPageResponse](
+            pager_strategy=MultiFieldContinuationStrategy[Any, SingerIndexPageResponse, Singer](
                 lambda params, response: (
                     None
                     if not response.singerlist
@@ -242,9 +243,6 @@ class SingerApi(ApiModule):
                 page_size=num,
                 start_page=page - 1,
                 has_more_extractor=lambda response: bool(response.has_more),
-                items_extractor=lambda response: (
-                    response.song_tab or response.album_tab or response.video_tab or response.introduction_tab
-                ),
             ),
         )
 
@@ -288,7 +286,7 @@ class SingerApi(ApiModule):
             method="GetSingerSongList",
             param={"singerMid": mid, "order": 1, "number": num, "begin": (page - 1) * num},
             response_model=SingerSongListResponse,
-            pager_strategy=OffsetStrategy[Any, SingerSongListResponse](
+            pager_strategy=OffsetStrategy[Any, SingerSongListResponse, Song](
                 offset_key="begin",
                 page_size_key="number",
                 total_extractor=lambda response: response.total_num,
@@ -310,7 +308,7 @@ class SingerApi(ApiModule):
             method="GetAlbumList",
             param={"singerMid": mid, "order": 1, "number": num, "begin": (page - 1) * num},
             response_model=SingerAlbumListResponse,
-            pager_strategy=OffsetStrategy[Any, SingerAlbumListResponse](
+            pager_strategy=OffsetStrategy[Any, SingerAlbumListResponse, Album](
                 offset_key="begin",
                 page_size_key="number",
                 total_extractor=lambda response: response.total,
@@ -332,7 +330,7 @@ class SingerApi(ApiModule):
             method="GetSingerMvList",
             param={"singermid": mid, "order": 1, "count": num, "start": (page - 1) * num},
             response_model=SingerMvListResponse,
-            pager_strategy=OffsetStrategy[Any, SingerMvListResponse](
+            pager_strategy=OffsetStrategy[Any, SingerMvListResponse, MV](
                 offset_key="start",
                 page_size_key="count",
                 total_extractor=lambda response: response.total,

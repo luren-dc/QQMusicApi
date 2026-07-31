@@ -6,6 +6,7 @@ from typing import Any, NamedTuple
 from qqmusic_api import Platform
 
 from ..core.pagination import BatchRefreshStrategy
+from ..models.base import MV, SongList
 from ..models.request import Credential
 from ..models.song import (
     GetCdnDispatchResponse,
@@ -377,7 +378,7 @@ class SongApi(ApiModule):
             method="GetRelatedPlaylist",
             param={"songid": songid, "vecPlaylist": last or []},
             response_model=GetRelatedSonglistResponse,
-            refresh_strategy=BatchRefreshStrategy[Any, GetRelatedSonglistResponse](
+            refresh_strategy=BatchRefreshStrategy[Any, GetRelatedSonglistResponse, SongList](
                 refresh_key="vecPlaylist",
                 has_more_extractor=lambda response: bool(response.has_more),
                 cursor_extractor=lambda response: (
@@ -399,7 +400,7 @@ class SongApi(ApiModule):
             method="GetSongRelatedMv",
             param={"songid": str(songid), "songtype": 1, "lastmvid": last_mvid or 0},
             response_model=GetRelatedMvResponse,
-            refresh_strategy=BatchRefreshStrategy[Any, GetRelatedMvResponse](
+            refresh_strategy=BatchRefreshStrategy[Any, GetRelatedMvResponse, MV](
                 refresh_key="lastmvid",
                 has_more_extractor=lambda response: bool(response.has_more),
                 cursor_extractor=lambda response: response.mv[-1].id if response.mv else None,

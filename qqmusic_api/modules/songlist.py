@@ -4,6 +4,7 @@ from typing import Any
 
 from ..core import CgiApiException
 from ..core.pagination import OffsetStrategy
+from ..models.base import Song
 from ..models.request import Credential
 from ..models.songlist import CreateDeleteSonglistResp, GetSonglistDetailResponse
 from ._base import ApiModule
@@ -62,7 +63,7 @@ class SonglistApi(ApiModule):
                 "onlysonglist": onlysong,
             },
             response_model=GetSonglistDetailResponse,
-            pager_strategy=OffsetStrategy[Any, GetSonglistDetailResponse](
+            pager_strategy=OffsetStrategy[Any, GetSonglistDetailResponse, Song](
                 offset_key="song_begin",
                 page_size_key="song_num",
                 has_more_extractor=lambda response: bool(response.hasmore),

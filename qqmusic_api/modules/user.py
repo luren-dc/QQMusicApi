@@ -3,13 +3,19 @@
 from typing import Any, ClassVar, cast
 
 from ..core.pagination import MultiFieldContinuationStrategy, OffsetStrategy, PageStrategy
+from ..models.base import Song
 from ..models.request import Credential
 from ..models.songlist import GetSonglistDetailResponse
 from ..models.user import (
+    DislikeItem,
     DislikeListData,
+    FriendEntry,
+    RelationUser,
     UserCreatedSonglistResponse,
+    UserFavAlbumItem,
     UserFavAlbumResponse,
     UserFavMvResponse,
+    UserFavSonglistItem,
     UserFavSonglistResponse,
     UserFriendListResponse,
     UserHomepageResponse,
@@ -97,10 +103,10 @@ class UserApi(ApiModule):
             credential=credential,
             require_login=True,
             response_model=UserRelationListResponse,
-            pager_strategy=OffsetStrategy[Any, UserRelationListResponse](
+            pager_strategy=OffsetStrategy[Any, UserRelationListResponse, RelationUser](
                 offset_key="From",
                 page_size_key="Size",
-                has_more_extractor=lambda response: bool(response.has_more),
+                has_more_extractor=lambda response: response.has_more,
                 items_extractor=lambda response: response.users,
                 total_extractor=lambda response: response.total,
                 count_extractor=lambda response: len(response.users),
@@ -130,10 +136,10 @@ class UserApi(ApiModule):
             credential=credential,
             require_login=True,
             response_model=UserRelationListResponse,
-            pager_strategy=OffsetStrategy[Any, UserRelationListResponse](
+            pager_strategy=OffsetStrategy[Any, UserRelationListResponse, RelationUser](
                 offset_key="From",
                 page_size_key="Size",
-                has_more_extractor=lambda response: bool(response.has_more),
+                has_more_extractor=lambda response: response.has_more,
                 items_extractor=lambda response: response.users,
                 total_extractor=lambda response: response.total,
                 count_extractor=lambda response: len(response.users),
@@ -161,11 +167,11 @@ class UserApi(ApiModule):
             credential=credential,
             require_login=True,
             response_model=UserFriendListResponse,
-            pager_strategy=PageStrategy[Any, UserFriendListResponse](
+            pager_strategy=PageStrategy[Any, UserFriendListResponse, FriendEntry](
                 page_key="Page",
                 page_size=num,
                 start_page=page - 1,
-                has_more_extractor=lambda response: bool(response.has_more),
+                has_more_extractor=lambda response: response.has_more,
                 items_extractor=lambda response: response.friends,
             ),
         )
@@ -193,10 +199,10 @@ class UserApi(ApiModule):
             credential=credential,
             require_login=True,
             response_model=UserRelationListResponse,
-            pager_strategy=OffsetStrategy[Any, UserRelationListResponse](
+            pager_strategy=OffsetStrategy[Any, UserRelationListResponse, RelationUser](
                 offset_key="From",
                 page_size_key="Size",
-                has_more_extractor=lambda response: bool(response.has_more),
+                has_more_extractor=lambda response: response.has_more,
                 items_extractor=lambda response: response.users,
                 total_extractor=lambda response: response.total,
                 count_extractor=lambda response: len(response.users),
@@ -249,7 +255,7 @@ class UserApi(ApiModule):
             },
             credential=credential,
             response_model=GetSonglistDetailResponse,
-            pager_strategy=OffsetStrategy[Any, GetSonglistDetailResponse](
+            pager_strategy=OffsetStrategy[Any, GetSonglistDetailResponse, Song](
                 offset_key="song_begin",
                 page_size_key="song_num",
                 has_more_extractor=lambda response: bool(response.hasmore),
@@ -281,7 +287,7 @@ class UserApi(ApiModule):
             param={"uin": euin, "offset": (page - 1) * num, "size": num},
             credential=credential,
             response_model=UserFavSonglistResponse,
-            pager_strategy=OffsetStrategy[Any, UserFavSonglistResponse](
+            pager_strategy=OffsetStrategy[Any, UserFavSonglistResponse, UserFavSonglistItem](
                 offset_key="offset",
                 page_size_key="size",
                 has_more_extractor=lambda response: bool(response.hasmore),
@@ -351,7 +357,7 @@ class UserApi(ApiModule):
             param={"euin": euin, "offset": (page - 1) * num, "size": num},
             credential=credential,
             response_model=UserFavAlbumResponse,
-            pager_strategy=OffsetStrategy[Any, UserFavAlbumResponse](
+            pager_strategy=OffsetStrategy[Any, UserFavAlbumResponse, UserFavAlbumItem](
                 offset_key="offset",
                 page_size_key="size",
                 has_more_extractor=lambda response: bool(response.hasmore),
@@ -429,7 +435,7 @@ class UserApi(ApiModule):
             require_login=True,
             response_model=DislikeListData,
             sign=True,
-            pager_strategy=MultiFieldContinuationStrategy[Any, DislikeListData](
+            pager_strategy=MultiFieldContinuationStrategy[Any, DislikeListData, DislikeItem](
                 build_next_params=lambda p, r: (
                     {
                         **cast("dict[str, Any]", p),

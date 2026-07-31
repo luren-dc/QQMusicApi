@@ -3,6 +3,7 @@
 from typing import Any
 
 from ..core.pagination import OffsetStrategy
+from ..models.base import Song
 from ..models.top import TopCategoryResponse, TopDetailResponse
 from ._base import ApiModule
 
@@ -49,7 +50,7 @@ class TopApi(ApiModule):
             param=param,
             preserve_bool=tag,
             response_model=TopDetailResponse,
-            pager_strategy=OffsetStrategy[Any, TopDetailResponse](
+            pager_strategy=OffsetStrategy[Any, TopDetailResponse, Song](
                 offset_key="offset",
                 page_size_key="num",
                 items_extractor=lambda response: response.songs,
