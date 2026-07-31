@@ -1,5 +1,6 @@
 """分页与换一批策略单元测试."""
 
+from dataclasses import dataclass, field
 from typing import Any, cast
 
 import pytest
@@ -186,3 +187,139 @@ def test_refreshable_request_next_request():
 
     resp_end = DummyResponse(has_more=False)
     assert req.next_request(resp_end) is None
+
+
+@pytest.mark.asyncio
+async def test_async_pager_and_collect_items():
+    """测试 AsyncPager 控制器以及 PaginatedRequest 的 collect 与 iter_items 功能."""
+
+    @dataclass
+    class MockPaginatedRequest(PaginatedRequest):
+        responses: list[DummyResponse] = field(default_factory=list)
+
+        def __await__(self):
+            async def _coro():
+                start = cast("dict[str, Any]", self.param).get("start", 0)
+                idx = start // 10
+                if idx < len(self.responses):
+                    return self.responses[idx]
+                return DummyResponse(total=len(self.responses) * 10, items=[])
+
+            return _coro().__await__()
+
+    resp1 = DummyResponse(total=30, items=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    resp2 = DummyResponse(total=30, items=[11, 12, 13, 14, 15, 16, 17, 18, 19, 20])
+    resp3 = DummyResponse(total=30, items=[21, 22, 23, 24, 25, 26, 27, 28, 29, 30])
+
+    strategy_with_items = OffsetStrategy[Any, DummyResponse](
+        offset_key="start",
+        page_size=10,
+        total_extractor=lambda r: r.total,
+        items_extractor=lambda r: r.items,
+    )
+
+    req = MockPaginatedRequest(
+        _client=cast("Any", None),
+        module="test",
+        method="test",
+        param={"start": 0},
+        pager_strategy=strategy_with_items,
+        responses=[resp1, resp2, resp3],
+    )
+
+    # 测试 pager 手动 step 推进与 limit
+    pager = req.pager(limit=2)
+    assert pager.has_more() is True
+    page1 = await pager.next()
+    assert page1.items == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    page2 = await pager.next()
+    assert page2.items == [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+    assert pager.has_more() is False
+    with pytest.raises(StopAsyncIteration):
+        await pager.next()
+
+    # 测试 collect (页级别)
+    pages = await req.collect(limit=2)
+    assert len(pages) == 2
+
+    # 测试 collect_items (条目级别)
+    items_15 = await req.collect_items(limit=15)
+    assert items_15 == list(range(1, 16))
+
+    all_items = await req.collect_items()
+    assert all_items == list(range(1, 31))
+
+    # 测试未配置 items_extractor 触发 TypeError
+    strategy_no_items = OffsetStrategy[Any, DummyResponse](
+        offset_key="start",
+        page_size=10,
+        total_extractor=lambda r: r.total,
+    )
+    req_no_items = MockPaginatedRequest(
+        _client=cast("Any", None),
+        module="test",
+        method="test",
+        param={"start": 0},
+        pager_strategy=strategy_no_items,
+        responses=[resp1],
+    )
+    with pytest.raises(TypeError, match="未配置 items_extractor"):
+        await req_no_items.collect_items()
+
+
+@pytest.mark.asyncio
+async def test_async_refresher_and_stream():
+    """测试 AsyncRefresher 控制器以及 RefreshableRequest 的 refresh_stream 与 aiter 功能."""
+
+    @dataclass
+    class MockRefreshableRequest(RefreshableRequest):
+        response_map: dict[str, DummyResponse] = field(default_factory=dict)
+
+        def __await__(self):
+            async def _coro():
+                cur = cast("dict[str, Any]", self.param).get("vec", "cur0")
+                return self.response_map.get(cur, DummyResponse(items=[]))
+
+            return _coro().__await__()
+
+    resp1 = DummyResponse(has_more=True, next_cursor="cur1", items=["a", "b"])
+    resp2 = DummyResponse(has_more=True, next_cursor="cur2", items=["c", "d"])
+    resp3 = DummyResponse(has_more=False, next_cursor=None, items=["e", "f"])
+
+    strategy = BatchRefreshStrategy[Any, DummyResponse](
+        refresh_key="vec",
+        cursor_extractor=lambda r: r.next_cursor,
+        has_more_extractor=lambda r: r.has_more,
+        items_extractor=lambda r: r.items,
+    )
+
+    req = MockRefreshableRequest(
+        _client=cast("Any", None),
+        module="test",
+        method="test",
+        param={"vec": "cur0"},
+        refresh_strategy=strategy,
+        response_map={"cur0": resp1, "cur1": resp2, "cur2": resp3},
+    )
+
+    # 测试 refresher 的 first 与 next
+    refresher = req.refresher(limit=2)
+    assert refresher.has_more() is True
+    b1_first = await refresher.first()
+    assert b1_first.items == ["a", "b"]
+    b2 = await refresher.next()
+    assert b2.items == ["c", "d"]
+    b1_again = await refresher.first()
+    assert b1_again.items == ["a", "b"]
+    assert refresher.has_more() is False
+    with pytest.raises(StopAsyncIteration):
+        await refresher.next()
+
+    # 测试 async for batch in req (aiter)
+    batches = [batch async for batch in req]
+    assert len(batches) == 3
+    assert [b.items for b in batches] == [["a", "b"], ["c", "d"], ["e", "f"]]
+
+    # 测试 collect_items
+    items_3 = await req.collect_items(limit=3)
+    assert items_3 == ["a", "b", "c"]

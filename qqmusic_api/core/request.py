@@ -11,7 +11,7 @@ from pydantic import BaseModel
 from typing_extensions import Self, overload
 
 from ..models.request import Credential
-from .pagination import PagerStrategy, RefresherStrategy
+from .pagination import AsyncPager, AsyncRefresher, PagerStrategy, RefresherStrategy
 from .versioning import Platform
 
 if TYPE_CHECKING:
@@ -114,6 +114,73 @@ class PaginatedRequest(Request[RequestResultT]):
 
     pager_strategy: PagerStrategy[Any, RequestResultT]
 
+    def next_request(self, previous_response: RequestResultT) -> "PaginatedRequest[RequestResultT] | None":
+        """根据上一次请求的响应, 构建下一次翻页的请求.
+
+        Args:
+            previous_response: 上一次请求得到的响应.
+
+        Returns:
+            下一次请求的描述符, 如果没有更多则返回 None.
+        """
+        if self.pager_strategy.has_next(self.param, previous_response):
+            next_param = self.pager_strategy.next_params(self.param, previous_response)
+            return self.replace(param=next_param)
+        return None
+
+    def pager(self, limit: int | None = None) -> AsyncPager[RequestResultT]:
+        """返回有状态异步分页器.
+
+        Args:
+            limit: 最大获取页数.
+        """
+        return AsyncPager(self, limit=limit)
+
+    async def collect(self, limit: int | None = None) -> list[RequestResultT]:
+        """收集前 limit 页响应数据为列表.
+
+        Args:
+            limit: 最大获取页数.
+
+        Returns:
+            响应对象列表.
+        """
+        return [response async for response in self.paginate(limit=limit)]
+
+    async def iter_items(self, limit: int | None = None) -> "AsyncGenerator[Any, None]":
+        """跨页展开提取数据项的异步迭代器.
+
+        Args:
+            limit: 最大提取条目数量.
+
+        Yields:
+            数据项实体.
+
+        Raises:
+            TypeError: 当策略未配置 items_extractor 时抛出.
+        """
+        count = 0
+        async for response in self.paginate():
+            items = self.pager_strategy.get_items(response)
+            if items is None:
+                raise TypeError("当前分页请求的策略未配置 items_extractor, 无法使用 iter_items()")
+            for item in items:
+                if limit is not None and count >= limit:
+                    return
+                yield item
+                count += 1
+
+    async def collect_items(self, limit: int | None = None) -> list[Any]:
+        """收集跨页展开的数据项为列表.
+
+        Args:
+            limit: 最大提取条目数量.
+
+        Returns:
+            数据项列表.
+        """
+        return [item async for item in self.iter_items(limit=limit)]
+
     async def paginate(self, limit: int | None = None) -> "AsyncGenerator[RequestResultT, None]":
         """返回响应的分页迭代器.
 
@@ -145,6 +212,73 @@ class RefreshableRequest(Request[RequestResultT]):
     """声明了换一批能力的请求描述符."""
 
     refresh_strategy: RefresherStrategy[Any, RequestResultT]
+
+    def refresher(self, limit: int | None = None) -> AsyncRefresher[RequestResultT]:
+        """返回有状态换一批控制器.
+
+        Args:
+            limit: 最大换一批次数.
+        """
+        return AsyncRefresher(self, limit=limit)
+
+    async def refresh_stream(self, limit: int | None = None) -> "AsyncGenerator[RequestResultT, None]":
+        """返回换一批响应的异步流式迭代器.
+
+        Args:
+            limit: 最大换一批次数.
+        """
+        refresher = self.refresher(limit=limit)
+        async for batch in refresher:
+            yield batch
+
+    def __aiter__(self) -> "AsyncGenerator[RequestResultT, None]":
+        """返回异步迭代器自身."""
+        return self.refresh_stream()
+
+    async def collect(self, limit: int | None = None) -> list[RequestResultT]:
+        """收集前 limit 次换一批响应数据为列表.
+
+        Args:
+            limit: 最大换一批次数.
+
+        Returns:
+            响应对象列表.
+        """
+        return [batch async for batch in self.refresh_stream(limit=limit)]
+
+    async def iter_items(self, limit: int | None = None) -> "AsyncGenerator[Any, None]":
+        """跨批展开提取数据项的异步迭代器.
+
+        Args:
+            limit: 最大提取条目数量.
+
+        Yields:
+            数据项实体.
+
+        Raises:
+            TypeError: 当策略未配置 items_extractor 时抛出.
+        """
+        count = 0
+        async for batch in self.refresh_stream():
+            items = self.refresh_strategy.get_items(batch)
+            if items is None:
+                raise TypeError("当前换一批请求的策略未配置 items_extractor, 无法使用 iter_items()")
+            for item in items:
+                if limit is not None and count >= limit:
+                    return
+                yield item
+                count += 1
+
+    async def collect_items(self, limit: int | None = None) -> list[Any]:
+        """收集跨批展开的数据项为列表.
+
+        Args:
+            limit: 最大提取条目数量.
+
+        Returns:
+            数据项列表.
+        """
+        return [item async for item in self.iter_items(limit=limit)]
 
     def next_request(self, previous_response: RequestResultT) -> "RefreshableRequest[RequestResultT] | None":
         """根据上一次请求的响应, 构建下一次换一批的请求.
