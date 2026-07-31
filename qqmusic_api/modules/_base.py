@@ -3,7 +3,7 @@
 from typing import TYPE_CHECKING, Any, overload
 
 from ..core.exceptions import CredentialInvalidError
-from ..core.pagination import PagerStrategy, RefresherStrategy
+from ..core.pagination import ItemT_co, PagerStrategy, RefresherStrategy
 from ..core.request import AllowErrorCodes, PaginatedRequest, RefreshableRequest, Request, ResponseModel
 from ..core.versioning import Platform
 
@@ -109,11 +109,11 @@ class ApiModule:
         platform: Platform | None = None,
         allow_error_codes: AllowErrorCodes | None = None,
         parse_on_allow: bool = False,
-        pager_strategy: PagerStrategy[Any, dict[str, Any]],
+        pager_strategy: PagerStrategy[Any, dict[str, Any], ItemT_co],
         refresh_strategy: None = None,
         sign: bool = False,
         require_login: bool = False,
-    ) -> PaginatedRequest[dict[str, Any]]: ...
+    ) -> PaginatedRequest[dict[str, Any], ItemT_co]: ...
 
     @overload
     def _build_request(
@@ -131,10 +131,10 @@ class ApiModule:
         allow_error_codes: AllowErrorCodes | None = None,
         parse_on_allow: bool = False,
         pager_strategy: None = None,
-        refresh_strategy: RefresherStrategy[Any, dict[str, Any]],
+        refresh_strategy: RefresherStrategy[Any, dict[str, Any], ItemT_co],
         sign: bool = False,
         require_login: bool = False,
-    ) -> RefreshableRequest[dict[str, Any]]: ...
+    ) -> RefreshableRequest[dict[str, Any], ItemT_co]: ...
 
     @overload
     def _build_request(
@@ -172,11 +172,11 @@ class ApiModule:
         platform: Platform | None = None,
         allow_error_codes: AllowErrorCodes | None = None,
         parse_on_allow: bool = False,
-        pager_strategy: PagerStrategy[Any, ResponseModel],
+        pager_strategy: PagerStrategy[Any, ResponseModel, ItemT_co],
         refresh_strategy: None = None,
         sign: bool = False,
         require_login: bool = False,
-    ) -> PaginatedRequest[ResponseModel]: ...
+    ) -> PaginatedRequest[ResponseModel, ItemT_co]: ...
 
     @overload
     def _build_request(
@@ -194,10 +194,10 @@ class ApiModule:
         allow_error_codes: AllowErrorCodes | None = None,
         parse_on_allow: bool = False,
         pager_strategy: None = None,
-        refresh_strategy: RefresherStrategy[Any, ResponseModel],
+        refresh_strategy: RefresherStrategy[Any, ResponseModel, ItemT_co],
         sign: bool = False,
         require_login: bool = False,
-    ) -> RefreshableRequest[ResponseModel]: ...
+    ) -> RefreshableRequest[ResponseModel, ItemT_co]: ...
 
     def _build_request(
         self,

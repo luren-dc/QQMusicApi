@@ -11,7 +11,7 @@ from pydantic import BaseModel
 from typing_extensions import Self, overload
 
 from ..models.request import Credential
-from .pagination import AsyncPager, AsyncRefresher, PagerStrategy, RefresherStrategy
+from .pagination import AsyncPager, AsyncRefresher, ItemT_co, PagerStrategy, RefresherStrategy
 from .versioning import Platform
 
 if TYPE_CHECKING:
@@ -109,12 +109,12 @@ class Request(Generic[RequestResultT]):
 
 
 @dataclass
-class PaginatedRequest(Request[RequestResultT]):
+class PaginatedRequest(Request[RequestResultT], Generic[RequestResultT, ItemT_co]):
     """声明了连续翻页能力的请求描述符."""
 
-    pager_strategy: PagerStrategy[Any, RequestResultT]
+    pager_strategy: PagerStrategy[Any, RequestResultT, ItemT_co]
 
-    def next_request(self, previous_response: RequestResultT) -> "PaginatedRequest[RequestResultT] | None":
+    def next_request(self, previous_response: RequestResultT) -> "PaginatedRequest[RequestResultT, ItemT_co] | None":
         """根据上一次请求的响应, 构建下一次翻页的请求.
 
         Args:
@@ -128,7 +128,7 @@ class PaginatedRequest(Request[RequestResultT]):
             return self.replace(param=next_param)
         return None
 
-    def pager(self, limit: int | None = None) -> AsyncPager[RequestResultT]:
+    def pager(self, limit: int | None = None) -> AsyncPager[RequestResultT, ItemT_co]:
         """返回有状态异步分页器.
 
         Args:
@@ -147,7 +147,7 @@ class PaginatedRequest(Request[RequestResultT]):
         """
         return [response async for response in self.paginate(limit=limit)]
 
-    async def iter_items(self, limit: int | None = None) -> "AsyncGenerator[Any, None]":
+    async def iter_items(self, limit: int | None = None) -> "AsyncGenerator[ItemT_co, None]":
         """跨页展开提取数据项的异步迭代器.
 
         Args:
@@ -170,7 +170,7 @@ class PaginatedRequest(Request[RequestResultT]):
                 yield item
                 count += 1
 
-    async def collect_items(self, limit: int | None = None) -> list[Any]:
+    async def collect_items(self, limit: int | None = None) -> list[ItemT_co]:
         """收集跨页展开的数据项为列表.
 
         Args:
@@ -208,12 +208,12 @@ class PaginatedRequest(Request[RequestResultT]):
 
 
 @dataclass
-class RefreshableRequest(Request[RequestResultT]):
+class RefreshableRequest(Request[RequestResultT], Generic[RequestResultT, ItemT_co]):
     """声明了换一批能力的请求描述符."""
 
-    refresh_strategy: RefresherStrategy[Any, RequestResultT]
+    refresh_strategy: RefresherStrategy[Any, RequestResultT, ItemT_co]
 
-    def refresher(self, limit: int | None = None) -> AsyncRefresher[RequestResultT]:
+    def refresher(self, limit: int | None = None) -> AsyncRefresher[RequestResultT, ItemT_co]:
         """返回有状态换一批控制器.
 
         Args:
@@ -246,7 +246,7 @@ class RefreshableRequest(Request[RequestResultT]):
         """
         return [batch async for batch in self.refresh_stream(limit=limit)]
 
-    async def iter_items(self, limit: int | None = None) -> "AsyncGenerator[Any, None]":
+    async def iter_items(self, limit: int | None = None) -> "AsyncGenerator[ItemT_co, None]":
         """跨批展开提取数据项的异步迭代器.
 
         Args:
@@ -269,7 +269,7 @@ class RefreshableRequest(Request[RequestResultT]):
                 yield item
                 count += 1
 
-    async def collect_items(self, limit: int | None = None) -> list[Any]:
+    async def collect_items(self, limit: int | None = None) -> list[ItemT_co]:
         """收集跨批展开的数据项为列表.
 
         Args:

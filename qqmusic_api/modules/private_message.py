@@ -8,7 +8,9 @@ from ..models.private_message import (
     PrivateChatEntriesResponse,
     PrivateConfigResponse,
     PrivateMediaMessageDetailsResponse,
+    PrivateMessageInfo,
     PrivateMessageListResponse,
+    PrivateMessageSession,
     PrivateMusicianCardResponse,
     PrivateOperationResponse,
     PrivateSafetyHintResponse,
@@ -87,7 +89,7 @@ class PrivateMessageApi(ApiModule):
             require_login=True,
             platform=Platform.ANDROID,
             response_model=PrivateSessionListResponse,
-            pager_strategy=MultiFieldContinuationStrategy[Any, PrivateSessionListResponse](
+            pager_strategy=MultiFieldContinuationStrategy[Any, PrivateSessionListResponse, PrivateMessageSession](
                 _build_session_list_next_params,
                 has_more_extractor=lambda response: response.has_more == 1,
                 items_extractor=lambda response: response.sessions,
@@ -160,7 +162,7 @@ class PrivateMessageApi(ApiModule):
             require_login=True,
             platform=Platform.ANDROID,
             response_model=PrivateMessageListResponse,
-            pager_strategy=MultiFieldContinuationStrategy[Any, PrivateMessageListResponse](
+            pager_strategy=MultiFieldContinuationStrategy[Any, PrivateMessageListResponse, PrivateMessageInfo](
                 _build_message_list_next_params,
                 has_more_extractor=lambda response: response.has_more == 1,
                 items_extractor=lambda response: response.messages,

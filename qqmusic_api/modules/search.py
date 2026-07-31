@@ -5,9 +5,20 @@ from typing import Any, cast
 
 from ..core import Platform
 from ..core.pagination import MultiFieldContinuationStrategy, PageStrategy
-from ..models.search import GeneralSearchResponse, SearchByTypeResponse, SearchSelector
+from ..models.search import (
+    AlbumSearch,
+    GeneralSearchResponse,
+    MvSearch,
+    SearchByTypeResponse,
+    SearchSelector,
+    SingerSearch,
+    SongListSearch,
+    SongSearch,
+)
 from ..utils import get_searchID
 from ._base import ApiModule
+
+SearchByTypeItem = SongSearch | SingerSearch | AlbumSearch | SongListSearch | MvSearch | dict[str, Any]
 
 
 class SearchType(IntEnum):
@@ -127,14 +138,6 @@ class SearchApi(ApiModule):
                     "page_start": response.nextpage_start,
                 },
                 has_more_extractor=lambda response: response.nextpage != -1,
-                items_extractor=lambda response: [
-                    *(response.song.items if response.song else []),
-                    *(response.singer.items if response.singer else []),
-                    *(response.album.items if response.album else []),
-                    *(response.songlist.items if response.songlist else []),
-                    *(response.mv.items if response.mv else []),
-                    *(response.audio.items if response.audio else []),
-                ],
                 context_name="general_search",
             ),
         )
@@ -184,7 +187,7 @@ class SearchApi(ApiModule):
             },
             platform=Platform.ANDROID,
             response_model=SearchByTypeResponse,
-            pager_strategy=PageStrategy[Any, SearchByTypeResponse](
+            pager_strategy=PageStrategy[Any, SearchByTypeResponse, SearchByTypeItem](
                 page_key="page_num",
                 page_size=num,
                 start_page=page,

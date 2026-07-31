@@ -211,7 +211,7 @@ async def test_async_pager_and_collect_items():
     resp2 = DummyResponse(total=30, items=[11, 12, 13, 14, 15, 16, 17, 18, 19, 20])
     resp3 = DummyResponse(total=30, items=[21, 22, 23, 24, 25, 26, 27, 28, 29, 30])
 
-    strategy_with_items = OffsetStrategy[Any, DummyResponse](
+    strategy_with_items = OffsetStrategy[Any, DummyResponse, int](
         offset_key="start",
         page_size=10,
         total_extractor=lambda r: r.total,
@@ -286,7 +286,7 @@ async def test_async_refresher_and_stream():
     resp2 = DummyResponse(has_more=True, next_cursor="cur2", items=["c", "d"])
     resp3 = DummyResponse(has_more=False, next_cursor=None, items=["e", "f"])
 
-    strategy = BatchRefreshStrategy[Any, DummyResponse](
+    strategy = BatchRefreshStrategy[Any, DummyResponse, str](
         refresh_key="vec",
         cursor_extractor=lambda r: r.next_cursor,
         has_more_extractor=lambda r: r.has_more,

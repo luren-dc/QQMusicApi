@@ -9,6 +9,7 @@ from ..models.album import (
     GetAlbumSongResponse,
     GetNewAlbumResponse,
 )
+from ..models.base import Album, Song
 from ..models.request import Credential
 from ._base import ApiModule
 
@@ -57,7 +58,7 @@ class AlbumApi(ApiModule):
             method="GetAlbumSongList",
             param=param,
             response_model=GetAlbumSongResponse,
-            pager_strategy=OffsetStrategy[Any, GetAlbumSongResponse](
+            pager_strategy=OffsetStrategy[Any, GetAlbumSongResponse, Song](
                 offset_key="begin",
                 page_size_key="num",
                 items_extractor=lambda response: response.song_list,
@@ -79,7 +80,7 @@ class AlbumApi(ApiModule):
             method="get_new_album_info",
             param={"area": area, "num": num, "start": num * (page - 1)},
             response_model=GetNewAlbumResponse,
-            pager_strategy=OffsetStrategy[Any, GetNewAlbumResponse](
+            pager_strategy=OffsetStrategy[Any, GetNewAlbumResponse, Album](
                 offset_key="start",
                 page_size_key="num",
                 items_extractor=lambda response: response.albums,

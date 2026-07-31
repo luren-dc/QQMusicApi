@@ -3,6 +3,7 @@
 from typing import Any
 
 from ..core.pagination import OffsetStrategy
+from ..models.base import MV
 from ..models.mv import GetMvDetailResponse, GetMvListResponse, GetMvUrlsResponse
 from ..utils.common import get_guid
 from ._base import ApiModule
@@ -94,7 +95,7 @@ class MvApi(ApiModule):
             method="GetAllocMvInfo",
             param={"area": area, "version": version, "order": order, "start": num * (page - 1), "size": num},
             response_model=GetMvListResponse,
-            pager_strategy=OffsetStrategy[Any, GetMvListResponse](
+            pager_strategy=OffsetStrategy[Any, GetMvListResponse, MV](
                 offset_key="start",
                 page_size_key="size",
                 items_extractor=lambda response: response.items,
