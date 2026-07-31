@@ -3,7 +3,7 @@
 from typing import Any
 
 from ..core import Platform
-from ..core.pagination import MultiFieldContinuationStrategy, PagerMeta, ResponseAdapter
+from ..core.pagination import MultiFieldContinuationStrategy
 from ..models.private_message import (
     PrivateChatEntriesResponse,
     PrivateConfigResponse,
@@ -22,7 +22,7 @@ PRIVATE_MSG_READ_MODULE = "music.privateMsg.PrivateMsgRead"
 PRIVATE_MSG_WRITE_MODULE = "music.privateMsg.PrivateMsgWrite"
 
 
-def _build_session_list_next_params(params: dict[Any, Any], response: PrivateSessionListResponse, _: ResponseAdapter):
+def _build_session_list_next_params(params: dict[Any, Any], response: PrivateSessionListResponse):
     """根据最后一个会话构造会话列表下一页参数."""
     if not response.sessions:
         return None
@@ -30,7 +30,7 @@ def _build_session_list_next_params(params: dict[Any, Any], response: PrivateSes
     return {**params, "last_id": last_session.session_id, "last_time": last_session.sort_time}
 
 
-def _build_message_list_next_params(params: dict[Any, Any], response: PrivateMessageListResponse, _: ResponseAdapter):
+def _build_message_list_next_params(params: dict[Any, Any], response: PrivateMessageListResponse):
     """根据最后一条消息构造消息列表下一页参数."""
     if not response.messages:
         return None
@@ -87,12 +87,10 @@ class PrivateMessageApi(ApiModule):
             require_login=True,
             platform=Platform.ANDROID,
             response_model=PrivateSessionListResponse,
-            pager_meta=PagerMeta(
-                strategy=MultiFieldContinuationStrategy(
-                    _build_session_list_next_params,
-                    context_name="private_message_session_list",
-                ),
-                adapter=ResponseAdapter(has_more_flag=lambda response: response.has_more == 1),
+            pager_strategy=MultiFieldContinuationStrategy[Any, PrivateSessionListResponse](
+                _build_session_list_next_params,
+                has_more_extractor=lambda response: response.has_more == 1,
+                context_name="private_message_session_list",
             ),
         )
 
@@ -161,12 +159,10 @@ class PrivateMessageApi(ApiModule):
             require_login=True,
             platform=Platform.ANDROID,
             response_model=PrivateMessageListResponse,
-            pager_meta=PagerMeta(
-                strategy=MultiFieldContinuationStrategy(
-                    _build_message_list_next_params,
-                    context_name="private_message_list",
-                ),
-                adapter=ResponseAdapter(has_more_flag=lambda response: response.has_more == 1),
+            pager_strategy=MultiFieldContinuationStrategy[Any, PrivateMessageListResponse](
+                _build_message_list_next_params,
+                has_more_extractor=lambda response: response.has_more == 1,
+                context_name="private_message_list",
             ),
         )
 

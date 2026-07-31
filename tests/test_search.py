@@ -77,19 +77,13 @@ async def test_search_by_type_with_int(client: Client) -> None:
 
 async def test_search_by_type_paginate(client: Client) -> None:
     """测试搜索分页支持 next 与 has_more."""
-    pager = client.search.search_by_type("周杰伦", num=5, page=1).paginate(limit=2)
+    req = client.search.search_by_type("周杰伦", num=5, page=1)
+    pages = [page async for page in req.paginate(limit=2)]
 
-    assert pager.has_more() is True
-    first_page = await pager.next()
-    assert pager.has_more() is True
-    second_page = await pager.next()
-
-    assert first_page.song
-    assert second_page.song
-    assert first_page.nextpage == 2
-    assert pager.has_more() is False
-    with pytest.raises(StopAsyncIteration):
-        await pager.next()
+    assert len(pages) == 2
+    assert pages[0].song
+    assert pages[1].song
+    assert pages[0].nextpage == 2
 
 
 async def test_search_by_type_with_selectors(client: Client) -> None:

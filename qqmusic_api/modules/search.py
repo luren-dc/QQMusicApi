@@ -4,7 +4,7 @@ from enum import IntEnum
 from typing import Any, cast
 
 from ..core import Platform
-from ..core.pagination import MultiFieldContinuationStrategy, PagerMeta, PageStrategy, ResponseAdapter
+from ..core.pagination import MultiFieldContinuationStrategy, PageStrategy
 from ..models.search import GeneralSearchResponse, SearchByTypeResponse, SearchSelector
 from ..utils import get_searchID
 from ._base import ApiModule
@@ -119,20 +119,15 @@ class SearchApi(ApiModule):
             "do_search_v2",
             param,
             response_model=GeneralSearchResponse,
-            pager_meta=PagerMeta(
-                strategy=MultiFieldContinuationStrategy(
-                    lambda params, response, adapter: {
-                        **cast("dict[str, Any]", params),
-                        "searchid": response.searchid,
-                        "page_id": response.nextpage,
-                        "page_start": cast("dict[str, Any]", adapter.get_cursor(response)),
-                    },
-                    context_name="general_search",
-                ),
-                adapter=ResponseAdapter(
-                    has_more_flag=lambda response: response.nextpage != -1,
-                    cursor="nextpage_start",
-                ),
+            pager_strategy=MultiFieldContinuationStrategy[Any, GeneralSearchResponse](
+                lambda params, response: {
+                    **cast("dict[str, Any]", params),
+                    "searchid": response.searchid,
+                    "page_id": response.nextpage,
+                    "page_start": response.nextpage_start,
+                },
+                has_more_extractor=lambda response: response.nextpage != -1,
+                context_name="general_search",
             ),
         )
 
@@ -181,11 +176,11 @@ class SearchApi(ApiModule):
             },
             platform=Platform.ANDROID,
             response_model=SearchByTypeResponse,
-            pager_meta=PagerMeta(
-                strategy=PageStrategy(page_key="page_num", page_size=num, start_page=page),
-                adapter=ResponseAdapter(
-                    has_more_flag=lambda r: getattr(r, "nextpage", -1) != -1,
-                    total="total_num",
-                ),
+            pager_strategy=PageStrategy[Any, SearchByTypeResponse](
+                page_key="page_num",
+                page_size=num,
+                start_page=page,
+                has_more_extractor=lambda r: getattr(r, "nextpage", -1) != -1,
+                total_extractor=lambda r: getattr(r, "total_num", None),
             ),
         )

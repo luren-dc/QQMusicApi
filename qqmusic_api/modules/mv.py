@@ -1,6 +1,8 @@
 """MV 相关 API."""
 
-from ..core.pagination import OffsetStrategy, PagerMeta, ResponseAdapter
+from typing import Any
+
+from ..core.pagination import OffsetStrategy
 from ..models.mv import GetMvDetailResponse, GetMvListResponse, GetMvUrlsResponse
 from ..utils.common import get_guid
 from ._base import ApiModule
@@ -92,8 +94,10 @@ class MvApi(ApiModule):
             method="GetAllocMvInfo",
             param={"area": area, "version": version, "order": order, "start": num * (page - 1), "size": num},
             response_model=GetMvListResponse,
-            pager_meta=PagerMeta(
-                strategy=OffsetStrategy(offset_key="start", page_size_key="size"),
-                adapter=ResponseAdapter(total="total", count=lambda response: len(response.items)),
+            pager_strategy=OffsetStrategy[Any, GetMvListResponse](
+                offset_key="start",
+                page_size_key="size",
+                total_extractor=lambda response: response.total,
+                count_extractor=lambda response: len(response.items),
             ),
         )

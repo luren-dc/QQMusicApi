@@ -8,16 +8,18 @@ from functools import cached_property
 from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar
 
 from pydantic import BaseModel
-from typing_extensions import overload
+from typing_extensions import Self, overload
 
 from ..models.request import Credential
-from .pagination import PagerMeta, RefreshMeta, RequestResultT, ResponsePager, ResponseRefresher
+from .pagination import PagerStrategy, RefresherStrategy
 from .versioning import Platform
 
 if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
+
     from .client import Client
 
-
+RequestResultT = TypeVar("RequestResultT", bound=BaseModel | dict[str, Any])
 ResponseModel = TypeVar("ResponseModel", bound=BaseModel)
 AllowErrorCodes = Literal["all"] | set[int] | frozenset[int] | tuple[int, ...]
 
@@ -95,7 +97,7 @@ class Request(Generic[RequestResultT]):
         comm_items = tuple(sorted(self.comm.items(), key=lambda item: item[0])) if self.comm is not None else None
         return (platform, comm_items, self.override_comm, credential_key, self.sign)
 
-    def replace(self, **changes: Any) -> "Request[RequestResultT]":
+    def replace(self, **changes: Any) -> Self:
         """返回一个应用了修改的新 Request 对象, 不会修改原对象."""
         if "param" not in changes:
             changes["param"] = copy.deepcopy(self.param)
@@ -110,31 +112,50 @@ class Request(Generic[RequestResultT]):
 class PaginatedRequest(Request[RequestResultT]):
     """声明了连续翻页能力的请求描述符."""
 
-    pager_meta: PagerMeta
+    pager_strategy: PagerStrategy[Any, RequestResultT]
 
-    def get_pager_meta(self) -> PagerMeta:
-        """返回连续翻页元数据."""
-        return self.pager_meta
-
-    def paginate(self, limit: int | None = None) -> ResponsePager[RequestResultT]:
+    async def paginate(self, limit: int | None = None) -> "AsyncGenerator[RequestResultT, None]":
         """返回响应的分页迭代器.
 
         Args:
             limit: 最大获取页数.
         """
-        return ResponsePager(self, limit=limit)
+        current_request: Request[RequestResultT] | None = self
+        yielded_count = 0
+        while current_request is not None:
+            if limit is not None and yielded_count >= limit:
+                break
+            response = await current_request
+            yield response
+            yielded_count += 1
+
+            if self.pager_strategy.has_next(current_request.param, response):
+                next_param = self.pager_strategy.next_params(current_request.param, response)
+                current_request = current_request.replace(param=next_param)
+            else:
+                current_request = None
+
+    def __aiter__(self) -> "AsyncGenerator[RequestResultT, None]":
+        """返回异步迭代器自身."""
+        return self.paginate()
 
 
 @dataclass
 class RefreshableRequest(Request[RequestResultT]):
     """声明了换一批能力的请求描述符."""
 
-    refresh_meta: RefreshMeta
+    refresh_strategy: RefresherStrategy[Any, RequestResultT]
 
-    def get_refresh_meta(self) -> RefreshMeta:
-        """返回换一批元数据."""
-        return self.refresh_meta
+    def next_request(self, previous_response: RequestResultT) -> "RefreshableRequest[RequestResultT] | None":
+        """根据上一次请求的响应, 构建下一次换一批的请求.
 
-    def refresh(self) -> ResponseRefresher[RequestResultT]:
-        """返回响应的换一批控制器."""
-        return ResponseRefresher(self)
+        Args:
+            previous_response: 上一次请求得到的响应.
+
+        Returns:
+            下一次请求的描述符, 如果没有更多则返回 None.
+        """
+        if self.refresh_strategy.has_next(self.param, previous_response):
+            next_param = self.refresh_strategy.next_params(self.param, previous_response)
+            return self.replace(param=next_param)
+        return None

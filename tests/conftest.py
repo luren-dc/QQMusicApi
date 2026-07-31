@@ -104,8 +104,6 @@ def handle_unavailable_api_errors(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr(Client, "execute", execute_with_rate_limit_retry)
     monkeypatch.setattr(Client, "gather", gather_with_rate_limit_retry)
 
-    return
-
 
 @pytest_asyncio.fixture
 async def client(pytestconfig: pytest.Config) -> AsyncIterator[Client]:

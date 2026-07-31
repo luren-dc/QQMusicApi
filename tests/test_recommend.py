@@ -7,7 +7,7 @@ from qqmusic_api import Client
 
 async def test_get_home_feed(client: Client) -> None:
     """测试获取主页推荐响应模型."""
-    result = await client.recommend.get_home_feed(page=1, direction=0, s_num=0, v_cache=[])
+    result = await client.recommend.get_home_feed()
     assert result.shelves
     assert result.shelves[0].id > 0
 

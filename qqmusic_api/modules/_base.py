@@ -3,12 +3,12 @@
 from typing import TYPE_CHECKING, Any, overload
 
 from ..core.exceptions import CredentialInvalidError
+from ..core.pagination import PagerStrategy, RefresherStrategy
+from ..core.request import AllowErrorCodes, PaginatedRequest, RefreshableRequest, Request, ResponseModel
 from ..core.versioning import Platform
 
 if TYPE_CHECKING:
     from ..core.client import Client
-    from ..core.pagination import PagerMeta, RefreshMeta
-    from ..core.request import AllowErrorCodes, PaginatedRequest, RefreshableRequest, Request, ResponseModel
     from ..models.request import Credential
 
 
@@ -86,13 +86,13 @@ class ApiModule:
         preserve_bool: bool = False,
         credential: "Credential | None" = None,
         platform: Platform | None = None,
-        allow_error_codes: "AllowErrorCodes | None" = None,
+        allow_error_codes: AllowErrorCodes | None = None,
         parse_on_allow: bool = False,
-        pager_meta: None = None,
-        refresh_meta: None = None,
+        pager_strategy: None = None,
+        refresh_strategy: None = None,
         sign: bool = False,
         require_login: bool = False,
-    ) -> "Request[dict[str, Any]]": ...
+    ) -> Request[dict[str, Any]]: ...
 
     @overload
     def _build_request(
@@ -107,13 +107,13 @@ class ApiModule:
         preserve_bool: bool = False,
         credential: "Credential | None" = None,
         platform: Platform | None = None,
-        allow_error_codes: "AllowErrorCodes | None" = None,
+        allow_error_codes: AllowErrorCodes | None = None,
         parse_on_allow: bool = False,
-        pager_meta: "PagerMeta",
-        refresh_meta: None = None,
+        pager_strategy: PagerStrategy[Any, dict[str, Any]],
+        refresh_strategy: None = None,
         sign: bool = False,
         require_login: bool = False,
-    ) -> "PaginatedRequest[dict[str, Any]]": ...
+    ) -> PaginatedRequest[dict[str, Any]]: ...
 
     @overload
     def _build_request(
@@ -128,13 +128,13 @@ class ApiModule:
         preserve_bool: bool = False,
         credential: "Credential | None" = None,
         platform: Platform | None = None,
-        allow_error_codes: "AllowErrorCodes | None" = None,
+        allow_error_codes: AllowErrorCodes | None = None,
         parse_on_allow: bool = False,
-        pager_meta: None = None,
-        refresh_meta: "RefreshMeta",
+        pager_strategy: None = None,
+        refresh_strategy: RefresherStrategy[Any, dict[str, Any]],
         sign: bool = False,
         require_login: bool = False,
-    ) -> "RefreshableRequest[dict[str, Any]]": ...
+    ) -> RefreshableRequest[dict[str, Any]]: ...
 
     @overload
     def _build_request(
@@ -142,20 +142,20 @@ class ApiModule:
         module: str,
         method: str,
         param: dict[str, Any] | dict[int, Any],
-        response_model: type["ResponseModel"],
+        response_model: type[ResponseModel],
         comm: dict[str, Any] | None = None,
         *,
         override_comm: bool = False,
         preserve_bool: bool = False,
         credential: "Credential | None" = None,
         platform: Platform | None = None,
-        allow_error_codes: "AllowErrorCodes | None" = None,
+        allow_error_codes: AllowErrorCodes | None = None,
         parse_on_allow: bool = False,
-        pager_meta: None = None,
-        refresh_meta: None = None,
+        pager_strategy: None = None,
+        refresh_strategy: None = None,
         sign: bool = False,
         require_login: bool = False,
-    ) -> "Request[ResponseModel]": ...
+    ) -> Request[ResponseModel]: ...
 
     @overload
     def _build_request(
@@ -163,20 +163,20 @@ class ApiModule:
         module: str,
         method: str,
         param: dict[str, Any] | dict[int, Any],
-        response_model: type["ResponseModel"],
+        response_model: type[ResponseModel],
         comm: dict[str, Any] | None = None,
         *,
         override_comm: bool = False,
         preserve_bool: bool = False,
         credential: "Credential | None" = None,
         platform: Platform | None = None,
-        allow_error_codes: "AllowErrorCodes | None" = None,
+        allow_error_codes: AllowErrorCodes | None = None,
         parse_on_allow: bool = False,
-        pager_meta: "PagerMeta",
-        refresh_meta: None = None,
+        pager_strategy: PagerStrategy[Any, ResponseModel],
+        refresh_strategy: None = None,
         sign: bool = False,
         require_login: bool = False,
-    ) -> "PaginatedRequest[ResponseModel]": ...
+    ) -> PaginatedRequest[ResponseModel]: ...
 
     @overload
     def _build_request(
@@ -184,40 +184,40 @@ class ApiModule:
         module: str,
         method: str,
         param: dict[str, Any] | dict[int, Any],
-        response_model: type["ResponseModel"],
+        response_model: type[ResponseModel],
         comm: dict[str, Any] | None = None,
         *,
         override_comm: bool = False,
         preserve_bool: bool = False,
         credential: "Credential | None" = None,
         platform: Platform | None = None,
-        allow_error_codes: "AllowErrorCodes | None" = None,
+        allow_error_codes: AllowErrorCodes | None = None,
         parse_on_allow: bool = False,
-        pager_meta: None = None,
-        refresh_meta: "RefreshMeta",
+        pager_strategy: None = None,
+        refresh_strategy: RefresherStrategy[Any, ResponseModel],
         sign: bool = False,
         require_login: bool = False,
-    ) -> "RefreshableRequest[ResponseModel]": ...
+    ) -> RefreshableRequest[ResponseModel]: ...
 
     def _build_request(
         self,
         module: str,
         method: str,
         param: dict[str, Any] | dict[int, Any],
-        response_model: type["ResponseModel"] | None = None,
+        response_model: type[ResponseModel] | None = None,
         comm: dict[str, Any] | None = None,
         *,
         override_comm: bool = False,
         preserve_bool: bool = False,
         credential: "Credential | None" = None,
         platform: Platform | None = None,
-        allow_error_codes: "AllowErrorCodes | None" = None,
+        allow_error_codes: AllowErrorCodes | None = None,
         parse_on_allow: bool = False,
-        pager_meta: "PagerMeta | None" = None,
-        refresh_meta: "RefreshMeta | None" = None,
+        pager_strategy: PagerStrategy | None = None,
+        refresh_strategy: RefresherStrategy | None = None,
         sign: bool = False,
         require_login: bool = False,
-    ) -> "Request[Any] | PaginatedRequest[Any] | RefreshableRequest[Any]":
+    ) -> Request[Any] | PaginatedRequest[Any] | RefreshableRequest[Any]:
         """构建可 await 的请求描述符.
 
         Args:
@@ -232,8 +232,8 @@ class ApiModule:
             platform: 本次请求的平台标识. 默认使用客户端所属平台.
             allow_error_codes: 允许放行的业务非零错误码.
             parse_on_allow: 为 True 时, 匹配 `allow_error_codes` 的响应仍走模型解析而非返回原始字典.
-            pager_meta: 分页组件元数据. 提供后则升级为 `PaginatedRequest`.
-            refresh_meta: 刷新组件元数据. 提供后则升级为 `RefreshableRequest`.
+            pager_strategy: 分页策略描述符. 提供后则升级为 `PaginatedRequest`.
+            refresh_strategy: 换一批策略描述符. 提供后则升级为 `RefreshableRequest`.
             sign: 是否对请求进行签名.
             require_login: 为 True 时, 在构建请求前校验凭证有效性.
 
@@ -241,13 +241,13 @@ class ApiModule:
             组装好的 Request 或衍生子类描述符.
 
         Raises:
-            ValueError: 如果同时提供 pager_meta 和 refresh_meta 时抛出.
+            ValueError: 如果同时提供 pager_strategy 和 refresh_strategy 时抛出.
             CredentialInvalidError: 如果 require_login 为 True 且凭证无效时抛出.
         """
         from ..core.request import PaginatedRequest, RefreshableRequest, Request
 
-        if pager_meta is not None and refresh_meta is not None:
-            raise ValueError("pager_meta 与 refresh_meta 不能同时声明")
+        if pager_strategy is not None and refresh_strategy is not None:
+            raise ValueError("pager_strategy 与 refresh_strategy 不能同时声明")
 
         if require_login:
             credential = self._require_login(credential)
@@ -267,8 +267,8 @@ class ApiModule:
             "parse_on_allow": parse_on_allow,
             "sign": sign,
         }
-        if pager_meta is not None:
-            return PaginatedRequest(**common_kwargs, pager_meta=pager_meta)
-        if refresh_meta is not None:
-            return RefreshableRequest(**common_kwargs, refresh_meta=refresh_meta)
+        if pager_strategy is not None:
+            return PaginatedRequest(**common_kwargs, pager_strategy=pager_strategy)
+        if refresh_strategy is not None:
+            return RefreshableRequest(**common_kwargs, refresh_strategy=refresh_strategy)
         return Request(**common_kwargs)

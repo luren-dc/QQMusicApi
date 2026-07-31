@@ -38,7 +38,7 @@ async def test_get_mv_list(client: Client) -> None:
 
 async def test_get_mv_list_pagination(client: Client) -> None:
     """测试 MV 分类列表分页返回不同数据."""
-    pager = client.mv.get_mv_list(num=5, page=1).paginate(limit=2)
-    first = await pager.next()
-    second = await pager.next()
-    assert first.items[0].vid != second.items[0].vid
+    req = client.mv.get_mv_list(num=5, page=1)
+    pages = [page async for page in req.paginate(limit=2)]
+    assert len(pages) == 2
+    assert pages[0].items[0].vid != pages[1].items[0].vid

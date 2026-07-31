@@ -1,15 +1,13 @@
 """歌手相关 API."""
 
 from enum import Enum, IntEnum
-from typing import cast
+from typing import Any, cast
 
 from ..core import Platform
 from ..core.pagination import (
     MultiFieldContinuationStrategy,
     OffsetStrategy,
-    PagerMeta,
     PageStrategy,
-    ResponseAdapter,
 )
 from ..models.singer import (
     HomepageHeaderResponse,
@@ -99,13 +97,13 @@ class IndexType(IntEnum):
     F = 6
     G = 7
     H = 8
-    I = 9  # noqa: E741
+    I = 9
     J = 10
     K = 11
     L = 12
     M = 13
     N = 14
-    O = 15  # noqa: E741
+    O = 15
     P = 16
     Q = 17
     R = 18
@@ -180,22 +178,19 @@ class SingerApi(ApiModule):
                 "cur_page": page,
             },
             response_model=SingerIndexPageResponse,
-            pager_meta=PagerMeta(
-                strategy=MultiFieldContinuationStrategy(
-                    lambda params, response, adapter: (
-                        None
-                        if not response.singerlist
-                        or cast("dict[str, int]", params)["sin"] + len(response.singerlist)
-                        >= (adapter.get_total(response) or 0)
-                        else {
-                            **cast("dict[str, int]", params),
-                            "sin": cast("dict[str, int]", params)["sin"] + len(response.singerlist),
-                            "cur_page": cast("dict[str, int]", params)["cur_page"] + 1,
-                        }
-                    ),
-                    context_name="singer_list_index",
+            pager_strategy=MultiFieldContinuationStrategy[Any, SingerIndexPageResponse](
+                lambda params, response: (
+                    None
+                    if not response.singerlist
+                    or cast("dict[str, int]", params)["sin"] + len(response.singerlist)
+                    >= (getattr(response, "total", 0) or 0)
+                    else {
+                        **cast("dict[str, int]", params),
+                        "sin": cast("dict[str, int]", params)["sin"] + len(response.singerlist),
+                        "cur_page": cast("dict[str, int]", params)["cur_page"] + 1,
+                    }
                 ),
-                adapter=ResponseAdapter(total="total"),
+                context_name="singer_list_index",
             ),
         )
 
@@ -242,9 +237,11 @@ class SingerApi(ApiModule):
                 "Order": 0,
             },
             response_model=HomepageTabDetailResponse,
-            pager_meta=PagerMeta(
-                strategy=PageStrategy(page_key="PageNum", page_size=num, start_page=page - 1),
-                adapter=ResponseAdapter(has_more_flag="has_more"),
+            pager_strategy=PageStrategy[Any, HomepageTabDetailResponse](
+                page_key="PageNum",
+                page_size=num,
+                start_page=page - 1,
+                has_more_extractor=lambda response: bool(response.has_more),
             ),
         )
 
@@ -288,9 +285,11 @@ class SingerApi(ApiModule):
             method="GetSingerSongList",
             param={"singerMid": mid, "order": 1, "number": num, "begin": (page - 1) * num},
             response_model=SingerSongListResponse,
-            pager_meta=PagerMeta(
-                strategy=OffsetStrategy(offset_key="begin", page_size_key="number"),
-                adapter=ResponseAdapter(total="total_num", count=lambda response: len(response.song_list)),
+            pager_strategy=OffsetStrategy[Any, SingerSongListResponse](
+                offset_key="begin",
+                page_size_key="number",
+                total_extractor=lambda response: response.total_num,
+                count_extractor=lambda response: len(response.song_list),
             ),
         )
 
@@ -307,9 +306,11 @@ class SingerApi(ApiModule):
             method="GetAlbumList",
             param={"singerMid": mid, "order": 1, "number": num, "begin": (page - 1) * num},
             response_model=SingerAlbumListResponse,
-            pager_meta=PagerMeta(
-                strategy=OffsetStrategy(offset_key="begin", page_size_key="number"),
-                adapter=ResponseAdapter(total="total", count=lambda response: len(response.album_list)),
+            pager_strategy=OffsetStrategy[Any, SingerAlbumListResponse](
+                offset_key="begin",
+                page_size_key="number",
+                total_extractor=lambda response: response.total,
+                count_extractor=lambda response: len(response.album_list),
             ),
         )
 
@@ -326,8 +327,10 @@ class SingerApi(ApiModule):
             method="GetSingerMvList",
             param={"singermid": mid, "order": 1, "count": num, "start": (page - 1) * num},
             response_model=SingerMvListResponse,
-            pager_meta=PagerMeta(
-                strategy=OffsetStrategy(offset_key="start", page_size_key="count"),
-                adapter=ResponseAdapter(total="total", count=lambda response: len(response.mv_list)),
+            pager_strategy=OffsetStrategy[Any, SingerMvListResponse](
+                offset_key="start",
+                page_size_key="count",
+                total_extractor=lambda response: response.total,
+                count_extractor=lambda response: len(response.mv_list),
             ),
         )

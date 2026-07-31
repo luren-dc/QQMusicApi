@@ -5,7 +5,7 @@ from typing import Any, NamedTuple
 
 from qqmusic_api import Platform
 
-from ..core.pagination import BatchRefreshStrategy, RefreshMeta, ResponseAdapter
+from ..core.pagination import BatchRefreshStrategy
 from ..models.request import Credential
 from ..models.song import (
     GetCdnDispatchResponse,
@@ -377,13 +377,11 @@ class SongApi(ApiModule):
             method="GetRelatedPlaylist",
             param={"songid": songid, "vecPlaylist": last or []},
             response_model=GetRelatedSonglistResponse,
-            refresh_meta=RefreshMeta(
-                strategy=BatchRefreshStrategy(refresh_key="vecPlaylist"),
-                adapter=ResponseAdapter(
-                    has_more_flag="has_more",
-                    cursor=lambda response: (
-                        [playlist.id for playlist in response.songlist] if response.songlist else None
-                    ),
+            refresh_strategy=BatchRefreshStrategy[Any, GetRelatedSonglistResponse](
+                refresh_key="vecPlaylist",
+                has_more_extractor=lambda response: bool(response.has_more),
+                cursor_extractor=lambda response: (
+                    [playlist.id for playlist in response.songlist] if response.songlist else None
                 ),
             ),
         )
@@ -400,12 +398,10 @@ class SongApi(ApiModule):
             method="GetSongRelatedMv",
             param={"songid": str(songid), "songtype": 1, "lastmvid": last_mvid or 0},
             response_model=GetRelatedMvResponse,
-            refresh_meta=RefreshMeta(
-                strategy=BatchRefreshStrategy(refresh_key="lastmvid"),
-                adapter=ResponseAdapter(
-                    has_more_flag="has_more",
-                    cursor=lambda response: response.mv[-1].id if response.mv else None,
-                ),
+            refresh_strategy=BatchRefreshStrategy[Any, GetRelatedMvResponse](
+                refresh_key="lastmvid",
+                has_more_extractor=lambda response: bool(response.has_more),
+                cursor_extractor=lambda response: response.mv[-1].id if response.mv else None,
             ),
         )
 

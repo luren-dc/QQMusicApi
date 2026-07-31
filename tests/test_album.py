@@ -40,10 +40,10 @@ async def test_get_new_album(client: Client, area: int) -> None:
 
 async def test_get_new_album_pagination(client: Client) -> None:
     """测试新碟上架分页返回不同数据."""
-    pager = client.album.get_new_album(area=1, num=5, page=1).paginate(limit=2)
-    first = await pager.next()
-    second = await pager.next()
-    assert first.albums[0].mid != second.albums[0].mid
+    req = client.album.get_new_album(area=1, num=5, page=1)
+    pages = [page async for page in req.paginate(limit=2)]
+    assert len(pages) == 2
+    assert pages[0].albums[0].mid != pages[1].albums[0].mid
 
 
 async def test_fav_album_roundtrip(authenticated_client: Client) -> None:

@@ -1,7 +1,9 @@
 """歌单相关 API."""
 
+from typing import Any
+
 from ..core import CgiApiException
-from ..core.pagination import OffsetStrategy, PagerMeta, ResponseAdapter
+from ..core.pagination import OffsetStrategy
 from ..models.request import Credential
 from ..models.songlist import CreateDeleteSonglistResp, GetSonglistDetailResponse
 from ._base import ApiModule
@@ -60,13 +62,12 @@ class SonglistApi(ApiModule):
                 "onlysonglist": onlysong,
             },
             response_model=GetSonglistDetailResponse,
-            pager_meta=PagerMeta(
-                strategy=OffsetStrategy(offset_key="song_begin", page_size_key="song_num"),
-                adapter=ResponseAdapter(
-                    has_more_flag="hasmore",
-                    total="total",
-                    count=lambda response: len(response.songs),
-                ),
+            pager_strategy=OffsetStrategy[Any, GetSonglistDetailResponse](
+                offset_key="song_begin",
+                page_size_key="song_num",
+                has_more_extractor=lambda response: bool(response.hasmore),
+                total_extractor=lambda response: response.total,
+                count_extractor=lambda response: len(response.songs),
             ),
         )
 

@@ -3,6 +3,7 @@
 import logging
 import ssl
 import threading
+import types
 from collections.abc import AsyncGenerator, Callable
 from dataclasses import dataclass, field
 from enum import IntEnum
@@ -17,6 +18,7 @@ import paho.mqtt.client as mqtt
 from paho.mqtt.enums import CallbackAPIVersion
 from paho.mqtt.packettypes import PacketTypes
 from paho.mqtt.properties import Properties
+from typing_extensions import Self
 
 if TYPE_CHECKING:
     from anyio.streams.memory import MemoryObjectReceiveStream, MemoryObjectSendStream
@@ -133,7 +135,7 @@ class Client:
 
         self._mqtt_client: mqtt.Client | None = None
 
-    async def __aenter__(self) -> "Client":
+    async def __aenter__(self) -> Self:
         """进入异步上下文."""
         self._event_loop_token = anyio.lowlevel.current_token()
         return self
@@ -142,7 +144,7 @@ class Client:
         self,
         exc_type: type[BaseException] | None,
         exc_val: BaseException | None,
-        exc_tb: Any | None,
+        exc_tb: types.TracebackType | None,
     ) -> None:
         """退出异步上下文并关闭连接."""
         await self.disconnect()

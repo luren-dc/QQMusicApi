@@ -11,6 +11,7 @@ from niquests import AsyncSession, AsyncTokenBucketLimiter, PreparedRequest, Ret
 from niquests.exceptions import RequestException
 from niquests.models import Response
 from niquests.typing import AsyncHookType, ProxyType, TLSClientCertType, TLSVerifyType
+from typing_extensions import Self
 
 from ..algorithms import zzc_sign
 from ..models.request import Credential, RequestItem
@@ -278,7 +279,7 @@ class Client:
 
         return UserApi(self)
 
-    async def __aenter__(self) -> "Client":  # noqa: D105
+    async def __aenter__(self) -> Self:  # noqa: D105
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:  # noqa: D105

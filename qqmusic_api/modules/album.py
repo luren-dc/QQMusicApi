@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from ..core.pagination import OffsetStrategy, PagerMeta, ResponseAdapter
+from ..core.pagination import OffsetStrategy
 from ..models.album import (
     AlbumFavWriteResponse,
     GetAlbumDetailResponse,
@@ -57,9 +57,11 @@ class AlbumApi(ApiModule):
             method="GetAlbumSongList",
             param=param,
             response_model=GetAlbumSongResponse,
-            pager_meta=PagerMeta(
-                strategy=OffsetStrategy(offset_key="begin", page_size_key="num"),
-                adapter=ResponseAdapter(total="total_num", count=lambda response: len(response.song_list)),
+            pager_strategy=OffsetStrategy[Any, GetAlbumSongResponse](
+                offset_key="begin",
+                page_size_key="num",
+                total_extractor=lambda response: response.total_num,
+                count_extractor=lambda response: len(response.song_list),
             ),
         )
 
@@ -76,9 +78,11 @@ class AlbumApi(ApiModule):
             method="get_new_album_info",
             param={"area": area, "num": num, "start": num * (page - 1)},
             response_model=GetNewAlbumResponse,
-            pager_meta=PagerMeta(
-                strategy=OffsetStrategy(offset_key="start", page_size_key="num"),
-                adapter=ResponseAdapter(total="total", count=lambda response: len(response.albums)),
+            pager_strategy=OffsetStrategy[Any, GetNewAlbumResponse](
+                offset_key="start",
+                page_size_key="num",
+                total_extractor=lambda response: response.total,
+                count_extractor=lambda response: len(response.albums),
             ),
         )
 

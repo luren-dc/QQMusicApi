@@ -60,24 +60,18 @@ async def test_get_moment_comments(client: Client) -> None:
 
 async def test_get_hot_comments_paginate(client: Client) -> None:
     """测试热评列表支持手动逐页拉取."""
-    pager = client.comment.get_hot_comments(102065756, page_num=1, page_size=5).paginate(limit=2)
+    req = client.comment.get_hot_comments(102065756, page_num=1, page_size=5)
+    pages = [page async for page in req.paginate(limit=2)]
 
-    assert pager.has_more() is True
-    first_page = await pager.next()
-    assert pager.has_more() is True
-    second_page = await pager.next()
-
-    assert first_page.comments
-    assert second_page.comments
-    assert pager.has_more() is False
-    with pytest.raises(StopAsyncIteration):
-        await pager.next()
+    assert len(pages) == 2
+    assert pages[0].comments
+    assert pages[1].comments
 
 
 async def test_get_moment_comments_paginate(client: Client) -> None:
     """测试时刻评论游标分页能力."""
-    pager = client.comment.get_moment_comments(102065756, page_size=5).paginate(limit=2)
-    pages = [page async for page in pager]
+    req = client.comment.get_moment_comments(102065756, page_size=5)
+    pages = [page async for page in req.paginate(limit=2)]
 
     assert len(pages) == 2
     assert pages[0].comments
