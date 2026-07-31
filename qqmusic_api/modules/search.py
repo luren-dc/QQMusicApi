@@ -1,10 +1,11 @@
 """搜索相关 API."""
 
 from enum import IntEnum
-from typing import Any, cast
+from typing import Any, Literal, cast, overload
 
 from ..core import Platform
 from ..core.pagination import MultiFieldContinuationStrategy, PageStrategy
+from ..core.request import PaginatedRequest
 from ..models.search import (
     AlbumSearch,
     GeneralSearchResponse,
@@ -141,6 +142,99 @@ class SearchApi(ApiModule):
                 context_name="general_search",
             ),
         )
+
+    @overload
+    def search_by_type(
+        self,
+        keyword: str,
+        search_type: Literal[
+            SearchType.SONG, 0, SearchType.LYRIC, 7, SearchType.AUDIO, 18, SearchType.RINGTONE, 10
+        ] = SearchType.SONG,
+        num: int = 10,
+        page: int = 1,
+        selectors: list[SearchSelector] | None = None,
+        searchid: str | None = None,
+        *,
+        highlight: bool = True,
+    ) -> PaginatedRequest[SearchByTypeResponse, SongSearch]: ...
+
+    @overload
+    def search_by_type(
+        self,
+        keyword: str,
+        search_type: Literal[SearchType.SINGER, 1],
+        num: int = 10,
+        page: int = 1,
+        selectors: list[SearchSelector] | None = None,
+        searchid: str | None = None,
+        *,
+        highlight: bool = True,
+    ) -> PaginatedRequest[SearchByTypeResponse, SingerSearch]: ...
+
+    @overload
+    def search_by_type(
+        self,
+        keyword: str,
+        search_type: Literal[SearchType.ALBUM, 2, SearchType.AUDIO_ALBUM, 15],
+        num: int = 10,
+        page: int = 1,
+        selectors: list[SearchSelector] | None = None,
+        searchid: str | None = None,
+        *,
+        highlight: bool = True,
+    ) -> PaginatedRequest[SearchByTypeResponse, AlbumSearch]: ...
+
+    @overload
+    def search_by_type(
+        self,
+        keyword: str,
+        search_type: Literal[SearchType.SONGLIST, 3],
+        num: int = 10,
+        page: int = 1,
+        selectors: list[SearchSelector] | None = None,
+        searchid: str | None = None,
+        *,
+        highlight: bool = True,
+    ) -> PaginatedRequest[SearchByTypeResponse, SongListSearch]: ...
+
+    @overload
+    def search_by_type(
+        self,
+        keyword: str,
+        search_type: Literal[SearchType.MV, 4],
+        num: int = 10,
+        page: int = 1,
+        selectors: list[SearchSelector] | None = None,
+        searchid: str | None = None,
+        *,
+        highlight: bool = True,
+    ) -> PaginatedRequest[SearchByTypeResponse, MvSearch]: ...
+
+    @overload
+    def search_by_type(
+        self,
+        keyword: str,
+        search_type: Literal[SearchType.USER, 8],
+        num: int = 10,
+        page: int = 1,
+        selectors: list[SearchSelector] | None = None,
+        searchid: str | None = None,
+        *,
+        highlight: bool = True,
+    ) -> PaginatedRequest[SearchByTypeResponse, dict[str, Any]]: ...
+
+    @overload
+    def search_by_type(
+        self,
+        keyword: str,
+        search_type: int | SearchType = SearchType.SONG,
+        num: int = 10,
+        page: int = 1,
+        selectors: list[SearchSelector] | None = None,
+        searchid: str | None = None,
+        *,
+        highlight: bool = True,
+    ) -> PaginatedRequest[SearchByTypeResponse, SearchByTypeItem]: ...
 
     def search_by_type(
         self,
