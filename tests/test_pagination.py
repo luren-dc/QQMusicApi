@@ -143,7 +143,7 @@ def test_multi_field_continuation_strategy():
 async def test_paginated_request_paginate():
     """测试 PaginatedRequest 的 async for 迭代流程."""
 
-    class DummyPaginatedRequest(PaginatedRequest):
+    class DummyPaginatedRequest(PaginatedRequest[DummyResponse, int]):
         def __await__(self):
             async def _coro():
                 return DummyResponse(total=20, items=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])

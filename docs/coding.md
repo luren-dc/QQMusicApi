@@ -291,6 +291,7 @@ def get_detail(self, songlist_id: int, num: int = 10, page: int = 1):
 from typing import Any
 
 from ..core.pagination import BatchRefreshStrategy
+from ..models.base import MV
 
 
 def get_related_mv(self, songid: int, last_mvid: str | None = None):
@@ -300,7 +301,7 @@ def get_related_mv(self, songid: int, last_mvid: str | None = None):
         method="GetSongRelatedMv",
         param={"songid": str(songid), "songtype": 1, "lastmvid": last_mvid or 0},
         response_model=GetRelatedMvResponse,
-        refresh_strategy=BatchRefreshStrategy[Any, GetRelatedMvResponse, Mv](
+        refresh_strategy=BatchRefreshStrategy[Any, GetRelatedMvResponse, MV](
             refresh_key="lastmvid",
             cursor_extractor=lambda response: response.mv[-1].id if response.mv else None,
             has_more_extractor=lambda response: bool(response.has_more),
