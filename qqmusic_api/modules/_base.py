@@ -4,7 +4,13 @@ from typing import TYPE_CHECKING, Any, overload
 
 from ..core.exceptions import CredentialInvalidError
 from ..core.pagination import ItemT_co, PagerStrategy, RefresherStrategy
-from ..core.request import AllowErrorCodes, PaginatedRequest, RefreshableRequest, Request, ResponseModel
+from ..core.request import (
+    AllowErrorCodes,
+    ItemPaginatedRequest,
+    ItemRefreshableRequest,
+    Request,
+    ResponseModel,
+)
 from ..core.versioning import Platform
 
 if TYPE_CHECKING:
@@ -113,7 +119,7 @@ class ApiModule:
         refresh_strategy: None = None,
         sign: bool = False,
         require_login: bool = False,
-    ) -> PaginatedRequest[dict[str, Any], ItemT_co]: ...
+    ) -> ItemPaginatedRequest[dict[str, Any], ItemT_co]: ...
 
     @overload
     def _build_request(
@@ -134,7 +140,7 @@ class ApiModule:
         refresh_strategy: RefresherStrategy[Any, dict[str, Any], ItemT_co],
         sign: bool = False,
         require_login: bool = False,
-    ) -> RefreshableRequest[dict[str, Any], ItemT_co]: ...
+    ) -> ItemRefreshableRequest[dict[str, Any], ItemT_co]: ...
 
     @overload
     def _build_request(
@@ -176,7 +182,7 @@ class ApiModule:
         refresh_strategy: None = None,
         sign: bool = False,
         require_login: bool = False,
-    ) -> PaginatedRequest[ResponseModel, ItemT_co]: ...
+    ) -> ItemPaginatedRequest[ResponseModel, ItemT_co]: ...
 
     @overload
     def _build_request(
@@ -197,7 +203,7 @@ class ApiModule:
         refresh_strategy: RefresherStrategy[Any, ResponseModel, ItemT_co],
         sign: bool = False,
         require_login: bool = False,
-    ) -> RefreshableRequest[ResponseModel, ItemT_co]: ...
+    ) -> ItemRefreshableRequest[ResponseModel, ItemT_co]: ...
 
     def _build_request(
         self,
@@ -217,7 +223,7 @@ class ApiModule:
         refresh_strategy: RefresherStrategy[Any, Any, Any] | None = None,
         sign: bool = False,
         require_login: bool = False,
-    ) -> Request[Any] | PaginatedRequest[Any, Any] | RefreshableRequest[Any, Any]:
+    ) -> Request[Any] | ItemPaginatedRequest[Any, Any] | ItemRefreshableRequest[Any, Any]:
         """构建可 await 的请求描述符.
 
         Args:
@@ -244,7 +250,7 @@ class ApiModule:
             ValueError: 如果同时提供 pager_strategy 和 refresh_strategy 时抛出.
             CredentialInvalidError: 如果 require_login 为 True 且凭证无效时抛出.
         """
-        from ..core.request import PaginatedRequest, RefreshableRequest, Request
+        from ..core.request import ItemPaginatedRequest, ItemRefreshableRequest, Request
 
         if pager_strategy is not None and refresh_strategy is not None:
             raise ValueError("pager_strategy 与 refresh_strategy 不能同时声明")
@@ -268,7 +274,7 @@ class ApiModule:
             "sign": sign,
         }
         if pager_strategy is not None:
-            return PaginatedRequest(**common_kwargs, pager_strategy=pager_strategy)
+            return ItemPaginatedRequest(**common_kwargs, pager_strategy=pager_strategy)
         if refresh_strategy is not None:
-            return RefreshableRequest(**common_kwargs, refresh_strategy=refresh_strategy)
+            return ItemRefreshableRequest(**common_kwargs, refresh_strategy=refresh_strategy)
         return Request(**common_kwargs)

@@ -13,7 +13,12 @@ from qqmusic_api.core.pagination import (
     OffsetStrategy,
     PageStrategy,
 )
-from qqmusic_api.core.request import PaginatedRequest, RefreshableRequest
+from qqmusic_api.core.request import (
+    ItemPaginatedRequest,
+    ItemRefreshableRequest,
+    PaginatedRequest,
+    RefreshableRequest,
+)
 
 
 class DummyResponse(BaseModel):
@@ -143,7 +148,7 @@ def test_multi_field_continuation_strategy():
 async def test_paginated_request_paginate():
     """测试 PaginatedRequest 的 async for 迭代流程."""
 
-    class DummyPaginatedRequest(PaginatedRequest[DummyResponse, int]):
+    class DummyPaginatedRequest(PaginatedRequest[DummyResponse]):
         def __await__(self):
             async def _coro():
                 return DummyResponse(total=20, items=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
@@ -198,7 +203,7 @@ async def test_async_pager_and_collect_items():
     """测试 AsyncPager 控制器以及 PaginatedRequest 的 collect 与 iter_items 功能."""
 
     @dataclass
-    class MockPaginatedRequest(PaginatedRequest[DummyResponse, int]):
+    class MockPaginatedRequest(ItemPaginatedRequest[DummyResponse, int]):
         responses: list[DummyResponse] = field(default_factory=list)
 
         def __await__(self):
@@ -276,7 +281,7 @@ async def test_async_refresher_and_stream():
     """测试 AsyncRefresher 控制器以及 RefreshableRequest 的 refresh_stream 与 aiter 功能."""
 
     @dataclass
-    class MockRefreshableRequest(RefreshableRequest[DummyResponse, str]):
+    class MockRefreshableRequest(ItemRefreshableRequest[DummyResponse, str]):
         response_map: dict[str, DummyResponse] = field(default_factory=dict)
 
         def __await__(self):

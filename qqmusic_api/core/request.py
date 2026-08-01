@@ -109,10 +109,10 @@ class Request(Generic[RequestResultT]):
 
 
 @dataclass
-class PaginatedRequest(Request[RequestResultT], Generic[RequestResultT, ItemT_co]):
+class PaginatedRequest(Request[RequestResultT]):
     """声明了连续翻页能力的请求描述符."""
 
-    pager_strategy: PagerStrategy[Any, RequestResultT, ItemT_co]
+    pager_strategy: PagerStrategy[Any, RequestResultT, Any]
 
     def next_request(self, previous_response: RequestResultT) -> Self | None:
         """根据上一次请求的响应, 构建下一次翻页的请求.
@@ -128,7 +128,7 @@ class PaginatedRequest(Request[RequestResultT], Generic[RequestResultT, ItemT_co
             return self.replace(param=next_param)
         return None
 
-    def pager(self, limit: int | None = None) -> AsyncPager[RequestResultT, ItemT_co]:
+    def pager(self, limit: int | None = None) -> AsyncPager[RequestResultT]:
         """返回有状态异步分页器.
 
         Args:
@@ -146,6 +146,38 @@ class PaginatedRequest(Request[RequestResultT], Generic[RequestResultT, ItemT_co
             响应对象列表.
         """
         return [response async for response in self.paginate(limit=limit)]
+
+    async def paginate(self, limit: int | None = None) -> "AsyncGenerator[RequestResultT, None]":
+        """返回响应的分页迭代器.
+
+        Args:
+            limit: 最大获取页数.
+        """
+        current_request: Request[RequestResultT] | None = self
+        yielded_count = 0
+        while current_request is not None:
+            if limit is not None and yielded_count >= limit:
+                break
+            response = await current_request
+            yield response
+            yielded_count += 1
+
+            if self.pager_strategy.has_next(current_request.param, response):
+                next_param = self.pager_strategy.next_params(current_request.param, response)
+                current_request = current_request.replace(param=next_param)
+            else:
+                current_request = None
+
+    def __aiter__(self) -> "AsyncGenerator[RequestResultT, None]":
+        """返回异步迭代器自身."""
+        return self.paginate()
+
+
+@dataclass
+class ItemPaginatedRequest(PaginatedRequest[RequestResultT], Generic[RequestResultT, ItemT_co]):
+    """声明了提取数据项能力的连续翻页请求描述符."""
+
+    pager_strategy: PagerStrategy[Any, RequestResultT, ItemT_co]
 
     async def iter_items(self, limit: int | None = None) -> "AsyncGenerator[ItemT_co, None]":
         """跨页展开提取数据项的异步迭代器.
@@ -181,39 +213,14 @@ class PaginatedRequest(Request[RequestResultT], Generic[RequestResultT, ItemT_co
         """
         return [item async for item in self.iter_items(limit=limit)]
 
-    async def paginate(self, limit: int | None = None) -> "AsyncGenerator[RequestResultT, None]":
-        """返回响应的分页迭代器.
-
-        Args:
-            limit: 最大获取页数.
-        """
-        current_request: Request[RequestResultT] | None = self
-        yielded_count = 0
-        while current_request is not None:
-            if limit is not None and yielded_count >= limit:
-                break
-            response = await current_request
-            yield response
-            yielded_count += 1
-
-            if self.pager_strategy.has_next(current_request.param, response):
-                next_param = self.pager_strategy.next_params(current_request.param, response)
-                current_request = current_request.replace(param=next_param)
-            else:
-                current_request = None
-
-    def __aiter__(self) -> "AsyncGenerator[RequestResultT, None]":
-        """返回异步迭代器自身."""
-        return self.paginate()
-
 
 @dataclass
-class RefreshableRequest(Request[RequestResultT], Generic[RequestResultT, ItemT_co]):
+class RefreshableRequest(Request[RequestResultT]):
     """声明了换一批能力的请求描述符."""
 
-    refresh_strategy: RefresherStrategy[Any, RequestResultT, ItemT_co]
+    refresh_strategy: RefresherStrategy[Any, RequestResultT, Any]
 
-    def refresher(self, limit: int | None = None) -> AsyncRefresher[RequestResultT, ItemT_co]:
+    def refresher(self, limit: int | None = None) -> AsyncRefresher[RequestResultT]:
         """返回有状态换一批控制器.
 
         Args:
@@ -245,6 +252,27 @@ class RefreshableRequest(Request[RequestResultT], Generic[RequestResultT, ItemT_
             响应对象列表.
         """
         return [batch async for batch in self.refresh_stream(limit=limit)]
+
+    def next_request(self, previous_response: RequestResultT) -> Self | None:
+        """根据上一次请求的响应, 构建下一次换一批的请求.
+
+        Args:
+            previous_response: 上一次请求得到的响应.
+
+        Returns:
+            下一次请求的描述符, 如果没有更多则返回 None.
+        """
+        if self.refresh_strategy.has_next(self.param, previous_response):
+            next_param = self.refresh_strategy.next_params(self.param, previous_response)
+            return self.replace(param=next_param)
+        return None
+
+
+@dataclass
+class ItemRefreshableRequest(RefreshableRequest[RequestResultT], Generic[RequestResultT, ItemT_co]):
+    """声明了提取数据项能力的换一批请求描述符."""
+
+    refresh_strategy: RefresherStrategy[Any, RequestResultT, ItemT_co]
 
     async def iter_items(self, limit: int | None = None) -> "AsyncGenerator[ItemT_co, None]":
         """跨批展开提取数据项的异步迭代器.
@@ -279,17 +307,3 @@ class RefreshableRequest(Request[RequestResultT], Generic[RequestResultT, ItemT_
             数据项列表.
         """
         return [item async for item in self.iter_items(limit=limit)]
-
-    def next_request(self, previous_response: RequestResultT) -> Self | None:
-        """根据上一次请求的响应, 构建下一次换一批的请求.
-
-        Args:
-            previous_response: 上一次请求得到的响应.
-
-        Returns:
-            下一次请求的描述符, 如果没有更多则返回 None.
-        """
-        if self.refresh_strategy.has_next(self.param, previous_response):
-            next_param = self.refresh_strategy.next_params(self.param, previous_response)
-            return self.replace(param=next_param)
-        return None

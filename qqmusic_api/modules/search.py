@@ -5,7 +5,7 @@ from typing import Any, Literal, cast, overload
 
 from ..core import Platform
 from ..core.pagination import MultiFieldContinuationStrategy, PageStrategy
-from ..core.request import PaginatedRequest
+from ..core.request import ItemPaginatedRequest, PaginatedRequest
 from ..models.search import (
     AlbumSearch,
     GeneralSearchResponse,
@@ -103,7 +103,7 @@ class SearchApi(ApiModule):
         page_start: dict[str, Any] | None = None,
         *,
         highlight: bool = True,
-    ):
+    ) -> PaginatedRequest[GeneralSearchResponse]:
         """综合搜索.
 
         Args:
@@ -156,7 +156,7 @@ class SearchApi(ApiModule):
         searchid: str | None = None,
         *,
         highlight: bool = True,
-    ) -> PaginatedRequest[SearchByTypeResponse, SongSearch]: ...
+    ) -> ItemPaginatedRequest[SearchByTypeResponse, SongSearch]: ...
 
     @overload
     def search_by_type(
@@ -169,7 +169,7 @@ class SearchApi(ApiModule):
         searchid: str | None = None,
         *,
         highlight: bool = True,
-    ) -> PaginatedRequest[SearchByTypeResponse, SingerSearch]: ...
+    ) -> ItemPaginatedRequest[SearchByTypeResponse, SingerSearch]: ...
 
     @overload
     def search_by_type(
@@ -182,7 +182,7 @@ class SearchApi(ApiModule):
         searchid: str | None = None,
         *,
         highlight: bool = True,
-    ) -> PaginatedRequest[SearchByTypeResponse, AlbumSearch]: ...
+    ) -> ItemPaginatedRequest[SearchByTypeResponse, AlbumSearch]: ...
 
     @overload
     def search_by_type(
@@ -195,7 +195,7 @@ class SearchApi(ApiModule):
         searchid: str | None = None,
         *,
         highlight: bool = True,
-    ) -> PaginatedRequest[SearchByTypeResponse, SongListSearch]: ...
+    ) -> ItemPaginatedRequest[SearchByTypeResponse, SongListSearch]: ...
 
     @overload
     def search_by_type(
@@ -208,7 +208,7 @@ class SearchApi(ApiModule):
         searchid: str | None = None,
         *,
         highlight: bool = True,
-    ) -> PaginatedRequest[SearchByTypeResponse, MvSearch]: ...
+    ) -> ItemPaginatedRequest[SearchByTypeResponse, MvSearch]: ...
 
     @overload
     def search_by_type(
@@ -221,7 +221,7 @@ class SearchApi(ApiModule):
         searchid: str | None = None,
         *,
         highlight: bool = True,
-    ) -> PaginatedRequest[SearchByTypeResponse, dict[str, Any]]: ...
+    ) -> ItemPaginatedRequest[SearchByTypeResponse, dict[str, Any]]: ...
 
     @overload
     def search_by_type(
@@ -234,7 +234,7 @@ class SearchApi(ApiModule):
         searchid: str | None = None,
         *,
         highlight: bool = True,
-    ) -> PaginatedRequest[SearchByTypeResponse, SearchByTypeItem]: ...
+    ) -> ItemPaginatedRequest[SearchByTypeResponse, SearchByTypeItem]: ...
 
     def search_by_type(
         self,

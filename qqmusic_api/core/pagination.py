@@ -367,12 +367,12 @@ class MultiFieldContinuationStrategy(
         return self._resolve_next_params(params, response)
 
 
-class AsyncPager(Generic[RequestResultT, ItemT_co]):
+class AsyncPager(Generic[RequestResultT]):
     """有状态异步分页器."""
 
     def __init__(
         self,
-        initial_request: "PaginatedRequest[RequestResultT, ItemT_co]",
+        initial_request: "PaginatedRequest[RequestResultT]",
         limit: int | None = None,
     ) -> None:
         """初始化异步分页器.
@@ -381,7 +381,7 @@ class AsyncPager(Generic[RequestResultT, ItemT_co]):
             initial_request: 初始翻页请求描述符.
             limit: 最大可拉取页数限制.
         """
-        self._current_request: PaginatedRequest[RequestResultT, ItemT_co] | None = initial_request
+        self._current_request: PaginatedRequest[RequestResultT] | None = initial_request
         self._limit = limit
         self._yielded_count = 0
         self._has_more = True
@@ -423,12 +423,12 @@ class AsyncPager(Generic[RequestResultT, ItemT_co]):
         return await self.next()
 
 
-class AsyncRefresher(Generic[RequestResultT, ItemT_co]):
+class AsyncRefresher(Generic[RequestResultT]):
     """有状态换一批控制器."""
 
     def __init__(
         self,
-        initial_request: "RefreshableRequest[RequestResultT, ItemT_co]",
+        initial_request: "RefreshableRequest[RequestResultT]",
         limit: int | None = None,
     ) -> None:
         """初始化换一批控制器.
@@ -437,8 +437,8 @@ class AsyncRefresher(Generic[RequestResultT, ItemT_co]):
             initial_request: 初始换一批请求描述符.
             limit: 最大换一批次数限制.
         """
-        self._initial_request: RefreshableRequest[RequestResultT, ItemT_co] = initial_request
-        self._current_request: RefreshableRequest[RequestResultT, ItemT_co] | None = initial_request
+        self._initial_request: RefreshableRequest[RequestResultT] = initial_request
+        self._current_request: RefreshableRequest[RequestResultT] | None = initial_request
         self._limit = limit
         self._yielded_count = 0
         self._first_response: RequestResultT | None = None
