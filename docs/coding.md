@@ -66,6 +66,7 @@ class FooApi(ApiModule):
 # qqmusic_api/core/client.py
 from functools import cached_property
 
+
 class Client:
     @cached_property
     def foo(self) -> "FooApi":
@@ -81,9 +82,9 @@ API 方法返回 `Request` 对象，不直接发起请求。使用 `self._build_
 def get_detail(self, song_id: int):
     """获取歌曲详情."""
     return self._build_request(
-        module="music.songDetail",       # 接口所属模块
-        method="GetDetail",              # 方法名
-        param={"songid": song_id},       # 业务参数
+        module="music.songDetail",  # 接口所属模块
+        method="GetDetail",  # 方法名
+        param={"songid": song_id},  # 业务参数
     )
 ```
 
@@ -103,20 +104,20 @@ async def quick_search(self, keyword: str) -> dict[str, Any]:
 
 ### `_build_request` 参数说明
 
-| 参数               | 类型                          | 说明                                                      |
-|--------------------|-------------------------------|-----------------------------------------------------------|
-| `module`           | `str`                         | 接口所属模块名                                            |
-| `method`           | `str`                         | 方法名                                                    |
-| `param`            | `dict`                        | 业务参数                                                  |
-| `response_model`   | `type[BaseModel]` 或 `None`   | 响应模型，为 None 时返回原始 dict                         |
-| `comm`             | `dict` 或 `None`              | 附加的公共参数                                            |
-| `override_comm`    | `bool`                        | 为 True 时 `comm` 完全替代自动生成的参数；为 False 时合并 |
-| `credential`       | `Credential` 或 `None`        | 覆盖本次请求的凭证                                        |
-| `platform`         | `Platform` 或 `None`          | 覆盖本次请求的平台                                        |
-| `preserve_bool`    | `bool`                        | 是否保留布尔值原样（默认转为 0/1 整型）                   |
-| `sign`             | `bool`                        | 是否对请求进行签名                                        |
-| `pager_strategy`   | `PagerStrategy` 或 `None`     | 分页策略，提供后返回 `PaginatedRequest`                   |
-| `refresh_strategy` | `RefresherStrategy` 或 `None` | 换一批策略，提供后返回 `RefreshableRequest`               |
+| 参数               | 类型                          | 说明                                                                    |
+|--------------------|-------------------------------|-------------------------------------------------------------------------|
+| `module`           | `str`                         | 接口所属模块名                                                          |
+| `method`           | `str`                         | 方法名                                                                  |
+| `param`            | `dict`                        | 业务参数                                                                |
+| `response_model`   | `type[BaseModel]` 或 `None`   | 响应模型，为 None 时返回原始 dict                                       |
+| `comm`             | `dict` 或 `None`              | 附加的公共参数                                                          |
+| `override_comm`    | `bool`                        | 为 True 时 `comm` 完全替代自动生成的参数；为 False 时合并               |
+| `credential`       | `Credential` 或 `None`        | 覆盖本次请求的凭证                                                      |
+| `platform`         | `Platform` 或 `None`          | 覆盖本次请求的平台                                                      |
+| `preserve_bool`    | `bool`                        | 是否保留布尔值原样（默认转为 0/1 整型）                                 |
+| `sign`             | `bool`                        | 是否对请求进行签名                                                      |
+| `pager_strategy`   | `PagerStrategy` 或 `None`     | 分页策略，提供后返回 `ItemPaginatedRequest` 或 `PaginatedRequest`       |
+| `refresh_strategy` | `RefresherStrategy` 或 `None` | 换一批策略，提供后返回 `ItemRefreshableRequest` 或 `RefreshableRequest` |
 
 ### `client.request` 参数说明
 
@@ -253,7 +254,8 @@ def get_vip_info(self, *, credential: Credential | None = None):
 
 ### 连续翻页
 
-通过 `pager_strategy` 声明连续翻页能力，建议配合显示 Generic 标注（形如 `OffsetStrategy[Any, GetSonglistDetailResponse, Song]`）以确保 IDE 的类型推断能力：
+通过 `pager_strategy` 声明连续翻页能力，建议配合显示 Generic 标注（形如
+`OffsetStrategy[Any, GetSonglistDetailResponse, Song]`）以确保 IDE 的类型推断能力：
 
 ```python
 from typing import Any
@@ -371,13 +373,14 @@ self._build_request(
 
 ## 异常处理
 
-在抛出或处理异常时，应使用项目统一的基于领域驱动（DDD）风格的异常类（继承自 `BaseApiException` 或 `ApiException`）。在包装底层异常时，必须使用原生异常链（`raise ... from exc`）保留堆栈追踪：
+在抛出或处理异常时，应使用项目统一的基于领域驱动（DDD）风格的异常类（继承自 `BaseApiException` 或 `ApiException`
+）。在包装底层异常时，必须使用原生异常链（`raise ... from exc`）保留堆栈追踪：
 
 ```python
 from ..core.exceptions import ApiDataError
 
 try:
-    # ...
+# ...
 except KeyError as e:
     raise ApiDataError("无法解析歌曲信息") from e
 ```
@@ -416,7 +419,7 @@ async def test_general_search(client: Client, page: int) -> None:
         if "limit" in str(e).lower() or "risk" in str(e).lower():
             pytest.skip(f"Triggered rate limit or risk control: {e}")
         raise
-        
+
     assert result.song.items is not None
 ```
 

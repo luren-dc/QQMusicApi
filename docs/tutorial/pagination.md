@@ -2,8 +2,11 @@
 
 QQMusicApi 提供了现代化的分页与换一批支持。
 
-* `PaginatedRequest` 声明了连续翻页能力的请求。可以直接 `await` 发起单页请求，也可以通过 `.pager()`、`.paginate()`、`.collect()`、`.collect_items()` 或 `async for` 进行灵活消费。
-* `RefreshableRequest` 声明了“换一批”能力的请求。可以通过 `.refresher()`、`.refresh_stream()`、`.collect_items()` 等手控或连续刷新拉取。
+* `PaginatedRequest` 声明了连续翻页能力的请求。可以直接 `await` 发起单页请求，也可以通过 `.pager()`、`.paginate()`、
+  `.collect()` 或 `async for` 进行灵活消费。若接口支持直接解析数据项，会返回其子类 `ItemPaginatedRequest`，额外支持
+  `.collect_items()` 与 `.iter_items()`。
+* `RefreshableRequest` 声明了“换一批”能力的请求。可以通过 `.refresher()`、`.refresh_stream()` 手控或连续刷新拉取。同理，其子类
+  `ItemRefreshableRequest` 额外支持 `.collect_items()` 与 `.iter_items()` 提取实体数据。
 
 ---
 
@@ -15,11 +18,13 @@ QQMusicApi 提供了现代化的分页与换一批支持。
 import asyncio
 from qqmusic_api import Client
 
+
 async def main() -> None:
     async with Client() as client:
         # 仅获取第 1 页数据
         first_page = await client.album.get_new_album(page=1, num=10)
         print(len(first_page.albums))
+
 
 asyncio.run(main())
 ```
@@ -46,6 +51,7 @@ if req2 is not None:
 import asyncio
 from qqmusic_api import Client
 
+
 async def main() -> None:
     async with Client() as client:
         pager = client.comment.get_hot_comments(102065756, page_size=5).pager(limit=2)
@@ -53,6 +59,7 @@ async def main() -> None:
         while pager.has_more():
             page = await pager.next()
             print(len(page.comments))
+
 
 asyncio.run(main())
 ```
@@ -69,6 +76,7 @@ asyncio.run(main())
 import asyncio
 from qqmusic_api import Client
 
+
 async def main() -> None:
     async with Client() as client:
         req = client.singer.get_album_list(mid="0025NhlN2yWrP4")
@@ -81,6 +89,7 @@ async def main() -> None:
         albums = await req.collect_items(limit=25)
         print(f"共收集 {len(albums)} 个专辑实体")
 
+
 asyncio.run(main())
 ```
 
@@ -88,24 +97,30 @@ asyncio.run(main())
 
 ## 4. 异步流式迭代 (`async for`)
 
-* **页级别迭代 (`paginate()`)**：每次迭代返回一个完整的页面响应对象。
-* **条目级别迭代 (`iter_items()`)**：自动跨页提取并展平实体。
+* **页级别迭代 (`paginate()` 或直接 `async for in req`)**：每次迭代返回一个完整的 **页面响应对象 (Response)**。
+* **条目级别迭代 (`iter_items()`)**：自动跨页提取并展平 **实体数据项 (Item)**。
 
 ```python
 import asyncio
 from qqmusic_api import Client
 
+
 async def main() -> None:
     async with Client() as client:
         req = client.search.search_by_type("周杰伦", num=5)
 
-        # 方式 A：页级别迭代
+        # 方式 A1：直接对请求对象迭代 (等价于 paginate，返回完整的页面)
+        async for page in req:
+            print("当前页歌曲数:", len(page.song))
+
+        # 方式 A2：带限制的页级别迭代
         async for page in req.paginate(limit=2):
             print("当前页歌曲数:", len(page.song))
 
         # 方式 B：条目级别迭代
         async for song in req.iter_items(limit=10):
             print("歌曲名:", song.name)
+
 
 asyncio.run(main())
 ```
@@ -120,6 +135,7 @@ asyncio.run(main())
 import asyncio
 from qqmusic_api import Client
 
+
 async def main() -> None:
     async with Client() as client:
         # 手动控制器用法
@@ -128,9 +144,14 @@ async def main() -> None:
         if refresher.has_more():
             next_batch = await refresher.next()
 
-        # 连续换一批流式迭代
+        # 方式 A1：直接对请求对象迭代 (等价于 refresh_stream，返回完整的批次)
+        async for batch in client.song.get_related_mv(1114857):
+            print("最新批次 MV 数:", len(batch.mv))
+
+        # 方式 A2：带限制的连续换一批流式迭代
         async for batch in client.song.get_related_mv(1114857).refresh_stream(limit=2):
             print("最新批次 MV 数:", len(batch.mv))
+
 
 asyncio.run(main())
 ```
