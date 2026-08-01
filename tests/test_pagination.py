@@ -332,3 +332,38 @@ async def test_async_refresher_and_stream():
     # 测试 collect_items
     items_3 = await req.collect_items(limit=3)
     assert items_3 == ["a", "b", "c"]
+
+
+@pytest.mark.asyncio
+async def test_with_extractor_combinator():
+    """测试通过 with_extractor 动态注入数据项提取器."""
+    strategy = PageStrategy[Any, DummyResponse](
+        page_key="page",
+        page_size=10,
+        start_page=1,
+        total_extractor=lambda r: r.total,
+        has_more_extractor=lambda r: r.has_more,
+    )
+
+    resp1 = DummyResponse(total=30, has_more=True, items=[1, 2, 3])
+    resp2 = DummyResponse(total=30, has_more=False, items=[4, 5, 6])
+
+    class MockClient:
+        async def execute(self, req: Any) -> DummyResponse:
+            page = req.param["page"]
+            return resp1 if page == 1 else resp2
+
+    req = PaginatedRequest(
+        _client=cast("Any", MockClient()),
+        module="test",
+        method="test",
+        param={"page": 1},
+        response_model=cast("Any", None),
+        pager_strategy=strategy,
+    )
+
+    item_req = req.with_extractor(lambda r: r.items or [])
+    assert isinstance(item_req, ItemPaginatedRequest)
+
+    items = await item_req.collect_items()
+    assert items == [1, 2, 3, 4, 5, 6]

@@ -367,6 +367,36 @@ class MultiFieldContinuationStrategy(
         return self._resolve_next_params(params, response)
 
 
+class ExtractorWrapperStrategy(Generic[T_Param, T_Resp_contra, ItemT_co]):
+    """动态组合的策略包装器, 为底层策略注入或覆盖数据项提取器."""
+
+    def __init__(
+        self,
+        base_strategy: IteratorStrategy[T_Param, T_Resp_contra, Any],
+        items_extractor: Callable[[T_Resp_contra], Iterable[ItemT_co] | None],
+    ) -> None:
+        """初始化提取器包装器.
+
+        Args:
+            base_strategy: 底层的迭代策略.
+            items_extractor: 新的数据项提取器.
+        """
+        self.base_strategy = base_strategy
+        self.items_extractor = items_extractor
+
+    def has_next(self, params: T_Param, response: T_Resp_contra) -> bool:
+        """判断是否还能继续迭代, 透传至底层策略."""
+        return self.base_strategy.has_next(params, response)
+
+    def next_params(self, params: T_Param, response: T_Resp_contra) -> T_Param:
+        """计算并返回下一次请求使用的全新参数字典, 透传至底层策略."""
+        return self.base_strategy.next_params(params, response)
+
+    def get_items(self, response: T_Resp_contra) -> Iterable[ItemT_co] | None:
+        """使用注入的提取器从响应中提取数据项列表."""
+        return self.items_extractor(response)
+
+
 class AsyncPager(Generic[RequestResultT]):
     """有状态异步分页器."""
 

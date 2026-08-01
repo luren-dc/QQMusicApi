@@ -1,7 +1,7 @@
 """请求描述符与批量请求容器. 提供对 API 请求的抽象与调度."""
 
 import copy
-from collections.abc import Generator
+from collections.abc import Callable, Generator, Iterable
 from dataclasses import dataclass
 from dataclasses import replace as dc_replace
 from functools import cached_property
@@ -11,7 +11,14 @@ from pydantic import BaseModel
 from typing_extensions import Self, overload
 
 from ..models.request import Credential
-from .pagination import AsyncPager, AsyncRefresher, ItemT_co, PagerStrategy, RefresherStrategy
+from .pagination import (
+    AsyncPager,
+    AsyncRefresher,
+    ExtractorWrapperStrategy,
+    ItemT_co,
+    PagerStrategy,
+    RefresherStrategy,
+)
 from .versioning import Platform
 
 if TYPE_CHECKING:
@@ -21,6 +28,7 @@ if TYPE_CHECKING:
 
 RequestResultT = TypeVar("RequestResultT", bound=BaseModel | dict[str, Any])
 ResponseModel = TypeVar("ResponseModel", bound=BaseModel)
+NewItemT = TypeVar("NewItemT")
 AllowErrorCodes = Literal["all"] | set[int] | frozenset[int] | tuple[int, ...]
 
 
@@ -172,6 +180,26 @@ class PaginatedRequest(Request[RequestResultT]):
         """返回异步迭代器自身."""
         return self.paginate()
 
+    def with_extractor(
+        self, extractor: Callable[[RequestResultT], Iterable[NewItemT] | None]
+    ) -> "ItemPaginatedRequest[RequestResultT, NewItemT]":
+        """显式绑定数据项提取器, 返回支持提取项的连续翻页请求描述符.
+
+        Args:
+            extractor: 数据项提取函数.
+
+        Returns:
+            具备 iter_items 与 collect_items 能力的 ItemPaginatedRequest.
+        """
+        new_strategy = ExtractorWrapperStrategy(self.pager_strategy, extractor)
+        import dataclasses
+
+        kwargs = {
+            f.name: getattr(self, f.name) for f in dataclasses.fields(PaginatedRequest) if f.name != "pager_strategy"
+        }
+        kwargs["pager_strategy"] = new_strategy
+        return ItemPaginatedRequest(**kwargs)
+
 
 @dataclass
 class ItemPaginatedRequest(PaginatedRequest[RequestResultT], Generic[RequestResultT, ItemT_co]):
@@ -252,6 +280,28 @@ class RefreshableRequest(Request[RequestResultT]):
             响应对象列表.
         """
         return [batch async for batch in self.refresh_stream(limit=limit)]
+
+    def with_extractor(
+        self, extractor: Callable[[RequestResultT], Iterable[NewItemT] | None]
+    ) -> "ItemRefreshableRequest[RequestResultT, NewItemT]":
+        """显式绑定数据项提取器, 返回支持提取项的换一批请求描述符.
+
+        Args:
+            extractor: 数据项提取函数.
+
+        Returns:
+            具备 iter_items 与 collect_items 能力的 ItemRefreshableRequest.
+        """
+        new_strategy = ExtractorWrapperStrategy(self.refresh_strategy, extractor)
+        import dataclasses
+
+        kwargs = {
+            f.name: getattr(self, f.name)
+            for f in dataclasses.fields(RefreshableRequest)
+            if f.name != "refresh_strategy"
+        }
+        kwargs["refresh_strategy"] = new_strategy
+        return ItemRefreshableRequest(**kwargs)
 
     def next_request(self, previous_response: RequestResultT) -> Self | None:
         """根据上一次请求的响应, 构建下一次换一批的请求.
