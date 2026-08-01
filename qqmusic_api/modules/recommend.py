@@ -29,9 +29,9 @@ class RecommendApi(ApiModule):
 
         Args:
             page: 页码.
-            direction: 翻页方向, 0=首屏, 1=向后翻页.
-            s_num: 已拉取的楼层数量累加值.
-            v_cache: 已经拉取过的楼层 ID 缓存列表.
+            direction: 刷新方向.
+            s_num: 已加载的卡片数量.
+            v_cache: 已曝光的卡片 ID 缓存, 防止重复推荐.
         """
         data: dict[str, Any] = {
             "direction": direction,
@@ -113,7 +113,7 @@ class RecommendApi(ApiModule):
             pager_strategy=PageStrategy[Any, RadarRecommendResponse, Song](
                 page_key="Page",
                 start_page=page,
-                has_more_extractor=lambda response: bool(response.has_more),
+                has_more_extractor=lambda response: response.has_more,
                 items_extractor=lambda response: response.songs,
             ),
         )
@@ -133,7 +133,7 @@ class RecommendApi(ApiModule):
             response_model=RecommendSonglistResponse,
             pager_strategy=CursorStrategy[Any, RecommendSonglistResponse, SongList](
                 cursor_key="From",
-                has_more_extractor=lambda response: bool(response.has_more),
+                has_more_extractor=lambda response: response.has_more,
                 cursor_extractor=lambda response: response.from_limit,
                 items_extractor=lambda response: response.songlists,
             ),
