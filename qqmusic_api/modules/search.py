@@ -129,7 +129,7 @@ class SearchApi(ApiModule):
             "do_search_v2",
             param,
             response_model=GeneralSearchResponse,
-            pager_strategy=MultiFieldContinuationStrategy(
+            pager_strategy=MultiFieldContinuationStrategy[GeneralSearchResponse](
                 lambda params, response: {
                     **params,
                     "searchid": response.searchid,

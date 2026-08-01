@@ -18,7 +18,7 @@ from ..models.request import Credential
 from ._base import ApiModule
 
 
-def _build_comment_pager_strategy():
+def _build_comment_pager_strategy() -> MultiFieldContinuationStrategy[CommentListResponse]:
     """构建评论列表接口使用的 continuation 策略."""
 
     def build_next_params(
@@ -227,7 +227,7 @@ class CommentApi(ApiModule):
             "GetSongTsCmList",
             params,
             response_model=MomentCommentResponse,
-            pager_strategy=CursorStrategy(
+            pager_strategy=CursorStrategy[MomentCommentResponse](
                 cursor_key="LastPos",
                 has_more_extractor=lambda response: response.has_more == 1,
                 cursor_extractor=lambda response: response.next_pos,

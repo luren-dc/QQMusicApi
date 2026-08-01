@@ -178,11 +178,10 @@ class SingerApi(ApiModule):
                 "cur_page": page,
             },
             response_model=SingerIndexPageResponse,
-            pager_strategy=MultiFieldContinuationStrategy(
+            pager_strategy=MultiFieldContinuationStrategy[SingerIndexPageResponse](
                 lambda params, response: (
                     None
-                    if not response.singerlist
-                    or cast("dict[str, int]", params)["sin"] + len(response.singerlist) >= (response.total or 0)
+                    if not response.singerlist or params["sin"] + len(response.singerlist) >= (response.total or 0)
                     else {
                         **cast("dict[str, int]", params),
                         "sin": cast("dict[str, int]", params)["sin"] + len(response.singerlist),
