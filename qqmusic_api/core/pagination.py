@@ -1,8 +1,8 @@
 """分页与换一批核心组件定义."""
 
 import copy
-from collections.abc import Callable, Iterable
-from typing import TYPE_CHECKING, Any, Generic, Protocol, TypeAlias, cast
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, Generic, Protocol, TypeAlias
 
 from pydantic import BaseModel
 from typing_extensions import Self, TypeVar
@@ -10,49 +10,43 @@ from typing_extensions import Self, TypeVar
 if TYPE_CHECKING:
     from .request import PaginatedRequest, RefreshableRequest
 
-T_Param = TypeVar("T_Param", bound=dict[str, Any] | dict[int, Any])
 T_Resp_contra = TypeVar("T_Resp_contra", contravariant=True)
 RequestResultT = TypeVar("RequestResultT", bound=BaseModel | dict[str, Any])
 ItemT_co = TypeVar("ItemT_co", covariant=True, default=Any)
 
-PaginationParams: TypeAlias = dict[str, Any] | dict[int, Any]
-NextParamsBuilder: TypeAlias = Callable[[T_Param, T_Resp_contra], T_Param | None]
+PaginationParams: TypeAlias = dict[str, Any]
+NextParamsBuilder: TypeAlias = Callable[[PaginationParams, T_Resp_contra], PaginationParams | None]
 
 
-class IteratorStrategy(Protocol[T_Param, T_Resp_contra, ItemT_co]):
+class IteratorStrategy(Protocol[T_Resp_contra]):
     """迭代策略协议."""
 
-    def has_next(self, params: T_Param, response: T_Resp_contra) -> bool:
+    def has_next(self, params: PaginationParams, response: T_Resp_contra) -> bool:
         """判断是否还能继续迭代."""
         ...
 
-    def next_params(self, params: T_Param, response: T_Resp_contra) -> T_Param:
+    def next_params(self, params: PaginationParams, response: T_Resp_contra) -> PaginationParams:
         """计算并返回下一次请求使用的全新参数字典."""
         ...
 
-    def get_items(self, response: T_Resp_contra) -> Iterable[ItemT_co] | None:
-        """从响应中提取数据项列表."""
-        ...
 
-
-class PagerStrategy(IteratorStrategy[T_Param, T_Resp_contra, ItemT_co], Protocol):
+class PagerStrategy(IteratorStrategy[T_Resp_contra], Protocol):
     """连续翻页策略协议."""
 
 
-class RefresherStrategy(IteratorStrategy[T_Param, T_Resp_contra, ItemT_co], Protocol):
+class RefresherStrategy(IteratorStrategy[T_Resp_contra], Protocol):
     """换一批策略协议."""
 
 
-class PageStrategy(PagerStrategy[T_Param, T_Resp_contra, ItemT_co], Generic[T_Param, T_Resp_contra, ItemT_co]):
+class PageStrategy(PagerStrategy[T_Resp_contra], Generic[T_Resp_contra]):
     """基于页码的翻页策略."""
 
     def __init__(
         self,
-        page_key: str | int,
+        page_key: str,
         *,
         has_more_extractor: Callable[[T_Resp_contra], bool | None] | None = None,
         total_extractor: Callable[[T_Resp_contra], int | None] | None = None,
-        items_extractor: Callable[[T_Resp_contra], Iterable[ItemT_co] | None] | None = None,
         page_size: int | None = None,
         start_page: int = 1,
     ) -> None:
@@ -62,24 +56,16 @@ class PageStrategy(PagerStrategy[T_Param, T_Resp_contra, ItemT_co], Generic[T_Pa
             page_key: 页码参数名.
             has_more_extractor: 是否还有更多数据的提取方式.
             total_extractor: 总数提取方式.
-            items_extractor: 数据项列表的提取方式.
             page_size: 每页条数.
             start_page: 起始页码.
         """
         self.page_key = page_key
         self.has_more_extractor = has_more_extractor
         self.total_extractor = total_extractor
-        self.items_extractor = items_extractor
         self.page_size = page_size
         self.start_page = start_page
 
-    def get_items(self, response: T_Resp_contra) -> Iterable[ItemT_co] | None:
-        """从响应中提取数据项列表."""
-        if self.items_extractor is not None:
-            return self.items_extractor(response)
-        return None
-
-    def has_next(self, params: T_Param, response: T_Resp_contra) -> bool:
+    def has_next(self, params: PaginationParams, response: T_Resp_contra) -> bool:
         """判断是否还能继续翻页."""
         if self.has_more_extractor is not None:
             explicit_flag = self.has_more_extractor(response)
@@ -89,8 +75,7 @@ class PageStrategy(PagerStrategy[T_Param, T_Resp_contra, ItemT_co], Generic[T_Pa
         if self.total_extractor is not None and self.page_size is not None:
             total = self.total_extractor(response)
             if total is not None:
-                current_params = cast("dict[Any, Any]", params)
-                current_page = current_params.get(self.page_key, self.start_page)
+                current_page = params.get(self.page_key, self.start_page)
                 if not isinstance(current_page, int):
                     raise TypeError("分页请求缺少有效的页码参数, 无法判断是否存在下一页")
                 consumed_pages = current_page - self.start_page + 1
@@ -98,30 +83,29 @@ class PageStrategy(PagerStrategy[T_Param, T_Resp_contra, ItemT_co], Generic[T_Pa
 
         return False
 
-    def next_params(self, params: T_Param, response: T_Resp_contra) -> T_Param:
+    def next_params(self, params: PaginationParams, response: T_Resp_contra) -> PaginationParams:
         """获取下一次请求的参数."""
-        new_params = cast("T_Param", copy.deepcopy(params))
-        current_page = cast("dict[Any, Any]", new_params).get(self.page_key, self.start_page)
+        new_params = copy.deepcopy(params)
+        current_page = new_params.get(self.page_key, self.start_page)
         if not isinstance(current_page, int):
             raise TypeError("分页请求缺少有效的页码参数, 无法计算下一页")
-        cast("dict[Any, Any]", new_params)[self.page_key] = current_page + 1
+        new_params[self.page_key] = current_page + 1
         return new_params
 
 
-class OffsetStrategy(PagerStrategy[T_Param, T_Resp_contra, ItemT_co], Generic[T_Param, T_Resp_contra, ItemT_co]):
+class OffsetStrategy(PagerStrategy[T_Resp_contra], Generic[T_Resp_contra]):
     """基于偏移量窗口的翻页策略."""
 
     def __init__(
         self,
-        offset_key: str | int,
+        offset_key: str,
         *,
-        page_size_key: str | int | None = None,
+        page_size_key: str | None = None,
         page_size: int | None = None,
         start_offset: int = 0,
         has_more_extractor: Callable[[T_Resp_contra], bool | None] | None = None,
         total_extractor: Callable[[T_Resp_contra], int | None] | None = None,
         count_extractor: Callable[[T_Resp_contra], int | None] | None = None,
-        items_extractor: Callable[[T_Resp_contra], Iterable[ItemT_co] | None] | None = None,
     ) -> None:
         """初始化偏移量策略.
 
@@ -133,7 +117,6 @@ class OffsetStrategy(PagerStrategy[T_Param, T_Resp_contra, ItemT_co], Generic[T_
             has_more_extractor: 是否还有更多数据的提取方式.
             total_extractor: 总数提取方式.
             count_extractor: 当前页实际返回数量提取方式.
-            items_extractor: 数据项列表的提取方式.
 
         Raises:
             ValueError: 当 page_size_key 和 page_size 同时缺失时抛出.
@@ -147,32 +130,25 @@ class OffsetStrategy(PagerStrategy[T_Param, T_Resp_contra, ItemT_co], Generic[T_
         self.has_more_extractor = has_more_extractor
         self.total_extractor = total_extractor
         self.count_extractor = count_extractor
-        self.items_extractor = items_extractor
 
-    def get_items(self, response: T_Resp_contra) -> Iterable[ItemT_co] | None:
-        """从响应中提取数据项列表."""
-        if self.items_extractor is not None:
-            return self.items_extractor(response)
-        return None
-
-    def _resolve_page_size(self, params: T_Param) -> int:
+    def _resolve_page_size(self, params: PaginationParams) -> int:
         if self.page_size is not None:
             return self.page_size
         if self.page_size_key is None:
             raise ValueError("OffsetStrategy 配置错误: page_size_key 和 page_size 不能同时缺失")
-        page_size = cast("dict[Any, Any]", params).get(self.page_size_key)
+        page_size = params.get(self.page_size_key)
         if not isinstance(page_size, int):
             raise TypeError("分页请求缺少有效的 page_size 参数, 无法计算下一页偏移量")
         return page_size
 
-    def _resolve_step(self, params: T_Param, response: T_Resp_contra) -> int:
+    def _resolve_step(self, params: PaginationParams, response: T_Resp_contra) -> int:
         if self.count_extractor is not None:
             count = self.count_extractor(response)
             if count is not None:
                 return count
         return self._resolve_page_size(params)
 
-    def has_next(self, params: T_Param, response: T_Resp_contra) -> bool:
+    def has_next(self, params: PaginationParams, response: T_Resp_contra) -> bool:
         """检查是否有下一页."""
         if self.has_more_extractor is not None:
             explicit_flag = self.has_more_extractor(response)
@@ -182,7 +158,7 @@ class OffsetStrategy(PagerStrategy[T_Param, T_Resp_contra, ItemT_co], Generic[T_
         if self.total_extractor is not None:
             total = self.total_extractor(response)
             if total is not None:
-                current_offset = cast("dict[Any, Any]", params).get(self.offset_key, self.start_offset)
+                current_offset = params.get(self.offset_key, self.start_offset)
                 if current_offset is None:
                     raise ValueError("分页请求缺少有效的 offset 参数, 无法计算下一页")
                 step = self._resolve_step(params, response)
@@ -192,31 +168,28 @@ class OffsetStrategy(PagerStrategy[T_Param, T_Resp_contra, ItemT_co], Generic[T_
 
         return False
 
-    def next_params(self, params: T_Param, response: T_Resp_contra) -> T_Param:
+    def next_params(self, params: PaginationParams, response: T_Resp_contra) -> PaginationParams:
         """获取下一页的请求参数."""
-        new_params = cast("T_Param", copy.deepcopy(params))
-        current_offset = cast("dict[Any, Any]", new_params).get(self.offset_key, self.start_offset)
+        new_params = copy.deepcopy(params)
+        current_offset = new_params.get(self.offset_key, self.start_offset)
         if current_offset is None:
             raise ValueError("分页请求缺少有效的 offset 参数, 无法计算下一页")
         step = self._resolve_step(params, response)
         if step <= 0:
             raise ValueError("分页响应未提供有效的当前页数量, 无法计算下一页偏移量")
-        cast("dict[Any, Any]", new_params)[self.offset_key] = current_offset + step
+        new_params[self.offset_key] = current_offset + step
         return new_params
 
 
-class BatchRefreshStrategy(
-    RefresherStrategy[T_Param, T_Resp_contra, ItemT_co], Generic[T_Param, T_Resp_contra, ItemT_co]
-):
+class BatchRefreshStrategy(RefresherStrategy[T_Resp_contra], Generic[T_Resp_contra]):
     """基于上一批结果标记换一批内容的策略."""
 
     def __init__(
         self,
-        refresh_key: str | int,
+        refresh_key: str,
         *,
         cursor_extractor: Callable[[T_Resp_contra], Any],
         has_more_extractor: Callable[[T_Resp_contra], bool | None] | None = None,
-        items_extractor: Callable[[T_Resp_contra], Iterable[ItemT_co] | None] | None = None,
     ) -> None:
         """初始化换一批策略.
 
@@ -224,18 +197,10 @@ class BatchRefreshStrategy(
             refresh_key: 下一次请求需要替换的参数名.
             cursor_extractor: 下一批刷新参数提取方式.
             has_more_extractor: 是否还有更多数据的提取方式.
-            items_extractor: 数据项列表的提取方式.
         """
         self.refresh_key = refresh_key
         self.cursor_extractor = cursor_extractor
         self.has_more_extractor = has_more_extractor
-        self.items_extractor = items_extractor
-
-    def get_items(self, response: T_Resp_contra) -> Iterable[ItemT_co] | None:
-        """从响应中提取数据项列表."""
-        if self.items_extractor is not None:
-            return self.items_extractor(response)
-        return None
 
     def _extract_refresh_value(self, response: T_Resp_contra) -> Any:
         refresh_value = self.cursor_extractor(response)
@@ -243,7 +208,7 @@ class BatchRefreshStrategy(
             raise ValueError("响应未提供换一批所需的刷新参数")
         return refresh_value
 
-    def has_next(self, params: T_Param, response: T_Resp_contra) -> bool:
+    def has_next(self, params: PaginationParams, response: T_Resp_contra) -> bool:
         """检查是否有下一批."""
         if self.has_more_extractor is not None:
             explicit_flag = self.has_more_extractor(response)
@@ -251,25 +216,24 @@ class BatchRefreshStrategy(
                 return False
 
         next_refresh_value = self._extract_refresh_value(response)
-        return cast("dict[Any, Any]", params).get(self.refresh_key) != next_refresh_value
+        return params.get(self.refresh_key) != next_refresh_value
 
-    def next_params(self, params: T_Param, response: T_Resp_contra) -> T_Param:
+    def next_params(self, params: PaginationParams, response: T_Resp_contra) -> PaginationParams:
         """获取下一批的请求参数."""
-        new_params = cast("T_Param", copy.deepcopy(params))
-        cast("dict[Any, Any]", new_params)[self.refresh_key] = self._extract_refresh_value(response)
+        new_params = copy.deepcopy(params)
+        new_params[self.refresh_key] = self._extract_refresh_value(response)
         return new_params
 
 
-class CursorStrategy(PagerStrategy[T_Param, T_Resp_contra, ItemT_co], Generic[T_Param, T_Resp_contra, ItemT_co]):
+class CursorStrategy(PagerStrategy[T_Resp_contra], Generic[T_Resp_contra]):
     """基于响应游标回写的翻页策略."""
 
     def __init__(
         self,
-        cursor_key: str | int,
+        cursor_key: str,
         *,
         cursor_extractor: Callable[[T_Resp_contra], Any],
         has_more_extractor: Callable[[T_Resp_contra], bool | None] | None = None,
-        items_extractor: Callable[[T_Resp_contra], Iterable[ItemT_co] | None] | None = None,
     ) -> None:
         """初始化游标翻页策略.
 
@@ -277,18 +241,10 @@ class CursorStrategy(PagerStrategy[T_Param, T_Resp_contra, ItemT_co], Generic[T_
             cursor_key: 下一页游标写回的请求参数名.
             cursor_extractor: 下一页游标提取方式.
             has_more_extractor: 是否还有更多数据的提取方式.
-            items_extractor: 数据项列表的提取方式.
         """
         self.cursor_key = cursor_key
         self.cursor_extractor = cursor_extractor
         self.has_more_extractor = has_more_extractor
-        self.items_extractor = items_extractor
-
-    def get_items(self, response: T_Resp_contra) -> Iterable[ItemT_co] | None:
-        """从响应中提取数据项列表."""
-        if self.items_extractor is not None:
-            return self.items_extractor(response)
-        return None
 
     def _extract_cursor(self, response: T_Resp_contra) -> Any:
         cursor = self.cursor_extractor(response)
@@ -296,7 +252,7 @@ class CursorStrategy(PagerStrategy[T_Param, T_Resp_contra, ItemT_co], Generic[T_
             raise ValueError("分页响应未提供下一页游标, 无法继续翻页")
         return cursor
 
-    def has_next(self, params: T_Param, response: T_Resp_contra) -> bool:
+    def has_next(self, params: PaginationParams, response: T_Resp_contra) -> bool:
         """检查是否有下一页."""
         if self.has_more_extractor is not None:
             explicit_flag = self.has_more_extractor(response)
@@ -304,26 +260,23 @@ class CursorStrategy(PagerStrategy[T_Param, T_Resp_contra, ItemT_co], Generic[T_
                 return False
 
         next_cursor = self._extract_cursor(response)
-        return cast("dict[Any, Any]", params).get(self.cursor_key) != next_cursor
+        return params.get(self.cursor_key) != next_cursor
 
-    def next_params(self, params: T_Param, response: T_Resp_contra) -> T_Param:
+    def next_params(self, params: PaginationParams, response: T_Resp_contra) -> PaginationParams:
         """获取下一页的请求参数."""
-        new_params = cast("T_Param", copy.deepcopy(params))
-        cast("dict[Any, Any]", new_params)[self.cursor_key] = self._extract_cursor(response)
+        new_params = copy.deepcopy(params)
+        new_params[self.cursor_key] = self._extract_cursor(response)
         return new_params
 
 
-class MultiFieldContinuationStrategy(
-    PagerStrategy[T_Param, T_Resp_contra, ItemT_co], Generic[T_Param, T_Resp_contra, ItemT_co]
-):
+class MultiFieldContinuationStrategy(PagerStrategy[T_Resp_contra], Generic[T_Resp_contra]):
     """基于多字段 continuation 更新的翻页策略."""
 
     def __init__(
         self,
-        build_next_params: NextParamsBuilder[T_Param, T_Resp_contra],
+        build_next_params: NextParamsBuilder[T_Resp_contra],
         *,
         has_more_extractor: Callable[[T_Resp_contra], bool | None] | None = None,
-        items_extractor: Callable[[T_Resp_contra], Iterable[ItemT_co] | None] | None = None,
         context_name: str = "continuation",
     ) -> None:
         """初始化多字段延续翻页策略.
@@ -331,30 +284,24 @@ class MultiFieldContinuationStrategy(
         Args:
             build_next_params: 根据当前请求与响应构造下一页完整参数的函数.
             has_more_extractor: 是否还有更多数据的提取方式.
-            items_extractor: 数据项列表的提取方式.
             context_name: 错误上下文中的策略名称.
         """
         self._build_next_params = build_next_params
         self.has_more_extractor = has_more_extractor
-        self.items_extractor = items_extractor
         self.context_name = context_name
 
-    def get_items(self, response: T_Resp_contra) -> Iterable[ItemT_co] | None:
-        """从响应中提取数据项列表."""
-        if self.items_extractor is not None:
-            return self.items_extractor(response)
-        return None
+    def _build_next_params_candidate(
+        self, params: PaginationParams, response: T_Resp_contra
+    ) -> PaginationParams | None:
+        return self._build_next_params(copy.deepcopy(params), response)
 
-    def _build_next_params_candidate(self, params: T_Param, response: T_Resp_contra) -> T_Param | None:
-        return self._build_next_params(cast("T_Param", copy.deepcopy(params)), response)
-
-    def _resolve_next_params(self, params: T_Param, response: T_Resp_contra) -> T_Param:
+    def _resolve_next_params(self, params: PaginationParams, response: T_Resp_contra) -> PaginationParams:
         next_params = self._build_next_params_candidate(params, response)
         if next_params is None:
             raise ValueError(f"[{self.context_name}] 分页响应未提供继续翻页所需的 continuation 数据")
         return next_params
 
-    def has_next(self, params: T_Param, response: T_Resp_contra) -> bool:
+    def has_next(self, params: PaginationParams, response: T_Resp_contra) -> bool:
         """检查是否有下一页."""
         if self.has_more_extractor is not None:
             explicit_flag = self.has_more_extractor(response)
@@ -362,39 +309,9 @@ class MultiFieldContinuationStrategy(
                 return False
         return self._build_next_params_candidate(params, response) is not None
 
-    def next_params(self, params: T_Param, response: T_Resp_contra) -> T_Param:
+    def next_params(self, params: PaginationParams, response: T_Resp_contra) -> PaginationParams:
         """获取下一页的请求参数."""
         return self._resolve_next_params(params, response)
-
-
-class ExtractorWrapperStrategy(Generic[T_Param, T_Resp_contra, ItemT_co]):
-    """动态组合的策略包装器, 为底层策略注入或覆盖数据项提取器."""
-
-    def __init__(
-        self,
-        base_strategy: IteratorStrategy[T_Param, T_Resp_contra, Any],
-        items_extractor: Callable[[T_Resp_contra], Iterable[ItemT_co] | None],
-    ) -> None:
-        """初始化提取器包装器.
-
-        Args:
-            base_strategy: 底层的迭代策略.
-            items_extractor: 新的数据项提取器.
-        """
-        self.base_strategy = base_strategy
-        self.items_extractor = items_extractor
-
-    def has_next(self, params: T_Param, response: T_Resp_contra) -> bool:
-        """判断是否还能继续迭代, 透传至底层策略."""
-        return self.base_strategy.has_next(params, response)
-
-    def next_params(self, params: T_Param, response: T_Resp_contra) -> T_Param:
-        """计算并返回下一次请求使用的全新参数字典, 透传至底层策略."""
-        return self.base_strategy.next_params(params, response)
-
-    def get_items(self, response: T_Resp_contra) -> Iterable[ItemT_co] | None:
-        """使用注入的提取器从响应中提取数据项列表."""
-        return self.items_extractor(response)
 
 
 class AsyncPager(Generic[RequestResultT]):
@@ -487,9 +404,15 @@ class AsyncRefresher(Generic[RequestResultT]):
 
         Returns:
             第一批的响应对象.
+
+        Raises:
+            StopAsyncIteration: 当达到 limit 且第一批尚未拉取时抛出.
         """
         if self._first_response is not None:
             return self._first_response
+
+        if not self.has_more():
+            raise StopAsyncIteration
 
         res = await self._initial_request
         self._first_response = res

@@ -9,7 +9,6 @@ from ..models.album import (
     GetAlbumSongResponse,
     GetNewAlbumResponse,
 )
-from ..models.base import Album, Song
 from ..models.request import Credential
 from ._base import ApiModule
 
@@ -58,14 +57,13 @@ class AlbumApi(ApiModule):
             method="GetAlbumSongList",
             param=param,
             response_model=GetAlbumSongResponse,
-            pager_strategy=OffsetStrategy[Any, GetAlbumSongResponse, Song](
+            pager_strategy=OffsetStrategy[GetAlbumSongResponse](
                 offset_key="begin",
                 page_size_key="num",
-                items_extractor=lambda response: response.song_list,
-                total_extractor=lambda response: response.total_num,
-                count_extractor=lambda response: len(response.song_list),
+                total_extractor=lambda r: r.total_num,
+                count_extractor=lambda r: len(r.song_list),
             ),
-        )
+        ).with_extractor(lambda r: r.song_list)
 
     def get_new_album(self, area: int = 1, num: int = 20, page: int = 1):
         """获取新碟上架列表.
@@ -80,14 +78,13 @@ class AlbumApi(ApiModule):
             method="get_new_album_info",
             param={"area": area, "num": num, "start": num * (page - 1)},
             response_model=GetNewAlbumResponse,
-            pager_strategy=OffsetStrategy[Any, GetNewAlbumResponse, Album](
+            pager_strategy=OffsetStrategy[GetNewAlbumResponse](
                 offset_key="start",
                 page_size_key="num",
-                items_extractor=lambda response: response.albums,
-                total_extractor=lambda response: response.total,
-                count_extractor=lambda response: len(response.albums),
+                total_extractor=lambda r: r.total,
+                count_extractor=lambda r: len(r.albums),
             ),
-        )
+        ).with_extractor(lambda r: r.albums)
 
     def fav_album(self, album_id: int | list[int], *, credential: Credential | None = None):
         """收藏专辑到当前登录用户.

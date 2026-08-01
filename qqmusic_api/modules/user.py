@@ -1,21 +1,15 @@
 """用户相关 API."""
 
-from typing import Any, ClassVar, cast
+from typing import Any, ClassVar
 
 from ..core.pagination import MultiFieldContinuationStrategy, OffsetStrategy, PageStrategy
-from ..models.base import Song
 from ..models.request import Credential
 from ..models.songlist import GetSonglistDetailResponse
 from ..models.user import (
-    DislikeItem,
     DislikeListData,
-    FriendEntry,
-    RelationUser,
     UserCreatedSonglistResponse,
-    UserFavAlbumItem,
     UserFavAlbumResponse,
     UserFavMvResponse,
-    UserFavSonglistItem,
     UserFavSonglistResponse,
     UserFriendListResponse,
     UserHomepageResponse,
@@ -103,15 +97,14 @@ class UserApi(ApiModule):
             credential=credential,
             require_login=True,
             response_model=UserRelationListResponse,
-            pager_strategy=OffsetStrategy[Any, UserRelationListResponse, RelationUser](
+            pager_strategy=OffsetStrategy[UserRelationListResponse](
                 offset_key="From",
                 page_size_key="Size",
-                has_more_extractor=lambda response: response.has_more,
-                items_extractor=lambda response: response.users,
-                total_extractor=lambda response: response.total,
-                count_extractor=lambda response: len(response.users),
+                has_more_extractor=lambda r: r.has_more,
+                total_extractor=lambda r: r.total,
+                count_extractor=lambda r: len(r.users),
             ),
-        )
+        ).with_extractor(lambda r: r.users)
 
     def get_fans(
         self,
@@ -136,15 +129,14 @@ class UserApi(ApiModule):
             credential=credential,
             require_login=True,
             response_model=UserRelationListResponse,
-            pager_strategy=OffsetStrategy[Any, UserRelationListResponse, RelationUser](
+            pager_strategy=OffsetStrategy[UserRelationListResponse](
                 offset_key="From",
                 page_size_key="Size",
-                has_more_extractor=lambda response: response.has_more,
-                items_extractor=lambda response: response.users,
-                total_extractor=lambda response: response.total,
-                count_extractor=lambda response: len(response.users),
+                has_more_extractor=lambda r: r.has_more,
+                total_extractor=lambda r: r.total,
+                count_extractor=lambda r: len(r.users),
             ),
-        )
+        ).with_extractor(lambda r: r.users)
 
     def get_friend(
         self,
@@ -167,14 +159,13 @@ class UserApi(ApiModule):
             credential=credential,
             require_login=True,
             response_model=UserFriendListResponse,
-            pager_strategy=PageStrategy[Any, UserFriendListResponse, FriendEntry](
+            pager_strategy=PageStrategy[UserFriendListResponse](
                 page_key="Page",
                 page_size=num,
                 start_page=page - 1,
-                has_more_extractor=lambda response: response.has_more,
-                items_extractor=lambda response: response.friends,
+                has_more_extractor=lambda r: r.has_more,
             ),
-        )
+        ).with_extractor(lambda r: r.friends)
 
     def get_follow_user(
         self,
@@ -199,15 +190,14 @@ class UserApi(ApiModule):
             credential=credential,
             require_login=True,
             response_model=UserRelationListResponse,
-            pager_strategy=OffsetStrategy[Any, UserRelationListResponse, RelationUser](
+            pager_strategy=OffsetStrategy[UserRelationListResponse](
                 offset_key="From",
                 page_size_key="Size",
-                has_more_extractor=lambda response: response.has_more,
-                items_extractor=lambda response: response.users,
-                total_extractor=lambda response: response.total,
-                count_extractor=lambda response: len(response.users),
+                has_more_extractor=lambda r: r.has_more,
+                total_extractor=lambda r: r.total,
+                count_extractor=lambda r: len(r.users),
             ),
-        )
+        ).with_extractor(lambda r: r.users)
 
     def get_created_songlist(self, uin: int, *, credential: Credential | None = None):
         """获取用户创建的歌单列表.
@@ -255,15 +245,14 @@ class UserApi(ApiModule):
             },
             credential=credential,
             response_model=GetSonglistDetailResponse,
-            pager_strategy=OffsetStrategy[Any, GetSonglistDetailResponse, Song](
+            pager_strategy=OffsetStrategy[GetSonglistDetailResponse](
                 offset_key="song_begin",
                 page_size_key="song_num",
-                has_more_extractor=lambda response: bool(response.hasmore),
-                items_extractor=lambda response: response.songs,
-                total_extractor=lambda response: response.total,
+                has_more_extractor=lambda r: bool(r.hasmore),
+                total_extractor=lambda r: r.total,
                 count_extractor=lambda response: len(response.songs),
             ),
-        )
+        ).with_extractor(lambda r: r.songs)
 
     def get_fav_songlist(
         self,
@@ -287,15 +276,14 @@ class UserApi(ApiModule):
             param={"uin": euin, "offset": (page - 1) * num, "size": num},
             credential=credential,
             response_model=UserFavSonglistResponse,
-            pager_strategy=OffsetStrategy[Any, UserFavSonglistResponse, UserFavSonglistItem](
+            pager_strategy=OffsetStrategy[UserFavSonglistResponse](
                 offset_key="offset",
                 page_size_key="size",
-                has_more_extractor=lambda response: bool(response.hasmore),
-                items_extractor=lambda response: response.playlists,
-                total_extractor=lambda response: response.total,
-                count_extractor=lambda response: len(response.playlists),
+                has_more_extractor=lambda r: bool(r.hasmore),
+                total_extractor=lambda r: r.total,
+                count_extractor=lambda r: len(r.playlists),
             ),
-        )
+        ).with_extractor(lambda r: r.playlists)
 
     async def fav_songlist(self, songlist_id: int, *, credential: Credential | None = None) -> bool:
         """收藏歌单 (将他人的公开歌单加入当前账号的收藏).
@@ -357,15 +345,14 @@ class UserApi(ApiModule):
             param={"euin": euin, "offset": (page - 1) * num, "size": num},
             credential=credential,
             response_model=UserFavAlbumResponse,
-            pager_strategy=OffsetStrategy[Any, UserFavAlbumResponse, UserFavAlbumItem](
+            pager_strategy=OffsetStrategy[UserFavAlbumResponse](
                 offset_key="offset",
                 page_size_key="size",
-                has_more_extractor=lambda response: bool(response.hasmore),
-                items_extractor=lambda response: response.albums,
-                total_extractor=lambda response: response.total,
-                count_extractor=lambda response: len(response.albums),
+                has_more_extractor=lambda r: bool(r.hasmore),
+                total_extractor=lambda r: r.total,
+                count_extractor=lambda r: len(r.albums),
             ),
-        )
+        ).with_extractor(lambda r: r.albums)
 
     def get_fav_mv(
         self,
@@ -435,11 +422,11 @@ class UserApi(ApiModule):
             require_login=True,
             response_model=DislikeListData,
             sign=True,
-            pager_strategy=MultiFieldContinuationStrategy[Any, DislikeListData, DislikeItem](
+            pager_strategy=MultiFieldContinuationStrategy[DislikeListData](
                 build_next_params=lambda p, r: (
                     {
-                        **cast("dict[str, Any]", p),
-                        "Page": cast("dict[str, Any]", p)["Page"] + 1,
+                        **p,
+                        "Page": p["Page"] + 1,
                         "SongLastid": r.songs[-1].id if r.songs else 0,
                         "SingersLastid": r.singers[-1].id if r.singers else 0,
                         "StyleLastid": r.styles[-1].id if r.styles else 0,
@@ -447,7 +434,6 @@ class UserApi(ApiModule):
                     if (r.singers or r.songs or r.styles)
                     else None
                 ),
-                items_extractor=lambda response: response.songs + response.singers + response.styles,
             ),
         )
 

@@ -1,6 +1,6 @@
 """推荐模块."""
 
-from typing import Any, cast
+from typing import Any
 
 from ..core.pagination import (
     CursorStrategy,
@@ -8,13 +8,11 @@ from ..core.pagination import (
     PageStrategy,
     PaginationParams,
 )
-from ..models.base import Song, SongList
 from ..models.recommend import (
     GuessRecommendResponse,
     RadarRecommendResponse,
     RecommendFeedCardResponse,
     RecommendNewSongResponse,
-    RecommendShelf,
     RecommendSonglistResponse,
 )
 from ..models.request import Credential
@@ -40,14 +38,12 @@ class RecommendApi(ApiModule):
             "v_cache": v_cache or [],
         }
 
-        def _build_home_feed_next_params(
-            params: PaginationParams, response: RecommendFeedCardResponse
-        ) -> PaginationParams | None:
+        def _build_home_feed_next_params(params: PaginationParams, response: RecommendFeedCardResponse):
             shelf_count = len(response.shelves)
             if shelf_count == 0:
                 return None
 
-            next_params = cast("dict[str, Any]", params.copy())
+            next_params = params.copy()
             seen = {str(item) for item in next_params.get("v_cache", [])}
             for shelf in response.shelves:
                 shelf_id = str(shelf.id)
@@ -65,12 +61,11 @@ class RecommendApi(ApiModule):
             "get_recommend_feed",
             data,
             response_model=RecommendFeedCardResponse,
-            pager_strategy=MultiFieldContinuationStrategy[Any, RecommendFeedCardResponse, RecommendShelf](
+            pager_strategy=MultiFieldContinuationStrategy[RecommendFeedCardResponse](
                 _build_home_feed_next_params,
-                items_extractor=lambda response: response.shelves,
                 context_name="recommend_home_feed",
             ),
-        )
+        ).with_extractor(lambda r: r.shelves)
 
     def get_guess_recommend(self, *, credential: Credential | None = None):
         """获取猜你喜欢推荐.
@@ -110,13 +105,12 @@ class RecommendApi(ApiModule):
             "GetRadarSong",
             data,
             response_model=RadarRecommendResponse,
-            pager_strategy=PageStrategy[Any, RadarRecommendResponse, Song](
+            pager_strategy=PageStrategy[RadarRecommendResponse](
                 page_key="Page",
                 start_page=page,
-                has_more_extractor=lambda response: response.has_more,
-                items_extractor=lambda response: response.songs,
+                has_more_extractor=lambda r: r.has_more,
             ),
-        )
+        ).with_extractor(lambda r: r.songs)
 
     def get_recommend_songlist(self, page: int = 1, num: int = 25):
         """获取推荐歌单.
@@ -131,13 +125,12 @@ class RecommendApi(ApiModule):
             "GetRecommendFeed",
             data,
             response_model=RecommendSonglistResponse,
-            pager_strategy=CursorStrategy[Any, RecommendSonglistResponse, SongList](
+            pager_strategy=CursorStrategy[RecommendSonglistResponse](
                 cursor_key="From",
-                has_more_extractor=lambda response: response.has_more,
-                cursor_extractor=lambda response: response.from_limit,
-                items_extractor=lambda response: response.songlists,
+                has_more_extractor=lambda r: r.has_more,
+                cursor_extractor=lambda r: r.from_limit,
             ),
-        )
+        ).with_extractor(lambda r: r.songlists)
 
     def get_recommend_newsong(self, type: int = 5):  # noqa: A002
         """获取推荐新歌.

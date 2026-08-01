@@ -1,7 +1,7 @@
 """搜索相关 API."""
 
 from enum import IntEnum
-from typing import Any, Literal, cast, overload
+from typing import Any, Literal, overload
 
 from ..core import Platform
 from ..core.pagination import MultiFieldContinuationStrategy, PageStrategy
@@ -18,8 +18,6 @@ from ..models.search import (
 )
 from ..utils import get_searchID
 from ._base import ApiModule
-
-SearchByTypeItem = SongSearch | SingerSearch | AlbumSearch | SongListSearch | MvSearch | dict[str, Any]
 
 
 class SearchType(IntEnum):
@@ -131,9 +129,9 @@ class SearchApi(ApiModule):
             "do_search_v2",
             param,
             response_model=GeneralSearchResponse,
-            pager_strategy=MultiFieldContinuationStrategy[Any, GeneralSearchResponse](
+            pager_strategy=MultiFieldContinuationStrategy(
                 lambda params, response: {
-                    **cast("dict[str, Any]", params),
+                    **params,
                     "searchid": response.searchid,
                     "page_id": response.nextpage,
                     "page_start": response.nextpage_start,
@@ -223,19 +221,6 @@ class SearchApi(ApiModule):
         highlight: bool = True,
     ) -> ItemPaginatedRequest[SearchByTypeResponse, dict[str, Any]]: ...
 
-    @overload
-    def search_by_type(
-        self,
-        keyword: str,
-        search_type: int | SearchType = SearchType.SONG,
-        num: int = 10,
-        page: int = 1,
-        selectors: list[SearchSelector] | None = None,
-        searchid: str | None = None,
-        *,
-        highlight: bool = True,
-    ) -> ItemPaginatedRequest[SearchByTypeResponse, SearchByTypeItem]: ...
-
     def search_by_type(
         self,
         keyword: str,
@@ -261,6 +246,19 @@ class SearchApi(ApiModule):
             highlight: 是否高亮关键词.
         """
         normalized_search_type = int(SearchType(search_type))
+
+        def _extract_items(
+            r: SearchByTypeResponse,
+        ) -> (
+            list[SongSearch]
+            | list[SingerSearch]
+            | list[AlbumSearch]
+            | list[SongListSearch]
+            | list[MvSearch]
+            | list[dict[str, Any]]
+        ):
+            return r.song or r.singer or r.album or r.songlist or r.mv or r.user or r.audio_alum or []
+
         return self._build_request(
             "music.search.SearchCgiService",
             "DoSearchForQQMusicMobile",
@@ -281,14 +279,11 @@ class SearchApi(ApiModule):
             },
             platform=Platform.ANDROID,
             response_model=SearchByTypeResponse,
-            pager_strategy=PageStrategy[Any, SearchByTypeResponse, SearchByTypeItem](
+            pager_strategy=PageStrategy[SearchByTypeResponse](
                 page_key="page_num",
                 page_size=num,
                 start_page=page,
                 has_more_extractor=lambda r: r.nextpage != -1,
                 total_extractor=lambda r: r.total_num,
-                items_extractor=lambda r: (
-                    r.song or r.singer or r.album or r.songlist or r.mv or r.user or r.audio_alum or []
-                ),
             ),
-        )
+        ).with_extractor(_extract_items)

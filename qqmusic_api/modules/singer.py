@@ -1,7 +1,7 @@
 """歌手相关 API."""
 
 from enum import Enum, IntEnum
-from typing import Any, cast
+from typing import cast
 
 from ..core import Platform
 from ..core.pagination import (
@@ -9,7 +9,6 @@ from ..core.pagination import (
     OffsetStrategy,
     PageStrategy,
 )
-from ..models.base import MV, Album, Singer, Song
 from ..models.singer import (
     HomepageHeaderResponse,
     HomepageTabDetailResponse,
@@ -179,7 +178,7 @@ class SingerApi(ApiModule):
                 "cur_page": page,
             },
             response_model=SingerIndexPageResponse,
-            pager_strategy=MultiFieldContinuationStrategy[Any, SingerIndexPageResponse, Singer](
+            pager_strategy=MultiFieldContinuationStrategy(
                 lambda params, response: (
                     None
                     if not response.singerlist
@@ -190,10 +189,9 @@ class SingerApi(ApiModule):
                         "cur_page": cast("dict[str, int]", params)["cur_page"] + 1,
                     }
                 ),
-                items_extractor=lambda response: response.singerlist,
                 context_name="singer_list_index",
             ),
-        )
+        ).with_extractor(lambda r: r.singerlist)
 
     def get_info(self, mid: str):
         """获取歌手主页基本信息.
@@ -238,7 +236,7 @@ class SingerApi(ApiModule):
                 "Order": 0,
             },
             response_model=HomepageTabDetailResponse,
-            pager_strategy=PageStrategy[Any, HomepageTabDetailResponse](
+            pager_strategy=PageStrategy[HomepageTabDetailResponse](
                 page_key="PageNum",
                 page_size=num,
                 start_page=page - 1,
@@ -286,14 +284,13 @@ class SingerApi(ApiModule):
             method="GetSingerSongList",
             param={"singerMid": mid, "order": 1, "number": num, "begin": (page - 1) * num},
             response_model=SingerSongListResponse,
-            pager_strategy=OffsetStrategy[Any, SingerSongListResponse, Song](
+            pager_strategy=OffsetStrategy[SingerSongListResponse](
                 offset_key="begin",
                 page_size_key="number",
-                total_extractor=lambda response: response.total_num,
-                count_extractor=lambda response: len(response.song_list),
-                items_extractor=lambda response: response.song_list,
+                total_extractor=lambda r: r.total_num,
+                count_extractor=lambda r: len(r.song_list),
             ),
-        )
+        ).with_extractor(lambda response: response.song_list)
 
     def get_album_list(self, mid: str, num: int = 10, page: int = 1):
         """获取歌手的专辑列表.
@@ -308,14 +305,13 @@ class SingerApi(ApiModule):
             method="GetAlbumList",
             param={"singerMid": mid, "order": 1, "number": num, "begin": (page - 1) * num},
             response_model=SingerAlbumListResponse,
-            pager_strategy=OffsetStrategy[Any, SingerAlbumListResponse, Album](
+            pager_strategy=OffsetStrategy[SingerAlbumListResponse](
                 offset_key="begin",
                 page_size_key="number",
-                total_extractor=lambda response: response.total,
-                count_extractor=lambda response: len(response.album_list),
-                items_extractor=lambda response: response.album_list,
+                total_extractor=lambda r: r.total,
+                count_extractor=lambda r: len(r.album_list),
             ),
-        )
+        ).with_extractor(lambda r: r.album_list)
 
     def get_mv_list(self, mid: str, num: int = 10, page: int = 1):
         """获取歌手 MV 列表数据.
@@ -330,11 +326,10 @@ class SingerApi(ApiModule):
             method="GetSingerMvList",
             param={"singermid": mid, "order": 1, "count": num, "start": (page - 1) * num},
             response_model=SingerMvListResponse,
-            pager_strategy=OffsetStrategy[Any, SingerMvListResponse, MV](
+            pager_strategy=OffsetStrategy[SingerMvListResponse](
                 offset_key="start",
                 page_size_key="count",
-                total_extractor=lambda response: response.total,
-                count_extractor=lambda response: len(response.mv_list),
-                items_extractor=lambda response: response.mv_list,
+                total_extractor=lambda r: r.total,
+                count_extractor=lambda r: len(r.mv_list),
             ),
-        )
+        ).with_extractor(lambda r: r.mv_list)

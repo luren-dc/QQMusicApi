@@ -1,10 +1,7 @@
 """歌单相关 API."""
 
-from typing import Any
-
 from ..core import CgiApiException
 from ..core.pagination import OffsetStrategy
-from ..models.base import Song
 from ..models.request import Credential
 from ..models.songlist import CreateDeleteSonglistResp, GetSonglistDetailResponse
 from ._base import ApiModule
@@ -63,15 +60,14 @@ class SonglistApi(ApiModule):
                 "onlysonglist": onlysong,
             },
             response_model=GetSonglistDetailResponse,
-            pager_strategy=OffsetStrategy[Any, GetSonglistDetailResponse, Song](
+            pager_strategy=OffsetStrategy[GetSonglistDetailResponse](
                 offset_key="song_begin",
                 page_size_key="song_num",
-                has_more_extractor=lambda response: bool(response.hasmore),
-                items_extractor=lambda response: response.songs,
-                total_extractor=lambda response: response.total,
+                has_more_extractor=lambda r: bool(r.hasmore),
+                total_extractor=lambda r: r.total,
                 count_extractor=lambda response: len(response.songs),
             ),
-        )
+        ).with_extractor(lambda r: r.songs)
 
     def create(self, dirname: str, *, credential: Credential | None = None):
         """创建歌单.

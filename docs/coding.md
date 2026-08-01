@@ -104,20 +104,20 @@ async def quick_search(self, keyword: str) -> dict[str, Any]:
 
 ### `_build_request` 参数说明
 
-| 参数               | 类型                          | 说明                                                                    |
-|--------------------|-------------------------------|-------------------------------------------------------------------------|
-| `module`           | `str`                         | 接口所属模块名                                                          |
-| `method`           | `str`                         | 方法名                                                                  |
-| `param`            | `dict`                        | 业务参数                                                                |
-| `response_model`   | `type[BaseModel]` 或 `None`   | 响应模型，为 None 时返回原始 dict                                       |
-| `comm`             | `dict` 或 `None`              | 附加的公共参数                                                          |
-| `override_comm`    | `bool`                        | 为 True 时 `comm` 完全替代自动生成的参数；为 False 时合并               |
-| `credential`       | `Credential` 或 `None`        | 覆盖本次请求的凭证                                                      |
-| `platform`         | `Platform` 或 `None`          | 覆盖本次请求的平台                                                      |
-| `preserve_bool`    | `bool`                        | 是否保留布尔值原样（默认转为 0/1 整型）                                 |
-| `sign`             | `bool`                        | 是否对请求进行签名                                                      |
-| `pager_strategy`   | `PagerStrategy` 或 `None`     | 分页策略，提供后返回 `ItemPaginatedRequest` 或 `PaginatedRequest`       |
-| `refresh_strategy` | `RefresherStrategy` 或 `None` | 换一批策略，提供后返回 `ItemRefreshableRequest` 或 `RefreshableRequest` |
+| 参数               | 类型                          | 说明                                                                                                        |
+|--------------------|-------------------------------|-------------------------------------------------------------------------------------------------------------|
+| `module`           | `str`                         | 接口所属模块名                                                                                              |
+| `method`           | `str`                         | 方法名                                                                                                      |
+| `param`            | `dict`                        | 业务参数                                                                                                    |
+| `response_model`   | `type[BaseModel]` 或 `None`   | 响应模型，为 None 时返回原始 dict                                                                           |
+| `comm`             | `dict` 或 `None`              | 附加的公共参数                                                                                              |
+| `override_comm`    | `bool`                        | 为 True 时 `comm` 完全替代自动生成的参数；为 False 时合并                                                   |
+| `credential`       | `Credential` 或 `None`        | 覆盖本次请求的凭证                                                                                          |
+| `platform`         | `Platform` 或 `None`          | 覆盖本次请求的平台                                                                                          |
+| `preserve_bool`    | `bool`                        | 是否保留布尔值原样（默认转为 0/1 整型）                                                                     |
+| `sign`             | `bool`                        | 是否对请求进行签名                                                                                          |
+| `pager_strategy`   | `PagerStrategy` 或 `None`     | 分页策略，提供后返回 `PaginatedRequest`；可链式调用 `.with_extractor()` 提升为 `ItemPaginatedRequest`       |
+| `refresh_strategy` | `RefresherStrategy` 或 `None` | 换一批策略，提供后返回 `RefreshableRequest`；可链式调用 `.with_extractor()` 提升为 `ItemRefreshableRequest` |
 
 ### `client.request` 参数说明
 
@@ -255,11 +255,10 @@ def get_vip_info(self, *, credential: Credential | None = None):
 ### 连续翻页
 
 通过 `pager_strategy` 声明连续翻页能力，建议配合显示 Generic 标注（形如
-`OffsetStrategy[Any, GetSonglistDetailResponse, Song]`）以确保 IDE 的类型推断能力：
+`OffsetStrategy[GetSonglistDetailResponse]`）以确保静态类型检查与类型推断的准确性，并通过 `.with_extractor()`
+链式调用绑定实体数据项的提取逻辑：
 
 ```python
-from typing import Any
-
 from ..core.pagination import OffsetStrategy
 
 
@@ -274,24 +273,21 @@ def get_detail(self, songlist_id: int, num: int = 10, page: int = 1):
             "song_num": num,
         },
         response_model=GetSonglistDetailResponse,
-        pager_strategy=OffsetStrategy[Any, GetSonglistDetailResponse, Song](
+        pager_strategy=OffsetStrategy[GetSonglistDetailResponse](
             offset_key="song_begin",
             page_size_key="song_num",
             has_more_extractor=lambda response: bool(response.hasmore),
             total_extractor=lambda response: response.total,
             count_extractor=lambda response: len(response.songs),
-            items_extractor=lambda response: response.songs,
         ),
-    )
+    ).with_extractor(lambda response: response.songs)
 ```
 
 ### 换一批
 
-通过 `refresh_strategy` 声明换一批能力：
+通过 `refresh_strategy` 声明换一批能力，同理可结合 `.with_extractor()` 链式绑定数据项提取器：
 
 ```python
-from typing import Any
-
 from ..core.pagination import BatchRefreshStrategy
 from ..models.base import MV
 
@@ -303,13 +299,12 @@ def get_related_mv(self, songid: int, last_mvid: str | None = None):
         method="GetSongRelatedMv",
         param={"songid": str(songid), "songtype": 1, "lastmvid": last_mvid or 0},
         response_model=GetRelatedMvResponse,
-        refresh_strategy=BatchRefreshStrategy[Any, GetRelatedMvResponse, MV](
+        refresh_strategy=BatchRefreshStrategy[GetRelatedMvResponse](
             refresh_key="lastmvid",
             cursor_extractor=lambda response: response.mv[-1].id if response.mv else None,
             has_more_extractor=lambda response: bool(response.has_more),
-            items_extractor=lambda response: response.mv,
         ),
-    )
+    ).with_extractor(lambda response: response.mv)
 ```
 
 ### 内置策略速查

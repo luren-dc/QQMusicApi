@@ -3,11 +3,11 @@
 from typing import TYPE_CHECKING, Any, overload
 
 from ..core.exceptions import CredentialInvalidError
-from ..core.pagination import ItemT_co, PagerStrategy, RefresherStrategy
+from ..core.pagination import PagerStrategy, RefresherStrategy
 from ..core.request import (
     AllowErrorCodes,
-    ItemPaginatedRequest,
-    ItemRefreshableRequest,
+    PaginatedRequest,
+    RefreshableRequest,
     Request,
     ResponseModel,
 )
@@ -84,7 +84,7 @@ class ApiModule:
         self,
         module: str,
         method: str,
-        param: dict[str, Any] | dict[int, Any],
+        param: dict[str, Any],
         response_model: None = None,
         comm: dict[str, Any] | None = None,
         *,
@@ -105,7 +105,7 @@ class ApiModule:
         self,
         module: str,
         method: str,
-        param: dict[str, Any] | dict[int, Any],
+        param: dict[str, Any],
         response_model: None = None,
         comm: dict[str, Any] | None = None,
         *,
@@ -115,18 +115,18 @@ class ApiModule:
         platform: Platform | None = None,
         allow_error_codes: AllowErrorCodes | None = None,
         parse_on_allow: bool = False,
-        pager_strategy: PagerStrategy[Any, dict[str, Any], ItemT_co],
+        pager_strategy: PagerStrategy[dict[str, Any]],
         refresh_strategy: None = None,
         sign: bool = False,
         require_login: bool = False,
-    ) -> ItemPaginatedRequest[dict[str, Any], ItemT_co]: ...
+    ) -> PaginatedRequest[dict[str, Any]]: ...
 
     @overload
     def _build_request(
         self,
         module: str,
         method: str,
-        param: dict[str, Any] | dict[int, Any],
+        param: dict[str, Any],
         response_model: None = None,
         comm: dict[str, Any] | None = None,
         *,
@@ -137,17 +137,17 @@ class ApiModule:
         allow_error_codes: AllowErrorCodes | None = None,
         parse_on_allow: bool = False,
         pager_strategy: None = None,
-        refresh_strategy: RefresherStrategy[Any, dict[str, Any], ItemT_co],
+        refresh_strategy: RefresherStrategy[dict[str, Any]],
         sign: bool = False,
         require_login: bool = False,
-    ) -> ItemRefreshableRequest[dict[str, Any], ItemT_co]: ...
+    ) -> RefreshableRequest[dict[str, Any]]: ...
 
     @overload
     def _build_request(
         self,
         module: str,
         method: str,
-        param: dict[str, Any] | dict[int, Any],
+        param: dict[str, Any],
         response_model: type[ResponseModel],
         comm: dict[str, Any] | None = None,
         *,
@@ -168,7 +168,7 @@ class ApiModule:
         self,
         module: str,
         method: str,
-        param: dict[str, Any] | dict[int, Any],
+        param: dict[str, Any],
         response_model: type[ResponseModel],
         comm: dict[str, Any] | None = None,
         *,
@@ -178,18 +178,18 @@ class ApiModule:
         platform: Platform | None = None,
         allow_error_codes: AllowErrorCodes | None = None,
         parse_on_allow: bool = False,
-        pager_strategy: PagerStrategy[Any, ResponseModel, ItemT_co],
+        pager_strategy: PagerStrategy[ResponseModel],
         refresh_strategy: None = None,
         sign: bool = False,
         require_login: bool = False,
-    ) -> ItemPaginatedRequest[ResponseModel, ItemT_co]: ...
+    ) -> PaginatedRequest[ResponseModel]: ...
 
     @overload
     def _build_request(
         self,
         module: str,
         method: str,
-        param: dict[str, Any] | dict[int, Any],
+        param: dict[str, Any],
         response_model: type[ResponseModel],
         comm: dict[str, Any] | None = None,
         *,
@@ -200,16 +200,16 @@ class ApiModule:
         allow_error_codes: AllowErrorCodes | None = None,
         parse_on_allow: bool = False,
         pager_strategy: None = None,
-        refresh_strategy: RefresherStrategy[Any, ResponseModel, ItemT_co],
+        refresh_strategy: RefresherStrategy[ResponseModel],
         sign: bool = False,
         require_login: bool = False,
-    ) -> ItemRefreshableRequest[ResponseModel, ItemT_co]: ...
+    ) -> RefreshableRequest[ResponseModel]: ...
 
     def _build_request(
         self,
         module: str,
         method: str,
-        param: dict[str, Any] | dict[int, Any],
+        param: dict[str, Any],
         response_model: type[ResponseModel] | None = None,
         comm: dict[str, Any] | None = None,
         *,
@@ -219,11 +219,11 @@ class ApiModule:
         platform: Platform | None = None,
         allow_error_codes: AllowErrorCodes | None = None,
         parse_on_allow: bool = False,
-        pager_strategy: PagerStrategy[Any, Any, Any] | None = None,
-        refresh_strategy: RefresherStrategy[Any, Any, Any] | None = None,
+        pager_strategy: PagerStrategy[Any] | None = None,
+        refresh_strategy: RefresherStrategy[Any] | None = None,
         sign: bool = False,
         require_login: bool = False,
-    ) -> Request[Any] | ItemPaginatedRequest[Any, Any] | ItemRefreshableRequest[Any, Any]:
+    ) -> Request[Any] | PaginatedRequest[Any] | RefreshableRequest[Any]:
         """构建可 await 的请求描述符.
 
         Args:
@@ -250,7 +250,7 @@ class ApiModule:
             ValueError: 如果同时提供 pager_strategy 和 refresh_strategy 时抛出.
             CredentialInvalidError: 如果 require_login 为 True 且凭证无效时抛出.
         """
-        from ..core.request import ItemPaginatedRequest, ItemRefreshableRequest, Request
+        from ..core.request import PaginatedRequest, RefreshableRequest, Request
 
         if pager_strategy is not None and refresh_strategy is not None:
             raise ValueError("pager_strategy 与 refresh_strategy 不能同时声明")
@@ -274,7 +274,7 @@ class ApiModule:
             "sign": sign,
         }
         if pager_strategy is not None:
-            return ItemPaginatedRequest(**common_kwargs, pager_strategy=pager_strategy)
+            return PaginatedRequest(**common_kwargs, pager_strategy=pager_strategy)
         if refresh_strategy is not None:
-            return ItemRefreshableRequest(**common_kwargs, refresh_strategy=refresh_strategy)
+            return RefreshableRequest(**common_kwargs, refresh_strategy=refresh_strategy)
         return Request(**common_kwargs)

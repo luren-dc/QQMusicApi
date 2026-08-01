@@ -8,9 +8,7 @@ from ..models.private_message import (
     PrivateChatEntriesResponse,
     PrivateConfigResponse,
     PrivateMediaMessageDetailsResponse,
-    PrivateMessageInfo,
     PrivateMessageListResponse,
-    PrivateMessageSession,
     PrivateMusicianCardResponse,
     PrivateOperationResponse,
     PrivateSafetyHintResponse,
@@ -93,13 +91,12 @@ class PrivateMessageApi(ApiModule):
             require_login=True,
             platform=Platform.ANDROID,
             response_model=PrivateSessionListResponse,
-            pager_strategy=MultiFieldContinuationStrategy[Any, PrivateSessionListResponse, PrivateMessageSession](
+            pager_strategy=MultiFieldContinuationStrategy[PrivateSessionListResponse](
                 _build_session_list_next_params,
-                has_more_extractor=lambda response: response.has_more == 1,
-                items_extractor=lambda response: response.sessions,
+                has_more_extractor=lambda r: r.has_more == 1,
                 context_name="private_message_session_list",
             ),
-        )
+        ).with_extractor(lambda r: r.sessions)
 
     def delete_session(self, session_id: str, *, super_msg_flag: int = 0, credential: Credential | None = None):
         """删除私信会话.
@@ -166,13 +163,12 @@ class PrivateMessageApi(ApiModule):
             require_login=True,
             platform=Platform.ANDROID,
             response_model=PrivateMessageListResponse,
-            pager_strategy=MultiFieldContinuationStrategy[Any, PrivateMessageListResponse, PrivateMessageInfo](
+            pager_strategy=MultiFieldContinuationStrategy[PrivateMessageListResponse](
                 _build_message_list_next_params,
-                has_more_extractor=lambda response: response.has_more == 1,
-                items_extractor=lambda response: response.messages,
+                has_more_extractor=lambda r: r.has_more == 1,
                 context_name="private_message_list",
             ),
-        )
+        ).with_extractor(lambda r: r.messages)
 
     def send_message(
         self,

@@ -1,6 +1,6 @@
 """评论模块."""
 
-from typing import Any, cast
+from typing import Any
 
 from ..core.pagination import (
     CursorStrategy,
@@ -11,36 +11,33 @@ from ..models.comment import (
     AddCommentResponse,
     CommentBizType,
     CommentCountResponse,
-    CommentItem,
     CommentListResponse,
-    MomentCommentItem,
     MomentCommentResponse,
 )
 from ..models.request import Credential
 from ._base import ApiModule
 
 
-def _build_comment_pager_strategy() -> MultiFieldContinuationStrategy[Any, CommentListResponse, CommentItem]:
+def _build_comment_pager_strategy():
     """构建评论列表接口使用的 continuation 策略."""
 
     def build_next_params(
         params: PaginationParams,
         response: CommentListResponse,
-    ) -> PaginationParams | None:
+    ):
         if not response.has_more:
             return None
         cursor = response.comments[-1].seq_no if response.comments else None
         if cursor is None:
             return None
-        next_params = cast("dict[str, Any]", params.copy())
+        next_params = params.copy()
         next_params["PageNum"] = next_params["PageNum"] + 1
         next_params["LastCommentSeqNo"] = cursor
         return next_params
 
-    return MultiFieldContinuationStrategy(
+    return MultiFieldContinuationStrategy[CommentListResponse](
         build_next_params,
-        has_more_extractor=lambda response: bool(response.has_more),
-        items_extractor=lambda response: response.comments,
+        has_more_extractor=lambda r: bool(r.has_more),
         context_name="comment_list",
     )
 
@@ -116,7 +113,7 @@ class CommentApi(ApiModule):
             params,
             response_model=CommentListResponse,
             pager_strategy=_build_comment_pager_strategy(),
-        )
+        ).with_extractor(lambda r: r.comments)
 
     def get_new_comments(
         self,
@@ -156,7 +153,7 @@ class CommentApi(ApiModule):
             params,
             response_model=CommentListResponse,
             pager_strategy=_build_comment_pager_strategy(),
-        )
+        ).with_extractor(lambda r: r.comments)
 
     def get_recommend_comments(
         self,
@@ -196,7 +193,7 @@ class CommentApi(ApiModule):
             params,
             response_model=CommentListResponse,
             pager_strategy=_build_comment_pager_strategy(),
-        )
+        ).with_extractor(lambda r: r.comments)
 
     def get_moment_comments(
         self,
@@ -230,13 +227,12 @@ class CommentApi(ApiModule):
             "GetSongTsCmList",
             params,
             response_model=MomentCommentResponse,
-            pager_strategy=CursorStrategy[Any, MomentCommentResponse, MomentCommentItem](
+            pager_strategy=CursorStrategy(
                 cursor_key="LastPos",
                 has_more_extractor=lambda response: response.has_more == 1,
                 cursor_extractor=lambda response: response.next_pos,
-                items_extractor=lambda response: response.comments,
             ),
-        )
+        ).with_extractor(lambda r: r.comments)
 
     def add_comment(
         self,

@@ -32,7 +32,7 @@ class DummyResponse(BaseModel):
 
 def test_page_strategy_has_next_and_next_params():
     """测试基于页码的分页策略 has_next 与 next_params."""
-    strategy = PageStrategy[Any, DummyResponse](
+    strategy = PageStrategy[DummyResponse](
         page_key="page",
         page_size=10,
         start_page=1,
@@ -58,7 +58,7 @@ def test_page_strategy_has_next_and_next_params():
 
 def test_offset_strategy_has_next_and_next_params():
     """测试基于偏移量的分页策略 has_next 与 next_params."""
-    strategy = OffsetStrategy[Any, DummyResponse](
+    strategy = OffsetStrategy[DummyResponse](
         offset_key="start",
         page_size_key="size",
         start_offset=0,
@@ -86,7 +86,7 @@ def test_offset_strategy_has_next_and_next_params():
 
 def test_batch_refresh_strategy():
     """测试换一批策略 has_next 与 next_params."""
-    strategy = BatchRefreshStrategy[Any, DummyResponse](
+    strategy = BatchRefreshStrategy[DummyResponse](
         refresh_key="vec",
         cursor_extractor=lambda r: r.next_cursor,
         has_more_extractor=lambda r: r.has_more,
@@ -109,7 +109,7 @@ def test_batch_refresh_strategy():
 
 def test_cursor_strategy():
     """测试游标策略 has_next 与 next_params."""
-    strategy = CursorStrategy[Any, DummyResponse](
+    strategy = CursorStrategy[DummyResponse](
         cursor_key="pos",
         cursor_extractor=lambda r: r.next_cursor,
         has_more_extractor=lambda r: r.has_more,
@@ -130,7 +130,7 @@ def test_multi_field_continuation_strategy():
             return None
         return {**p, "page": p.get("page", 1) + 1}
 
-    strategy = MultiFieldContinuationStrategy[Any, DummyResponse](builder)
+    strategy = MultiFieldContinuationStrategy[DummyResponse](builder)
 
     resp_has = DummyResponse(items=[1, 2])
     resp_empty = DummyResponse(items=[])
@@ -155,7 +155,7 @@ async def test_paginated_request_paginate():
 
             return _coro().__await__()
 
-    strategy = OffsetStrategy[Any, DummyResponse](
+    strategy = OffsetStrategy[DummyResponse](
         offset_key="start",
         page_size_key="size",
         total_extractor=lambda r: r.total,
@@ -175,7 +175,7 @@ async def test_paginated_request_paginate():
 
 def test_refreshable_request_next_request():
     """测试 RefreshableRequest 的 next_request 方法."""
-    strategy = BatchRefreshStrategy[Any, DummyResponse](
+    strategy = BatchRefreshStrategy[DummyResponse](
         refresh_key="vec",
         cursor_extractor=lambda r: r.next_cursor,
         has_more_extractor=lambda r: r.has_more,
@@ -220,11 +220,10 @@ async def test_async_pager_and_collect_items():
     resp2 = DummyResponse(total=30, items=[11, 12, 13, 14, 15, 16, 17, 18, 19, 20])
     resp3 = DummyResponse(total=30, items=[21, 22, 23, 24, 25, 26, 27, 28, 29, 30])
 
-    strategy_with_items = OffsetStrategy[Any, DummyResponse, int](
+    strategy = OffsetStrategy[DummyResponse](
         offset_key="start",
         page_size=10,
         total_extractor=lambda r: r.total,
-        items_extractor=lambda r: r.items,
     )
 
     req = MockPaginatedRequest(
@@ -232,7 +231,8 @@ async def test_async_pager_and_collect_items():
         module="test",
         method="test",
         param={"start": 0},
-        pager_strategy=strategy_with_items,
+        pager_strategy=strategy,
+        items_extractor=lambda r: r.items,
         responses=[resp1, resp2, resp3],
     )
 
@@ -258,22 +258,18 @@ async def test_async_pager_and_collect_items():
     all_items = await req.collect_items()
     assert all_items == list(range(1, 31))
 
-    # 测试未配置 items_extractor 触发 TypeError
-    strategy_no_items = OffsetStrategy[Any, DummyResponse](
-        offset_key="start",
-        page_size=10,
-        total_extractor=lambda r: r.total,
-    )
-    req_no_items = MockPaginatedRequest(
+    # 测试 items_extractor 返回 None 的处理
+    req_none_items = MockPaginatedRequest(
         _client=cast("Any", None),
         module="test",
         method="test",
         param={"start": 0},
-        pager_strategy=strategy_no_items,
+        pager_strategy=strategy,
+        items_extractor=lambda r: None,
         responses=[resp1],
     )
-    with pytest.raises(TypeError, match="未配置 items_extractor"):
-        await req_no_items.collect_items()
+    items_none = await req_none_items.collect_items()
+    assert items_none == []
 
 
 @pytest.mark.asyncio
@@ -295,11 +291,10 @@ async def test_async_refresher_and_stream():
     resp2 = DummyResponse(has_more=True, next_cursor="cur2", items=["c", "d"])
     resp3 = DummyResponse(has_more=False, next_cursor=None, items=["e", "f"])
 
-    strategy = BatchRefreshStrategy[Any, DummyResponse, str](
+    strategy = BatchRefreshStrategy[DummyResponse](
         refresh_key="vec",
         cursor_extractor=lambda r: r.next_cursor,
         has_more_extractor=lambda r: r.has_more,
-        items_extractor=lambda r: r.items,
     )
 
     req = MockRefreshableRequest(
@@ -308,6 +303,7 @@ async def test_async_refresher_and_stream():
         method="test",
         param={"vec": "cur0"},
         refresh_strategy=strategy,
+        items_extractor=lambda r: r.items,
         response_map={"cur0": resp1, "cur1": resp2, "cur2": resp3},
     )
 
@@ -324,6 +320,12 @@ async def test_async_refresher_and_stream():
     with pytest.raises(StopAsyncIteration):
         await refresher.next()
 
+    # 测试 limit=0 时 first() 短路抛出 StopAsyncIteration
+    refresher_zero = req.refresher(limit=0)
+    assert refresher_zero.has_more() is False
+    with pytest.raises(StopAsyncIteration):
+        await refresher_zero.first()
+
     # 测试 async for batch in req (aiter)
     batches = [batch async for batch in req]
     assert len(batches) == 3
@@ -337,7 +339,7 @@ async def test_async_refresher_and_stream():
 @pytest.mark.asyncio
 async def test_with_extractor_combinator():
     """测试通过 with_extractor 动态注入数据项提取器."""
-    strategy = PageStrategy[Any, DummyResponse](
+    strategy = PageStrategy[DummyResponse](
         page_key="page",
         page_size=10,
         start_page=1,

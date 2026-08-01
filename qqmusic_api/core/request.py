@@ -14,7 +14,6 @@ from ..models.request import Credential
 from .pagination import (
     AsyncPager,
     AsyncRefresher,
-    ExtractorWrapperStrategy,
     ItemT_co,
     PagerStrategy,
     RefresherStrategy,
@@ -73,7 +72,7 @@ class Request(Generic[RequestResultT]):
     _client: "Client"
     module: str
     method: str
-    param: dict[str, Any] | dict[int, Any]
+    param: dict[str, Any]
     response_model: type[BaseModel] | None = None
     comm: dict[str, int | str | bool] | None = None
     override_comm: bool = False
@@ -120,7 +119,7 @@ class Request(Generic[RequestResultT]):
 class PaginatedRequest(Request[RequestResultT]):
     """声明了连续翻页能力的请求描述符."""
 
-    pager_strategy: PagerStrategy[Any, RequestResultT, Any]
+    pager_strategy: PagerStrategy[RequestResultT]
 
     def next_request(self, previous_response: RequestResultT) -> Self | None:
         """根据上一次请求的响应, 构建下一次翻页的请求.
@@ -191,13 +190,10 @@ class PaginatedRequest(Request[RequestResultT]):
         Returns:
             具备 iter_items 与 collect_items 能力的 ItemPaginatedRequest.
         """
-        new_strategy = ExtractorWrapperStrategy(self.pager_strategy, extractor)
         import dataclasses
 
-        kwargs = {
-            f.name: getattr(self, f.name) for f in dataclasses.fields(PaginatedRequest) if f.name != "pager_strategy"
-        }
-        kwargs["pager_strategy"] = new_strategy
+        kwargs = {f.name: getattr(self, f.name) for f in dataclasses.fields(PaginatedRequest)}
+        kwargs["items_extractor"] = extractor
         return ItemPaginatedRequest(**kwargs)
 
 
@@ -205,7 +201,7 @@ class PaginatedRequest(Request[RequestResultT]):
 class ItemPaginatedRequest(PaginatedRequest[RequestResultT], Generic[RequestResultT, ItemT_co]):
     """声明了提取数据项能力的连续翻页请求描述符."""
 
-    pager_strategy: PagerStrategy[Any, RequestResultT, ItemT_co]
+    items_extractor: Callable[[RequestResultT], Iterable[ItemT_co] | None]
 
     async def iter_items(self, limit: int | None = None) -> "AsyncGenerator[ItemT_co, None]":
         """跨页展开提取数据项的异步迭代器.
@@ -215,15 +211,12 @@ class ItemPaginatedRequest(PaginatedRequest[RequestResultT], Generic[RequestResu
 
         Yields:
             数据项实体.
-
-        Raises:
-            TypeError: 当策略未配置 items_extractor 时抛出.
         """
         count = 0
         async for response in self.paginate():
-            items = self.pager_strategy.get_items(response)
+            items = self.items_extractor(response)
             if items is None:
-                raise TypeError("当前分页请求的策略未配置 items_extractor, 无法使用 iter_items()")
+                continue
             for item in items:
                 if limit is not None and count >= limit:
                     return
@@ -246,7 +239,7 @@ class ItemPaginatedRequest(PaginatedRequest[RequestResultT], Generic[RequestResu
 class RefreshableRequest(Request[RequestResultT]):
     """声明了换一批能力的请求描述符."""
 
-    refresh_strategy: RefresherStrategy[Any, RequestResultT, Any]
+    refresh_strategy: RefresherStrategy[RequestResultT]
 
     def refresher(self, limit: int | None = None) -> AsyncRefresher[RequestResultT]:
         """返回有状态换一批控制器.
@@ -292,15 +285,10 @@ class RefreshableRequest(Request[RequestResultT]):
         Returns:
             具备 iter_items 与 collect_items 能力的 ItemRefreshableRequest.
         """
-        new_strategy = ExtractorWrapperStrategy(self.refresh_strategy, extractor)
         import dataclasses
 
-        kwargs = {
-            f.name: getattr(self, f.name)
-            for f in dataclasses.fields(RefreshableRequest)
-            if f.name != "refresh_strategy"
-        }
-        kwargs["refresh_strategy"] = new_strategy
+        kwargs = {f.name: getattr(self, f.name) for f in dataclasses.fields(RefreshableRequest)}
+        kwargs["items_extractor"] = extractor
         return ItemRefreshableRequest(**kwargs)
 
     def next_request(self, previous_response: RequestResultT) -> Self | None:
@@ -322,7 +310,7 @@ class RefreshableRequest(Request[RequestResultT]):
 class ItemRefreshableRequest(RefreshableRequest[RequestResultT], Generic[RequestResultT, ItemT_co]):
     """声明了提取数据项能力的换一批请求描述符."""
 
-    refresh_strategy: RefresherStrategy[Any, RequestResultT, ItemT_co]
+    items_extractor: Callable[[RequestResultT], Iterable[ItemT_co] | None]
 
     async def iter_items(self, limit: int | None = None) -> "AsyncGenerator[ItemT_co, None]":
         """跨批展开提取数据项的异步迭代器.
@@ -332,15 +320,12 @@ class ItemRefreshableRequest(RefreshableRequest[RequestResultT], Generic[Request
 
         Yields:
             数据项实体.
-
-        Raises:
-            TypeError: 当策略未配置 items_extractor 时抛出.
         """
         count = 0
         async for batch in self.refresh_stream():
-            items = self.refresh_strategy.get_items(batch)
+            items = self.items_extractor(batch)
             if items is None:
-                raise TypeError("当前换一批请求的策略未配置 items_extractor, 无法使用 iter_items()")
+                continue
             for item in items:
                 if limit is not None and count >= limit:
                     return

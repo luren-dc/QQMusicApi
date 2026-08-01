@@ -6,7 +6,6 @@ from typing import Any, NamedTuple
 from qqmusic_api import Platform
 
 from ..core.pagination import BatchRefreshStrategy
-from ..models.base import MV, SongList
 from ..models.request import Credential
 from ..models.song import (
     GetCdnDispatchResponse,
@@ -378,15 +377,12 @@ class SongApi(ApiModule):
             method="GetRelatedPlaylist",
             param={"songid": songid, "vecPlaylist": last or []},
             response_model=GetRelatedSonglistResponse,
-            refresh_strategy=BatchRefreshStrategy[Any, GetRelatedSonglistResponse, SongList](
+            refresh_strategy=BatchRefreshStrategy[GetRelatedSonglistResponse](
                 refresh_key="vecPlaylist",
-                has_more_extractor=lambda response: bool(response.has_more),
-                cursor_extractor=lambda response: (
-                    [playlist.id for playlist in response.songlist] if response.songlist else None
-                ),
-                items_extractor=lambda response: response.songlist,
+                has_more_extractor=lambda r: bool(r.has_more),
+                cursor_extractor=lambda r: [playlist.id for playlist in r.songlist] if r.songlist else None,
             ),
-        )
+        ).with_extractor(lambda r: r.songlist)
 
     def get_related_mv(self, songid: int, last_mvid: str | None = None):
         """获取歌曲相关 MV.
@@ -400,13 +396,12 @@ class SongApi(ApiModule):
             method="GetSongRelatedMv",
             param={"songid": str(songid), "songtype": 1, "lastmvid": last_mvid or 0},
             response_model=GetRelatedMvResponse,
-            refresh_strategy=BatchRefreshStrategy[Any, GetRelatedMvResponse, MV](
+            refresh_strategy=BatchRefreshStrategy[GetRelatedMvResponse](
                 refresh_key="lastmvid",
-                has_more_extractor=lambda response: bool(response.has_more),
-                cursor_extractor=lambda response: response.mv[-1].id if response.mv else None,
-                items_extractor=lambda response: response.mv,
+                has_more_extractor=lambda r: bool(r.has_more),
+                cursor_extractor=lambda r: r.mv[-1].id if r.mv else None,
             ),
-        )
+        ).with_extractor(lambda r: r.mv)
 
     def get_other_version(self, value: int | str):
         """获取歌曲其他版本.
