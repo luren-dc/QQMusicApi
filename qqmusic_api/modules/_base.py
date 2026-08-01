@@ -213,11 +213,11 @@ class ApiModule:
         platform: Platform | None = None,
         allow_error_codes: AllowErrorCodes | None = None,
         parse_on_allow: bool = False,
-        pager_strategy: PagerStrategy | None = None,
-        refresh_strategy: RefresherStrategy | None = None,
+        pager_strategy: PagerStrategy[Any, Any, Any] | None = None,
+        refresh_strategy: RefresherStrategy[Any, Any, Any] | None = None,
         sign: bool = False,
         require_login: bool = False,
-    ) -> Request[Any] | PaginatedRequest[Any] | RefreshableRequest[Any]:
+    ) -> Request[Any] | PaginatedRequest[Any, Any] | RefreshableRequest[Any, Any]:
         """构建可 await 的请求描述符.
 
         Args:
