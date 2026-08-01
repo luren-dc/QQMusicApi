@@ -232,7 +232,7 @@ class CommentApi(ApiModule):
             response_model=MomentCommentResponse,
             pager_strategy=CursorStrategy[Any, MomentCommentResponse, MomentCommentItem](
                 cursor_key="LastPos",
-                has_more_extractor=lambda response: bool(response.has_more),
+                has_more_extractor=lambda response: response.has_more == 1,
                 cursor_extractor=lambda response: response.next_pos,
                 items_extractor=lambda response: response.comments,
             ),

@@ -190,7 +190,7 @@ class OffsetStrategy(PagerStrategy[T_Param, T_Resp_contra, ItemT_co], Generic[T_
                     return False
                 return current_offset + step < total
 
-        raise ValueError("分页响应未提供有效的方式(如 has_more_flag, total)来判断是否存在下一页")
+        return False
 
     def next_params(self, params: T_Param, response: T_Resp_contra) -> T_Param:
         """获取下一页的请求参数."""
@@ -408,11 +408,8 @@ class AsyncPager(Generic[RequestResultT, ItemT_co]):
         response = await req
         self._yielded_count += 1
 
-        if req.pager_strategy.has_next(req.param, response):
-            next_param = req.pager_strategy.next_params(req.param, response)
-            self._current_request = req.replace(param=next_param)
-        else:
-            self._current_request = None
+        self._current_request = req.next_request(response)
+        if self._current_request is None:
             self._has_more = False
 
         return response

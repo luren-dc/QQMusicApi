@@ -74,6 +74,10 @@ def test_offset_strategy_has_next_and_next_params():
     last_resp = DummyResponse(total=30, items=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
     assert strategy.has_next(last_params, last_resp) is False
 
+    # 当未提供 total/has_more 时, 安全返回 False 而非抛错
+    empty_resp = DummyResponse(total=None)
+    assert strategy.has_next(params, empty_resp) is False
+
 
 def test_batch_refresh_strategy():
     """测试换一批策略 has_next 与 next_params."""
@@ -194,7 +198,7 @@ async def test_async_pager_and_collect_items():
     """测试 AsyncPager 控制器以及 PaginatedRequest 的 collect 与 iter_items 功能."""
 
     @dataclass
-    class MockPaginatedRequest(PaginatedRequest):
+    class MockPaginatedRequest(PaginatedRequest[DummyResponse, int]):
         responses: list[DummyResponse] = field(default_factory=list)
 
         def __await__(self):
@@ -272,7 +276,7 @@ async def test_async_refresher_and_stream():
     """测试 AsyncRefresher 控制器以及 RefreshableRequest 的 refresh_stream 与 aiter 功能."""
 
     @dataclass
-    class MockRefreshableRequest(RefreshableRequest):
+    class MockRefreshableRequest(RefreshableRequest[DummyResponse, str]):
         response_map: dict[str, DummyResponse] = field(default_factory=dict)
 
         def __await__(self):
