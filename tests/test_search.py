@@ -76,7 +76,7 @@ async def test_search_by_type_with_int(client: Client) -> None:
 
 
 async def test_search_by_type_paginate(client: Client) -> None:
-    """测试搜索分页支持 next 与 has_more."""
+    """测试按类型搜索按页面迭代 (paginate)."""
     req = client.search.search_by_type("周杰伦", num=5, page=1)
     pages = [page async for page in req.paginate(limit=2)]
 

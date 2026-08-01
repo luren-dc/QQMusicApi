@@ -414,6 +414,20 @@ class UserApi(ApiModule):
         param: dict[str, Any] = {"Cmd": cmd, "Page": page}
         if lastid:
             param[lastid_fields[cmd]] = lastid
+
+        def _build_next_params(p: dict[str, Any], r: DislikeListData) -> dict[str, Any] | None:
+            if not (r.singers or r.songs or r.styles):
+                return None
+            next_p = p.copy()
+            next_p["Page"] = next_p["Page"] + 1
+            if r.songs:
+                next_p["SongLastid"] = r.songs[-1].id
+            if r.singers:
+                next_p["SingersLastid"] = r.singers[-1].id
+            if r.styles:
+                next_p["StyleLastid"] = r.styles[-1].id
+            return next_p
+
         return self._build_request(
             module="music.feedback.FeedbackBlack",
             method="GetDislikeList",
@@ -423,17 +437,7 @@ class UserApi(ApiModule):
             response_model=DislikeListData,
             sign=True,
             pager_strategy=MultiFieldContinuationStrategy[DislikeListData](
-                build_next_params=lambda p, r: (
-                    {
-                        **p,
-                        "Page": p["Page"] + 1,
-                        "SongLastid": r.songs[-1].id if r.songs else 0,
-                        "SingersLastid": r.singers[-1].id if r.singers else 0,
-                        "StyleLastid": r.styles[-1].id if r.styles else 0,
-                    }
-                    if (r.singers or r.songs or r.styles)
-                    else None
-                ),
+                build_next_params=_build_next_params,
             ),
         )
 
