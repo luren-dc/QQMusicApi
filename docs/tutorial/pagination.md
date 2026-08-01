@@ -8,8 +8,6 @@ QQMusicApi 提供了现代化的分页与换一批支持。
 * `RefreshableRequest` 声明了“换一批”能力的请求。可以通过 `.refresher()`、`.refresh_stream()` 手控或连续刷新拉取。同理，其子类
   `ItemRefreshableRequest` 额外支持 `.collect_items()` 与 `.iter_items()` 提取实体数据。
 
----
-
 ## 1. 单次请求与无状态步进
 
 即使请求具备分页能力，你依然可以像普通请求一样直接 `await` 它，仅拉取单页数据：
@@ -41,8 +39,6 @@ if req2 is not None:
     res2 = await req2
 ```
 
----
-
 ## 2. Pager 有状态控制器（适合 Web / UI 场景）
 
 通过 `.pager()` 可以创建一个有状态的 `AsyncPager` 控制器，包含 `has_more()` 与 `next()` 方法，极其适合 UI 的“点击下一页”交互：
@@ -65,8 +61,6 @@ asyncio.run(main())
 ```
 
 > `has_more()` 只读取当前分页器的内部状态，不会发起网络请求。`next()` 没有更多数据时会抛出 `StopAsyncIteration`。
-
----
 
 ## 3. 全量收集与条目平铺 (`collect` / `collect_items`)
 
@@ -92,8 +86,6 @@ async def main() -> None:
 
 asyncio.run(main())
 ```
-
----
 
 ## 4. 异步流式迭代 (`async for`)
 
@@ -125,8 +117,6 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
----
-
 ## 5. Refresher 换一批用法
 
 “换一批”接口提供 `.refresher()` 手动控制器，以及 `.refresh_stream()` 异步流式迭代器：
@@ -151,6 +141,36 @@ async def main() -> None:
         # 方式 A2：带限制的连续换一批流式迭代
         async for batch in client.song.get_related_mv(1114857).refresh_stream(limit=2):
             print("最新批次 MV 数:", len(batch.mv))
+
+
+asyncio.run(main())
+```
+
+## 6. 动态数据项提取 (`with_extractor`)
+
+如果你使用的某个 API 返回的请求对象是原生的 `PaginatedRequest` 或 `RefreshableRequest`（即 API 层没有预设数据项提取器），你仍然可以通过
+`.with_extractor()` 动态注入一个提取逻辑。这会将请求无缝转换为具备跨页提取能力的 `ItemPaginatedRequest` 或
+`ItemRefreshableRequest`。
+
+这在处理一些层级较深、或者没有统一结构的响应（例如 `general_search`）时非常有用：
+
+```python
+import asyncio
+from qqmusic_api import Client
+
+
+async def main() -> None:
+    async with Client() as client:
+        # 这个 API 返回原生的 PaginatedRequest
+        req = client.search.general_search("周杰伦")
+
+        # 动态绑定 extractor
+        # 此时 item_req 类型变为 ItemPaginatedRequest
+        item_req = req.with_extractor(lambda r: r.song.items if r.song else [])
+
+        # 现在你可以非常自然地跨页迭代数据项了！
+        async for song in item_req.iter_items(limit=10):
+            print("提取到的歌曲:", song)
 
 
 asyncio.run(main())
