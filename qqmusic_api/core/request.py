@@ -2,7 +2,7 @@
 
 import copy
 from collections.abc import Callable, Generator, Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from dataclasses import replace as dc_replace
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar
@@ -177,9 +177,7 @@ class PaginatedRequest(Request[RequestResultT]):
         Returns:
             具备 iter_items 与 collect_items 能力的 ItemPaginatedRequest.
         """
-        import dataclasses
-
-        kwargs = {f.name: getattr(self, f.name) for f in dataclasses.fields(PaginatedRequest)}
+        kwargs = {f.name: getattr(self, f.name) for f in fields(PaginatedRequest)}
         kwargs["items_extractor"] = extractor
         return ItemPaginatedRequest(**kwargs)
 

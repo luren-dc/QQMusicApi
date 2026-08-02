@@ -230,8 +230,8 @@ class CursorStrategy(PagerStrategy[T_Resp_contra], Generic[T_Resp_contra]):
         """检查是否有明确的分页终止条件."""
         if self.has_more_extractor is not None:
             explicit_flag = self.has_more_extractor(response)
-            if explicit_flag is not None and not explicit_flag:
-                return True
+            if explicit_flag is not None:
+                return not explicit_flag
 
         if self.count_extractor is not None:
             count = self.count_extractor(response)
@@ -351,8 +351,8 @@ class MultiFieldContinuationStrategy(PagerStrategy[T_Resp_contra], Generic[T_Res
         """检查是否有明确的分页终止条件."""
         if self.has_more_extractor is not None:
             explicit_flag = self.has_more_extractor(response)
-            if explicit_flag is False:
-                return True
+            if explicit_flag is not None:
+                return not explicit_flag
 
         if self.count_extractor is not None:
             count = self.count_extractor(response)

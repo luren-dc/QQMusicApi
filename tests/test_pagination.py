@@ -384,3 +384,18 @@ async def test_page_strategy_count_fallback():
 
     assert strategy.has_next({"page": 1}, resp1) is True
     assert strategy.has_next({"page": 2}, resp2) is False
+
+
+@pytest.mark.asyncio
+async def test_cursor_strategy_short_circuit_has_more():
+    """测试 CursorStrategy 在 has_more 为 True 时短路判定未终止, 不被少量条目误判."""
+    strategy = CursorStrategy[DummyResponse](
+        cursor_key="cursor",
+        cursor_extractor=lambda r: r.next_cursor,
+        has_more_extractor=lambda r: r.has_more,
+        count_extractor=lambda r: len(r.items or []),
+        page_size=10,
+    )
+
+    resp = DummyResponse(has_more=True, items=[1, 2], next_cursor="next_c")
+    assert strategy.has_next({"cursor": "init_c"}, resp) is True
