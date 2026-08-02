@@ -250,7 +250,7 @@ def get_vip_info(self, *, credential: Credential | None = None):
 > 若接口需要凭证对象的字段来构建请求参数，
 > 仍可显式调用 `_require_login` 获取凭证对象。
 
-## 翻页与换一批
+## 连续翻页与批次刷新
 
 ### 连续翻页
 
@@ -283,9 +283,9 @@ def get_detail(self, songlist_id: int, num: int = 10, page: int = 1):
     ).with_extractor(lambda response: response.songs)
 ```
 
-### 换一批
+### 批次刷新 (Batch Refresh)
 
-通过 `refresh_strategy` 声明换一批能力，同理可结合 `.with_extractor()` 链式绑定数据项提取器：
+批次刷新（Batch Refresh）是一种针对推荐或关联接口、支持游标复位与防循环重复游标的特殊游标分页，同样通过 `pager_strategy` 声明：
 
 ```python
 from ..core.pagination import BatchRefreshStrategy
@@ -299,7 +299,7 @@ def get_related_mv(self, songid: int, last_mvid: str | None = None):
         method="GetSongRelatedMv",
         param={"songid": str(songid), "songtype": 1, "lastmvid": last_mvid or 0},
         response_model=GetRelatedMvResponse,
-        refresh_strategy=BatchRefreshStrategy[GetRelatedMvResponse](
+        pager_strategy=BatchRefreshStrategy[GetRelatedMvResponse](
             refresh_key="lastmvid",
             cursor_extractor=lambda response: response.mv[-1].id if response.mv else None,
             has_more_extractor=lambda response: bool(response.has_more),
@@ -315,9 +315,7 @@ def get_related_mv(self, songid: int, last_mvid: str | None = None):
 | `OffsetStrategy`                 |   偏移量滑窗 | `offset_key` + `page_size_key`  |
 | `CursorStrategy`                 | 响应游标回写 | `cursor_key`                    |
 | `MultiFieldContinuationStrategy` |   多字段续翻 | 自定义 `build_next_params` 函数 |
-| `BatchRefreshStrategy`           |       换一批 | `refresh_key`                   |
-
-`pager_strategy` 与 `refresh_strategy` 不能同时声明。
+| `BatchRefreshStrategy`           |     批次刷新 | `refresh_key`                   |
 
 ## 请求签名
 

@@ -13,10 +13,8 @@ from typing_extensions import Self, overload
 from ..models.request import Credential
 from .pagination import (
     AsyncPager,
-    AsyncRefresher,
     ItemT_co,
     PagerStrategy,
-    RefresherStrategy,
 )
 from .versioning import Platform
 
@@ -160,20 +158,9 @@ class PaginatedRequest(Request[RequestResultT]):
         Args:
             limit: 最大获取页数.
         """
-        current_request: Request[RequestResultT] | None = self
-        yielded_count = 0
-        while current_request is not None:
-            if limit is not None and yielded_count >= limit:
-                break
-            response = await current_request
+        pager = self.pager(limit=limit)
+        async for response in pager:
             yield response
-            yielded_count += 1
-
-            if self.pager_strategy.has_next(current_request.param, response):
-                next_param = self.pager_strategy.next_params(current_request.param, response)
-                current_request = current_request.replace(param=next_param)
-            else:
-                current_request = None
 
     def __aiter__(self) -> "AsyncGenerator[RequestResultT, None]":
         """返回异步迭代器自身."""
@@ -225,115 +212,6 @@ class ItemPaginatedRequest(PaginatedRequest[RequestResultT], Generic[RequestResu
 
     async def collect_items(self, limit: int | None = None) -> list[ItemT_co]:
         """收集跨页展开的数据项为列表.
-
-        Args:
-            limit: 最大提取条目数量.
-
-        Returns:
-            数据项列表.
-        """
-        return [item async for item in self.iter_items(limit=limit)]
-
-
-@dataclass
-class RefreshableRequest(Request[RequestResultT]):
-    """声明了换一批能力的请求描述符."""
-
-    refresh_strategy: RefresherStrategy[RequestResultT]
-
-    def refresher(self, limit: int | None = None) -> AsyncRefresher[RequestResultT]:
-        """返回有状态换一批控制器.
-
-        Args:
-            limit: 最大换一批次数.
-        """
-        return AsyncRefresher(self, limit=limit)
-
-    async def refresh_stream(self, limit: int | None = None) -> "AsyncGenerator[RequestResultT, None]":
-        """返回换一批响应的异步流式迭代器.
-
-        Args:
-            limit: 最大换一批次数.
-        """
-        refresher = self.refresher(limit=limit)
-        async for batch in refresher:
-            yield batch
-
-    def __aiter__(self) -> "AsyncGenerator[RequestResultT, None]":
-        """返回异步迭代器自身."""
-        return self.refresh_stream()
-
-    async def collect(self, limit: int | None = None) -> list[RequestResultT]:
-        """收集前 limit 次换一批响应数据为列表.
-
-        Args:
-            limit: 最大换一批次数.
-
-        Returns:
-            响应对象列表.
-        """
-        return [batch async for batch in self.refresh_stream(limit=limit)]
-
-    def with_extractor(
-        self, extractor: Callable[[RequestResultT], Iterable[NewItemT] | None]
-    ) -> "ItemRefreshableRequest[RequestResultT, NewItemT]":
-        """显式绑定数据项提取器, 返回支持提取项的换一批请求描述符.
-
-        Args:
-            extractor: 数据项提取函数.
-
-        Returns:
-            具备 iter_items 与 collect_items 能力的 ItemRefreshableRequest.
-        """
-        import dataclasses
-
-        kwargs = {f.name: getattr(self, f.name) for f in dataclasses.fields(RefreshableRequest)}
-        kwargs["items_extractor"] = extractor
-        return ItemRefreshableRequest(**kwargs)
-
-    def next_request(self, previous_response: RequestResultT) -> Self | None:
-        """根据上一次请求的响应, 构建下一次换一批的请求.
-
-        Args:
-            previous_response: 上一次请求得到的响应.
-
-        Returns:
-            下一次请求的描述符, 如果没有更多则返回 None.
-        """
-        if self.refresh_strategy.has_next(self.param, previous_response):
-            next_param = self.refresh_strategy.next_params(self.param, previous_response)
-            return self.replace(param=next_param)
-        return None
-
-
-@dataclass
-class ItemRefreshableRequest(RefreshableRequest[RequestResultT], Generic[RequestResultT, ItemT_co]):
-    """声明了提取数据项能力的换一批请求描述符."""
-
-    items_extractor: Callable[[RequestResultT], Iterable[ItemT_co] | None]
-
-    async def iter_items(self, limit: int | None = None) -> "AsyncGenerator[ItemT_co, None]":
-        """跨批展开提取数据项的异步迭代器.
-
-        Args:
-            limit: 最大提取条目数量.
-
-        Yields:
-            数据项实体.
-        """
-        count = 0
-        async for batch in self.refresh_stream():
-            items = self.items_extractor(batch)
-            if items is None:
-                continue
-            for item in items:
-                if limit is not None and count >= limit:
-                    return
-                yield item
-                count += 1
-
-    async def collect_items(self, limit: int | None = None) -> list[ItemT_co]:
-        """收集跨批展开的数据项为列表.
 
         Args:
             limit: 最大提取条目数量.

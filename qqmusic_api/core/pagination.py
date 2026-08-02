@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from typing_extensions import Self, TypeVar
 
 if TYPE_CHECKING:
-    from .request import PaginatedRequest, RefreshableRequest
+    from .request import PaginatedRequest
 
 T_Resp_contra = TypeVar("T_Resp_contra", contravariant=True)
 RequestResultT = TypeVar("RequestResultT", bound=BaseModel | dict[str, Any])
@@ -32,10 +32,6 @@ class IteratorStrategy(Protocol[T_Resp_contra]):
 
 class PagerStrategy(IteratorStrategy[T_Resp_contra], Protocol):
     """连续翻页策略协议."""
-
-
-class RefresherStrategy(IteratorStrategy[T_Resp_contra], Protocol):
-    """换一批策略协议."""
 
 
 class PageStrategy(PagerStrategy[T_Resp_contra], Generic[T_Resp_contra]):
@@ -181,50 +177,6 @@ class OffsetStrategy(PagerStrategy[T_Resp_contra], Generic[T_Resp_contra]):
         return new_params
 
 
-class BatchRefreshStrategy(RefresherStrategy[T_Resp_contra], Generic[T_Resp_contra]):
-    """基于上一批结果标记换一批内容的策略."""
-
-    def __init__(
-        self,
-        refresh_key: str,
-        *,
-        cursor_extractor: Callable[[T_Resp_contra], Any],
-        has_more_extractor: Callable[[T_Resp_contra], bool | None] | None = None,
-    ) -> None:
-        """初始化换一批策略.
-
-        Args:
-            refresh_key: 下一次请求需要替换的参数名.
-            cursor_extractor: 下一批刷新参数提取方式.
-            has_more_extractor: 是否还有更多数据的提取方式.
-        """
-        self.refresh_key = refresh_key
-        self.cursor_extractor = cursor_extractor
-        self.has_more_extractor = has_more_extractor
-
-    def _extract_refresh_value(self, response: T_Resp_contra) -> Any:
-        refresh_value = self.cursor_extractor(response)
-        if refresh_value is None:
-            raise ValueError("响应未提供换一批所需的刷新参数")
-        return refresh_value
-
-    def has_next(self, params: PaginationParams, response: T_Resp_contra) -> bool:
-        """检查是否有下一批."""
-        if self.has_more_extractor is not None:
-            explicit_flag = self.has_more_extractor(response)
-            if explicit_flag is not None and not explicit_flag:
-                return False
-
-        next_refresh_value = self._extract_refresh_value(response)
-        return params.get(self.refresh_key) != next_refresh_value
-
-    def next_params(self, params: PaginationParams, response: T_Resp_contra) -> PaginationParams:
-        """获取下一批的请求参数."""
-        new_params = copy.deepcopy(params)
-        new_params[self.refresh_key] = self._extract_refresh_value(response)
-        return new_params
-
-
 class CursorStrategy(PagerStrategy[T_Resp_contra], Generic[T_Resp_contra]):
     """基于响应游标回写的翻页策略."""
 
@@ -249,7 +201,7 @@ class CursorStrategy(PagerStrategy[T_Resp_contra], Generic[T_Resp_contra]):
     def _extract_cursor(self, response: T_Resp_contra) -> Any:
         cursor = self.cursor_extractor(response)
         if cursor is None:
-            raise ValueError("分页响应未提供下一页游标, 无法继续翻页")
+            raise ValueError(f"分页响应未提供下一页参数: {self.cursor_key}")
         return cursor
 
     def has_next(self, params: PaginationParams, response: T_Resp_contra) -> bool:
@@ -259,7 +211,11 @@ class CursorStrategy(PagerStrategy[T_Resp_contra], Generic[T_Resp_contra]):
             if explicit_flag is not None and not explicit_flag:
                 return False
 
-        next_cursor = self._extract_cursor(response)
+        try:
+            next_cursor = self._extract_cursor(response)
+        except ValueError:
+            return False
+
         return params.get(self.cursor_key) != next_cursor
 
     def next_params(self, params: PaginationParams, response: T_Resp_contra) -> PaginationParams:
@@ -267,6 +223,49 @@ class CursorStrategy(PagerStrategy[T_Resp_contra], Generic[T_Resp_contra]):
         new_params = copy.deepcopy(params)
         new_params[self.cursor_key] = self._extract_cursor(response)
         return new_params
+
+
+class BatchRefreshStrategy(CursorStrategy[T_Resp_contra]):
+    """基于上一批结果标记换一批内容的策略."""
+
+    def __init__(
+        self,
+        refresh_key: str,
+        *,
+        cursor_extractor: Callable[[T_Resp_contra], Any],
+        has_more_extractor: Callable[[T_Resp_contra], bool | None] | None = None,
+        allow_repeat: bool = False,
+    ) -> None:
+        """初始化换一批策略.
+
+        Args:
+            refresh_key: 下一次请求需要替换的参数名.
+            cursor_extractor: 下一批刷新参数提取方式.
+            has_more_extractor: 是否还有更多数据的提取方式.
+            allow_repeat: 是否允许在游标不变或无新游标时重复刷新.
+        """
+        super().__init__(
+            cursor_key=refresh_key,
+            cursor_extractor=cursor_extractor,
+            has_more_extractor=has_more_extractor,
+        )
+        self.allow_repeat = allow_repeat
+
+    def has_next(self, params: PaginationParams, response: T_Resp_contra) -> bool:
+        """检查是否有下一批."""
+        if self.has_more_extractor is not None:
+            explicit_flag = self.has_more_extractor(response)
+            if explicit_flag is not None and not explicit_flag:
+                return False
+
+        if self.allow_repeat:
+            try:
+                self._extract_cursor(response)
+                return True
+            except ValueError:
+                return False
+
+        return super().has_next(params, response)
 
 
 class MultiFieldContinuationStrategy(PagerStrategy[T_Resp_contra], Generic[T_Resp_contra]):
@@ -328,16 +327,46 @@ class AsyncPager(Generic[RequestResultT]):
             initial_request: 初始翻页请求描述符.
             limit: 最大可拉取页数限制.
         """
+        self._initial_request = initial_request
         self._current_request: PaginatedRequest[RequestResultT] | None = initial_request
         self._limit = limit
         self._yielded_count = 0
         self._has_more = True
+        self._first_response: RequestResultT | None = None
+        self._last_response: RequestResultT | None = None
 
     def has_more(self) -> bool:
         """判断是否还有更多页数据可拉取."""
         if self._limit is not None and self._yielded_count >= self._limit:
             return False
-        return self._has_more
+        if self._yielded_count == 0:
+            return True
+        return self._has_more and self._current_request is not None
+
+    async def first(self) -> RequestResultT:
+        """获取或拉取首批/首页响应数据.
+
+        Returns:
+            首个页面响应对象.
+
+        Raises:
+            StopAsyncIteration: 当达到 limit 且第一页尚未拉取时抛出.
+        """
+        if self._first_response is not None:
+            return self._first_response
+
+        if not self.has_more():
+            raise StopAsyncIteration
+
+        res = await self._initial_request
+        self._first_response = res
+        if self._yielded_count == 0:
+            self._yielded_count = 1
+            self._last_response = res
+            self._current_request = self._initial_request.next_request(res)
+            if self._current_request is None:
+                self._has_more = False
+        return res
 
     async def next(self) -> RequestResultT:
         """拉取并返回下一页响应数据.
@@ -353,94 +382,13 @@ class AsyncPager(Generic[RequestResultT]):
 
         req = self._current_request
         response = await req
-        self._yielded_count += 1
-
-        self._current_request = req.next_request(response)
-        if self._current_request is None:
-            self._has_more = False
-
-        return response
-
-    def __aiter__(self) -> Self:
-        """返回异步迭代器自身."""
-        return self
-
-    async def __anext__(self) -> RequestResultT:
-        """异步迭代下一个元素."""
-        return await self.next()
-
-
-class AsyncRefresher(Generic[RequestResultT]):
-    """有状态换一批控制器."""
-
-    def __init__(
-        self,
-        initial_request: "RefreshableRequest[RequestResultT]",
-        limit: int | None = None,
-    ) -> None:
-        """初始化换一批控制器.
-
-        Args:
-            initial_request: 初始换一批请求描述符.
-            limit: 最大换一批次数限制.
-        """
-        self._initial_request: RefreshableRequest[RequestResultT] = initial_request
-        self._current_request: RefreshableRequest[RequestResultT] | None = initial_request
-        self._limit = limit
-        self._yielded_count = 0
-        self._first_response: RequestResultT | None = None
-        self._last_response: RequestResultT | None = None
-
-    def has_more(self) -> bool:
-        """判断是否还能继续换一批."""
-        if self._limit is not None and self._yielded_count >= self._limit:
-            return False
-        if self._yielded_count == 0:
-            return True
-        return self._current_request is not None
-
-    async def first(self) -> RequestResultT:
-        """获取或拉取第一批响应数据.
-
-        Returns:
-            第一批的响应对象.
-
-        Raises:
-            StopAsyncIteration: 当达到 limit 且第一批尚未拉取时抛出.
-        """
-        if self._first_response is not None:
-            return self._first_response
-
-        if not self.has_more():
-            raise StopAsyncIteration
-
-        res = await self._initial_request
-        self._first_response = res
-        if self._yielded_count == 0:
-            self._yielded_count = 1
-            self._last_response = res
-            self._current_request = self._initial_request.next_request(res)
-        return res
-
-    async def next(self) -> RequestResultT:
-        """拉取并返回下一批响应数据.
-
-        Returns:
-            下一批的响应对象.
-
-        Raises:
-            StopAsyncIteration: 当没有更多批次或达到 limit 时抛出.
-        """
-        if not self.has_more() or self._current_request is None:
-            raise StopAsyncIteration
-
-        req = self._current_request
-        response = await req
         if self._first_response is None:
             self._first_response = response
         self._last_response = response
         self._yielded_count += 1
         self._current_request = req.next_request(response)
+        if self._current_request is None:
+            self._has_more = False
 
         return response
 

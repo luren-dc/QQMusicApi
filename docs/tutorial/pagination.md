@@ -1,12 +1,11 @@
 # Pagination
 
-QQMusicApi 提供了现代化的分页与换一批支持。
+QQMusicApi 提供了统一的分页体系：
 
-* `PaginatedRequest` 声明了连续翻页能力的请求。可以直接 `await` 发起单页请求，也可以通过 `.pager()`、`.paginate()`、
-  `.collect()` 或 `async for` 进行灵活消费。若接口支持直接解析数据项，会返回其子类 `ItemPaginatedRequest`，额外支持
-  `.collect_items()` 与 `.iter_items()`。
-* `RefreshableRequest` 声明了“换一批”能力的请求。可以通过 `.refresher()`、`.refresh_stream()` 手控或连续刷新拉取。同理，其子类
-  `ItemRefreshableRequest` 额外支持 `.collect_items()` 与 `.iter_items()` 提取实体数据。
+* **`PaginatedRequest`**：具备连续翻页与批次刷新能力的请求描述符。既可直接 `await` 获取首批响应，也可通过 `.pager()`
+  手动按需步进，或使用 `.paginate()`、`.collect()` 和 `async for` 进行流式与批量遍历。
+* **`ItemPaginatedRequest`**：具备数据项提取能力的分页扩展类。除具备通用分页方法外，还通过 `.iter_items()` 与
+  `.collect_items()` 实现了跨越页面边界、直接消费单一具体业务元素（如歌曲、专辑等）的功能。
 
 ## 1. 单次请求与无状态步进
 
@@ -39,9 +38,9 @@ if req2 is not None:
     res2 = await req2
 ```
 
-## 2. Pager 有状态控制器（适合 Web / UI 场景）
+## 2. 有状态控制器
 
-通过 `.pager()` 可以创建一个有状态的 `AsyncPager` 控制器，包含 `has_more()` 与 `next()` 方法，极其适合 UI 的“点击下一页”交互：
+通过 `.pager()` 可以创建一个有状态的 `AsyncPager` 控制器：
 
 ```python
 import asyncio
@@ -62,9 +61,10 @@ asyncio.run(main())
 
 > `has_more()` 只读取当前分页器的内部状态，不会发起网络请求。`next()` 没有更多数据时会抛出 `StopAsyncIteration`。
 
-## 3. 全量收集与条目平铺 (`collect` / `collect_items`)
+## 3. 全量收集与条目平铺
 
-如果你希望直接获取多页响应列表，或者直接获取展平后的所有实体数据项（如所有歌曲或专辑）：
+如果你希望直接获取多页响应列表，或者直接获取展平后的所有实体数据项（如所有歌曲或专辑）。为防止无休止拉取带来的耗时与风控风险，强烈建议调用时始终设置合理的
+`limit` 参数：
 
 ```python
 import asyncio
@@ -87,10 +87,7 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-## 4. 异步流式迭代 (`async for`)
-
-* **页级别迭代 (`paginate()` 或直接 `async for in req`)**：每次迭代返回一个完整的 **页面响应对象 (Response)**。
-* **条目级别迭代 (`iter_items()`)**：自动跨页提取并展平 **实体数据项 (Item)**。
+## 4. 异步流式迭代
 
 ```python
 import asyncio
@@ -101,15 +98,16 @@ async def main() -> None:
     async with Client() as client:
         req = client.search.search_by_type("周杰伦", num=5)
 
-        # 方式 A1：直接对请求对象迭代 (等价于 paginate，返回完整的页面)
+        # 方式 1：直接迭代对象本身，等价于 paginate()，连续翻页直至尾页
         async for page in req:
             print("当前页歌曲数:", len(page.song))
+            break  # 演示示例：仅处理一页后退出
 
-        # 方式 A2：带限制的页级别迭代
+        # 方式 2：显式限制最大翻页数（推荐在生产环境中为循环设置合理的上限）
         async for page in req.paginate(limit=2):
             print("当前页歌曲数:", len(page.song))
 
-        # 方式 B：条目级别迭代
+        # 方式 3：跨页条目级别迭代（自动展平为实体）
         async for song in req.iter_items(limit=10):
             print("歌曲名:", song.name)
 
@@ -117,9 +115,12 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-## 5. Refresher 换一批用法
+## 5. 批次刷新与单批次步进
 
-“换一批”接口提供 `.refresher()` 手动控制器，以及 `.refresh_stream()` 异步流式迭代器：
+部分关联或推荐类接口（如歌曲相关 MV、相似歌曲等）并非按传统的页码（Page）或偏移量（Offset）递增，而是 **按批次（Batch）** 持续更新内容。
+
+对于此类以批次刷新为主、常通过单次触发拉取的场景，推荐使用有状态的分页控制器 `.pager()` 配合 `.first()` 与 `.next()`
+精准控制每一批次的获取：
 
 ```python
 import asyncio
@@ -128,31 +129,30 @@ from qqmusic_api import Client
 
 async def main() -> None:
     async with Client() as client:
-        # 手动控制器用法
-        refresher = client.song.get_related_mv(1114857).refresher(limit=3)
-        current_batch = await refresher.first()
-        if refresher.has_more():
-            next_batch = await refresher.next()
+        # 1. 实例化分页控制器
+        pager = client.song.get_related_mv(1114857).pager()
 
-        # 方式 A1：直接对请求对象迭代 (等价于 refresh_stream，返回完整的批次)
-        async for batch in client.song.get_related_mv(1114857):
-            print("最新批次 MV 数:", len(batch.mv))
+        # 2. 首次加载页面时，拉取首批推荐数据
+        first_batch = await pager.first()
+        print("首批 MV 数量:", len(first_batch.mv))
 
-        # 方式 A2：带限制的连续换一批流式迭代
-        async for batch in client.song.get_related_mv(1114857).refresh_stream(limit=2):
-            print("最新批次 MV 数:", len(batch.mv))
+        # 3. 按需触发：调用 pager.next() 刷新拉取下一个批次
+        if pager.has_more():
+            next_batch = await pager.next()
+            print("下一批 MV 数量:", len(next_batch.mv))
 
 
 asyncio.run(main())
 ```
 
-## 6. 动态数据项提取 (`with_extractor`)
+通过 `pager().first()` 与 `pager().next()`，既能在规范的接口契约下享受自动游标维护与防重复终止保护，又能贴合按批次更新的数据消费模式。
 
-如果你使用的某个 API 返回的请求对象是原生的 `PaginatedRequest` 或 `RefreshableRequest`（即 API 层没有预设数据项提取器），你仍然可以通过
-`.with_extractor()` 动态注入一个提取逻辑。这会将请求无缝转换为具备跨页提取能力的 `ItemPaginatedRequest` 或
-`ItemRefreshableRequest`。
+## 6. 动态数据项提取
 
-这在处理一些层级较深、或者没有统一结构的响应（例如 `general_search`）时非常有用：
+如果你使用的某个 API 返回的请求对象是原生的 `PaginatedRequest`（即 API 层没有预设数据项提取器），你仍然可以通过
+`.with_extractor()` 动态注入一个提取逻辑。这会将请求无缝转换为具备跨页提取能力的 `ItemPaginatedRequest`。
+
+这在处理一些层级较深、或者没有统一结构的响应时非常有用：
 
 ```python
 import asyncio

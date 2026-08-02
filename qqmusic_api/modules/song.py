@@ -377,7 +377,7 @@ class SongApi(ApiModule):
             method="GetRelatedPlaylist",
             param={"songid": songid, "vecPlaylist": last or []},
             response_model=GetRelatedSonglistResponse,
-            refresh_strategy=BatchRefreshStrategy[GetRelatedSonglistResponse](
+            pager_strategy=BatchRefreshStrategy[GetRelatedSonglistResponse](
                 refresh_key="vecPlaylist",
                 has_more_extractor=lambda r: bool(r.has_more),
                 cursor_extractor=lambda r: [playlist.id for playlist in r.songlist] if r.songlist else None,
@@ -396,7 +396,7 @@ class SongApi(ApiModule):
             method="GetSongRelatedMv",
             param={"songid": str(songid), "songtype": 1, "lastmvid": last_mvid or 0},
             response_model=GetRelatedMvResponse,
-            refresh_strategy=BatchRefreshStrategy[GetRelatedMvResponse](
+            pager_strategy=BatchRefreshStrategy[GetRelatedMvResponse](
                 refresh_key="lastmvid",
                 has_more_extractor=lambda r: bool(r.has_more),
                 cursor_extractor=lambda r: r.mv[-1].id if r.mv else None,

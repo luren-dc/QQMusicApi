@@ -15,9 +15,7 @@ from qqmusic_api.core.pagination import (
 )
 from qqmusic_api.core.request import (
     ItemPaginatedRequest,
-    ItemRefreshableRequest,
     PaginatedRequest,
-    RefreshableRequest,
 )
 
 
@@ -173,20 +171,20 @@ async def test_paginated_request_paginate():
     assert len(results) == 2
 
 
-def test_refreshable_request_next_request():
-    """测试 RefreshableRequest 的 next_request 方法."""
+def test_batch_refresh_request_next_request():
+    """测试 PaginatedRequest 配合 BatchRefreshStrategy 的 next_request 方法."""
     strategy = BatchRefreshStrategy[DummyResponse](
         refresh_key="vec",
         cursor_extractor=lambda r: r.next_cursor,
         has_more_extractor=lambda r: r.has_more,
     )
 
-    req = RefreshableRequest(
+    req = PaginatedRequest(
         _client=cast("Any", None),
         module="test",
         method="test",
         param={"vec": "cur1"},
-        refresh_strategy=strategy,
+        pager_strategy=strategy,
     )
 
     resp_more = DummyResponse(has_more=True, next_cursor="cur2")
@@ -273,11 +271,11 @@ async def test_async_pager_and_collect_items():
 
 
 @pytest.mark.asyncio
-async def test_async_refresher_and_stream():
-    """测试 AsyncRefresher 控制器以及 RefreshableRequest 的 refresh_stream 与 aiter 功能."""
+async def test_async_pager_with_batch_refresh_strategy():
+    """测试 AsyncPager 控制器 (含 first/next) 以及配合 BatchRefreshStrategy 的工作功能."""
 
     @dataclass
-    class MockRefreshableRequest(ItemRefreshableRequest[DummyResponse, str]):
+    class MockPaginatedRequest(ItemPaginatedRequest[DummyResponse, str]):
         response_map: dict[str, DummyResponse] = field(default_factory=dict)
 
         def __await__(self):
@@ -297,34 +295,34 @@ async def test_async_refresher_and_stream():
         has_more_extractor=lambda r: r.has_more,
     )
 
-    req = MockRefreshableRequest(
+    req = MockPaginatedRequest(
         _client=cast("Any", None),
         module="test",
         method="test",
         param={"vec": "cur0"},
-        refresh_strategy=strategy,
+        pager_strategy=strategy,
         items_extractor=lambda r: r.items,
         response_map={"cur0": resp1, "cur1": resp2, "cur2": resp3},
     )
 
-    # 测试 refresher 的 first 与 next
-    refresher = req.refresher(limit=2)
-    assert refresher.has_more() is True
-    b1_first = await refresher.first()
+    # 测试 pager 的 first 与 next
+    pager = req.pager(limit=2)
+    assert pager.has_more() is True
+    b1_first = await pager.first()
     assert b1_first.items == ["a", "b"]
-    b2 = await refresher.next()
+    b2 = await pager.next()
     assert b2.items == ["c", "d"]
-    b1_again = await refresher.first()
+    b1_again = await pager.first()
     assert b1_again.items == ["a", "b"]
-    assert refresher.has_more() is False
+    assert pager.has_more() is False
     with pytest.raises(StopAsyncIteration):
-        await refresher.next()
+        await pager.next()
 
     # 测试 limit=0 时 first() 短路抛出 StopAsyncIteration
-    refresher_zero = req.refresher(limit=0)
-    assert refresher_zero.has_more() is False
+    pager_zero = req.pager(limit=0)
+    assert pager_zero.has_more() is False
     with pytest.raises(StopAsyncIteration):
-        await refresher_zero.first()
+        await pager_zero.first()
 
     # 测试 async for batch in req (aiter)
     batches = [batch async for batch in req]
