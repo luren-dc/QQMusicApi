@@ -367,3 +367,20 @@ async def test_with_extractor_combinator():
 
     items = await item_req.collect_items()
     assert items == [1, 2, 3, 4, 5, 6]
+
+
+@pytest.mark.asyncio
+async def test_page_strategy_count_fallback():
+    """测试 PageStrategy 仅配置 count_extractor 和 page_size 时依据数据条目数终止翻页."""
+    strategy = PageStrategy[DummyResponse](
+        page_key="page",
+        page_size=10,
+        start_page=1,
+        count_extractor=lambda r: len(r.items or []),
+    )
+
+    resp1 = DummyResponse(items=list(range(10)))
+    resp2 = DummyResponse(items=[1, 2, 3])
+
+    assert strategy.has_next({"page": 1}, resp1) is True
+    assert strategy.has_next({"page": 2}, resp2) is False

@@ -43,6 +43,7 @@ class PageStrategy(PagerStrategy[T_Resp_contra], Generic[T_Resp_contra]):
         *,
         has_more_extractor: Callable[[T_Resp_contra], bool | None] | None = None,
         total_extractor: Callable[[T_Resp_contra], int | None] | None = None,
+        count_extractor: Callable[[T_Resp_contra], int | None] | None = None,
         page_size: int | None = None,
         start_page: int = 1,
     ) -> None:
@@ -52,12 +53,14 @@ class PageStrategy(PagerStrategy[T_Resp_contra], Generic[T_Resp_contra]):
             page_key: 页码参数名.
             has_more_extractor: 是否还有更多数据的提取方式.
             total_extractor: 总数提取方式.
+            count_extractor: 当前页条目数量提取方式.
             page_size: 每页条数.
             start_page: 起始页码.
         """
         self.page_key = page_key
         self.has_more_extractor = has_more_extractor
         self.total_extractor = total_extractor
+        self.count_extractor = count_extractor
         self.page_size = page_size
         self.start_page = start_page
 
@@ -76,6 +79,13 @@ class PageStrategy(PagerStrategy[T_Resp_contra], Generic[T_Resp_contra]):
                     raise TypeError("分页请求缺少有效的页码参数, 无法判断是否存在下一页")
                 consumed_pages = current_page - self.start_page + 1
                 return consumed_pages * self.page_size < total
+
+        if self.count_extractor is not None:
+            count = self.count_extractor(response)
+            if count is not None:
+                if self.page_size is not None:
+                    return count >= self.page_size and count > 0
+                return count > 0
 
         return False
 
@@ -162,6 +172,12 @@ class OffsetStrategy(PagerStrategy[T_Resp_contra], Generic[T_Resp_contra]):
                     return False
                 return current_offset + step < total
 
+        if self.count_extractor is not None:
+            count = self.count_extractor(response)
+            if count is not None:
+                page_size = self._resolve_page_size(params)
+                return count >= page_size and count > 0
+
         return False
 
     def next_params(self, params: PaginationParams, response: T_Resp_contra) -> PaginationParams:
@@ -186,6 +202,8 @@ class CursorStrategy(PagerStrategy[T_Resp_contra], Generic[T_Resp_contra]):
         *,
         cursor_extractor: Callable[[T_Resp_contra], Any],
         has_more_extractor: Callable[[T_Resp_contra], bool | None] | None = None,
+        count_extractor: Callable[[T_Resp_contra], int | None] | None = None,
+        page_size: int | None = None,
     ) -> None:
         """初始化游标翻页策略.
 
@@ -193,10 +211,14 @@ class CursorStrategy(PagerStrategy[T_Resp_contra], Generic[T_Resp_contra]):
             cursor_key: 下一页游标写回的请求参数名.
             cursor_extractor: 下一页游标提取方式.
             has_more_extractor: 是否还有更多数据的提取方式.
+            count_extractor: 当前页条目数量提取方式.
+            page_size: 每页条数.
         """
         self.cursor_key = cursor_key
         self.cursor_extractor = cursor_extractor
         self.has_more_extractor = has_more_extractor
+        self.count_extractor = count_extractor
+        self.page_size = page_size
 
     def _extract_cursor(self, response: T_Resp_contra) -> Any:
         cursor = self.cursor_extractor(response)
@@ -204,12 +226,27 @@ class CursorStrategy(PagerStrategy[T_Resp_contra], Generic[T_Resp_contra]):
             raise ValueError(f"分页响应未提供下一页参数: {self.cursor_key}")
         return cursor
 
-    def has_next(self, params: PaginationParams, response: T_Resp_contra) -> bool:
-        """检查是否有下一页."""
+    def _is_terminated(self, response: T_Resp_contra) -> bool:
+        """检查是否有明确的分页终止条件."""
         if self.has_more_extractor is not None:
             explicit_flag = self.has_more_extractor(response)
             if explicit_flag is not None and not explicit_flag:
-                return False
+                return True
+
+        if self.count_extractor is not None:
+            count = self.count_extractor(response)
+            if count is not None:
+                if self.page_size is not None and count < self.page_size:
+                    return True
+                if count == 0:
+                    return True
+
+        return False
+
+    def has_next(self, params: PaginationParams, response: T_Resp_contra) -> bool:
+        """检查是否有下一页."""
+        if self._is_terminated(response):
+            return False
 
         try:
             next_cursor = self._extract_cursor(response)
@@ -234,6 +271,8 @@ class BatchRefreshStrategy(CursorStrategy[T_Resp_contra]):
         *,
         cursor_extractor: Callable[[T_Resp_contra], Any],
         has_more_extractor: Callable[[T_Resp_contra], bool | None] | None = None,
+        count_extractor: Callable[[T_Resp_contra], int | None] | None = None,
+        page_size: int | None = None,
         allow_repeat: bool = False,
     ) -> None:
         """初始化换一批策略.
@@ -242,21 +281,23 @@ class BatchRefreshStrategy(CursorStrategy[T_Resp_contra]):
             refresh_key: 下一次请求需要替换的参数名.
             cursor_extractor: 下一批刷新参数提取方式.
             has_more_extractor: 是否还有更多数据的提取方式.
+            count_extractor: 当前页条目数量提取方式.
+            page_size: 每页条数.
             allow_repeat: 是否允许在游标不变或无新游标时重复刷新.
         """
         super().__init__(
             cursor_key=refresh_key,
             cursor_extractor=cursor_extractor,
             has_more_extractor=has_more_extractor,
+            count_extractor=count_extractor,
+            page_size=page_size,
         )
         self.allow_repeat = allow_repeat
 
     def has_next(self, params: PaginationParams, response: T_Resp_contra) -> bool:
         """检查是否有下一批."""
-        if self.has_more_extractor is not None:
-            explicit_flag = self.has_more_extractor(response)
-            if explicit_flag is not None and not explicit_flag:
-                return False
+        if self._is_terminated(response):
+            return False
 
         if self.allow_repeat:
             try:
@@ -276,6 +317,8 @@ class MultiFieldContinuationStrategy(PagerStrategy[T_Resp_contra], Generic[T_Res
         build_next_params: NextParamsBuilder[T_Resp_contra],
         *,
         has_more_extractor: Callable[[T_Resp_contra], bool | None] | None = None,
+        count_extractor: Callable[[T_Resp_contra], int | None] | None = None,
+        page_size: int | None = None,
         context_name: str = "continuation",
     ) -> None:
         """初始化多字段延续翻页策略.
@@ -283,10 +326,14 @@ class MultiFieldContinuationStrategy(PagerStrategy[T_Resp_contra], Generic[T_Res
         Args:
             build_next_params: 根据当前请求与响应构造下一页完整参数的函数.
             has_more_extractor: 是否还有更多数据的提取方式.
+            count_extractor: 当前页条目数量提取方式.
+            page_size: 每页条数.
             context_name: 错误上下文中的策略名称.
         """
         self._build_next_params = build_next_params
         self.has_more_extractor = has_more_extractor
+        self.count_extractor = count_extractor
+        self.page_size = page_size
         self.context_name = context_name
 
     def _build_next_params_candidate(
@@ -300,12 +347,28 @@ class MultiFieldContinuationStrategy(PagerStrategy[T_Resp_contra], Generic[T_Res
             raise ValueError(f"[{self.context_name}] 分页响应未提供继续翻页所需的 continuation 数据")
         return next_params
 
-    def has_next(self, params: PaginationParams, response: T_Resp_contra) -> bool:
-        """检查是否有下一页."""
+    def _is_terminated(self, response: T_Resp_contra) -> bool:
+        """检查是否有明确的分页终止条件."""
         if self.has_more_extractor is not None:
             explicit_flag = self.has_more_extractor(response)
             if explicit_flag is False:
-                return False
+                return True
+
+        if self.count_extractor is not None:
+            count = self.count_extractor(response)
+            if count is not None:
+                if self.page_size is not None and count < self.page_size:
+                    return True
+                if count == 0:
+                    return True
+
+        return False
+
+    def has_next(self, params: PaginationParams, response: T_Resp_contra) -> bool:
+        """检查是否有下一页."""
+        if self._is_terminated(response):
+            return False
+
         return self._build_next_params_candidate(params, response) is not None
 
     def next_params(self, params: PaginationParams, response: T_Resp_contra) -> PaginationParams:
