@@ -1,19 +1,18 @@
 """分页与换一批核心组件定义."""
 
 import copy
-from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, Generic, Protocol, TypeAlias
+from abc import ABC, abstractmethod
+from collections.abc import AsyncGenerator, AsyncIterator, Callable, Generator, Iterable
+from dataclasses import dataclass
+from typing import Any, Generic, Protocol, TypeAlias
 
 from pydantic import BaseModel
 from typing_extensions import Self, TypeVar
 
-if TYPE_CHECKING:
-    from .request import PaginatedRequest
-
 T_Resp_contra = TypeVar("T_Resp_contra", contravariant=True)
 RequestResultT = TypeVar("RequestResultT", bound=BaseModel | dict[str, Any])
 ItemT_co = TypeVar("ItemT_co", covariant=True, default=Any)
-
+RequestResultT_co = TypeVar("RequestResultT_co", bound=BaseModel | dict[str, Any], covariant=True)
 PaginationParams: TypeAlias = dict[str, Any]
 NextParamsBuilder: TypeAlias = Callable[[PaginationParams, T_Resp_contra], PaginationParams | None]
 
@@ -347,27 +346,18 @@ class MultiFieldContinuationStrategy(PagerStrategy[T_Resp_contra], Generic[T_Res
             raise ValueError(f"[{self.context_name}] 分页响应未提供继续翻页所需的 continuation 数据")
         return next_params
 
-    def _is_terminated(self, response: T_Resp_contra) -> bool:
-        """检查是否有明确的分页终止条件."""
+    def has_next(self, params: PaginationParams, response: T_Resp_contra) -> bool:
+        """检查是否有下一页."""
         if self.has_more_extractor is not None:
             explicit_flag = self.has_more_extractor(response)
-            if explicit_flag is not None:
-                return not explicit_flag
+            if explicit_flag is not None and not explicit_flag:
+                return False
 
         if self.count_extractor is not None:
             count = self.count_extractor(response)
-            if count is not None:
-                if self.page_size is not None and count < self.page_size:
-                    return True
-                if count == 0:
-                    return True
-
-        return False
-
-    def has_next(self, params: PaginationParams, response: T_Resp_contra) -> bool:
-        """检查是否有下一页."""
-        if self._is_terminated(response):
-            return False
+            if count is not None:  # noqa: SIM102
+                if (self.page_size is not None and count < self.page_size) or count == 0:
+                    return False
 
         return self._build_next_params_candidate(params, response) is not None
 
@@ -376,12 +366,42 @@ class MultiFieldContinuationStrategy(PagerStrategy[T_Resp_contra], Generic[T_Res
         return self._resolve_next_params(params, response)
 
 
+class AwaitableRequest(Protocol[RequestResultT_co]):
+    """约束宿主必须具备可等待能力."""
+
+    def __await__(self) -> Generator[Any, Any, RequestResultT_co]:
+        """使请求对象支持异步等待 (`await`)."""
+        ...
+
+
+class PaginatedRequestProtocol(Protocol[RequestResultT]):
+    """分页请求协议.
+
+    用于定义可分页请求对象的鸭子类型约束.
+    实现此协议的类必须是可等待的 (Awaitable), 并且能够根据上一次的响应数据生成下一页的请求对象.
+    """
+
+    def __await__(self) -> Generator[Any, Any, RequestResultT]:
+        """使请求对象支持异步等待 (`await`)."""
+        ...
+
+    def next_request(self, previous_response: RequestResultT) -> "PaginatedRequestProtocol[RequestResultT] | None":
+        """根据上一次的响应数据, 生成下一页的请求描述符."""
+        ...
+
+
+class ItemPaginatedRequestProtocol(PaginatedRequestProtocol[RequestResultT], Protocol[RequestResultT, ItemT_co]):
+    """约束宿主同时具备分页协议与数据项提取能力 (仅供外部类型标注使用)."""
+
+    items_extractor: Callable[[RequestResultT], Iterable[ItemT_co] | None]
+
+
 class AsyncPager(Generic[RequestResultT]):
     """有状态异步分页器."""
 
     def __init__(
         self,
-        initial_request: "PaginatedRequest[RequestResultT]",
+        initial_request: "PaginatedRequestProtocol[RequestResultT]",
         limit: int | None = None,
     ) -> None:
         """初始化异步分页器.
@@ -391,7 +411,7 @@ class AsyncPager(Generic[RequestResultT]):
             limit: 最大可拉取页数限制.
         """
         self._initial_request = initial_request
-        self._current_request: PaginatedRequest[RequestResultT] | None = initial_request
+        self._current_request: PaginatedRequestProtocol[RequestResultT] | None = initial_request
         self._limit = limit
         self._yielded_count = 0
         self._has_more = True
@@ -462,3 +482,195 @@ class AsyncPager(Generic[RequestResultT]):
     async def __anext__(self) -> RequestResultT:
         """异步迭代下一个元素."""
         return await self.next()
+
+
+@dataclass(kw_only=True)
+class ItemMixin(ABC, Generic[RequestResultT, ItemT_co]):
+    """单次请求数据提取接口.
+
+    提供执行单次请求并从中提取数据项的能力. 必须与具备 `__await__` 方法的请求类组合使用.
+
+    Attributes:
+        items_extractor: 接收原始响应对象并返回数据项迭代器或 None 的可调用对象.
+    """
+
+    items_extractor: Callable[[RequestResultT], Iterable[ItemT_co] | None]
+
+    @abstractmethod
+    def __await__(self) -> Generator[Any, Any, RequestResultT]:
+        """声明宿主类必须提供 await 能力.
+
+        Returns:
+            包含网络请求响应结果的生成器.
+        """
+        ...
+
+    async def iter_items(self, limit: int | None = None) -> AsyncGenerator[ItemT_co, None]:
+        """执行单次请求并逐个产出提取的实体.
+
+        Args:
+            limit: 最大提取条目数量. 如果为 None, 则提取所有返回的条目.
+
+        Yields:
+            从响应中提取的数据项实体.
+        """
+        response = await self
+        items = self.items_extractor(response)
+
+        if not items:
+            return
+
+        for count, item in enumerate(items):
+            if limit is not None and count >= limit:
+                break
+            yield item
+
+    async def collect_items(self, limit: int | None = None) -> list[ItemT_co]:
+        """执行请求并提取指定数量的条目返回列表.
+
+        Args:
+            limit: 最大提取条目数量. 如果为 None, 则提取所有返回的条目.
+
+        Returns:
+            提取的数据项列表.
+        """
+        return [item async for item in self.iter_items(limit=limit)]
+
+
+@dataclass(kw_only=True)
+class PaginatedMixin(ABC, Generic[RequestResultT]):
+    """赋予翻页能力的混入类.
+
+    提供跨页请求的调度、状态管理及迭代能力. 宿主类需提供当前分页参数和生成新请求的能力.
+
+    Attributes:
+        pager_strategy: 用于判断是否有下一页以及计算下一页参数的翻页策略对象.
+    """
+
+    pager_strategy: "PagerStrategy[RequestResultT]"
+
+    @abstractmethod
+    def __await__(self) -> Generator[Any, Any, RequestResultT]:
+        """声明宿主类必须提供 await 能力.
+
+        Returns:
+            包含网络请求响应结果的生成器.
+        """
+        ...
+
+    @property
+    @abstractmethod
+    def _page_params(self) -> dict[str, Any]:
+        """获取当前请求的分页参数字典.
+
+        Returns:
+            包含当前分页状态的参数字典.
+        """
+
+    @abstractmethod
+    def _with_page_params(self, params: dict[str, Any]) -> Self:
+        """基于新的分页参数生成全新的请求对象.
+
+        Args:
+            params: 新的请求参数字典.
+
+        Returns:
+            带有新参数的请求对象实例.
+        """
+
+    def next_request(self, previous_response: RequestResultT) -> Self | None:
+        """根据上一次请求的响应, 构建下一次翻页的请求.
+
+        Args:
+            previous_response: 上一次请求得到的解析后响应对象.
+
+        Returns:
+            下一次请求的描述符, 如果没有更多数据则返回 None.
+        """
+        if self.pager_strategy.has_next(self._page_params, previous_response):
+            next_param = self.pager_strategy.next_params(self._page_params, previous_response)
+            return self._with_page_params(next_param)
+        return None
+
+    def pager(self, limit: int | None = None) -> "AsyncPager[RequestResultT]":
+        """返回有状态异步分页器.
+
+        Args:
+            limit: 最大可拉取页数限制. 如果为 None, 则无限制拉取直到结束.
+
+        Returns:
+            管理当前请求翻页状态的异步分页器实例.
+        """
+        return AsyncPager(self, limit=limit)
+
+    async def collect(self, limit: int | None = None) -> list[RequestResultT]:
+        """收集指定页数的响应数据为列表.
+
+        Args:
+            limit: 最大可拉取页数限制. 如果为 None, 则拉取所有页.
+
+        Returns:
+            包含各页解析后响应对象的列表.
+        """
+        return [response async for response in self.paginate(limit=limit)]
+
+    async def paginate(self, limit: int | None = None) -> AsyncGenerator[RequestResultT, None]:
+        """返回响应的分页迭代器.
+
+        Args:
+            limit: 最大可拉取页数限制. 如果为 None, 则无限制翻页.
+
+        Yields:
+            单页的解析后响应对象.
+        """
+        pager = self.pager(limit=limit)
+        async for response in pager:
+            yield response
+
+    def __aiter__(self) -> AsyncIterator[RequestResultT]:
+        """返回异步迭代器自身.
+
+        Returns:
+            可用于 `async for` 循环的异步迭代器.
+        """
+        return self.paginate()
+
+
+@dataclass(kw_only=True)
+class ItemPaginatedMixin(PaginatedMixin[RequestResultT], ItemMixin[RequestResultT, ItemT_co]):
+    """跨页提取数据项能力的混入类.
+
+    结合了 `PaginatedMixin` 的自动翻页与 `ItemMixin` 的数据提取能力, 提供平滑的跨页条目级流式拉取.
+    """
+
+    async def iter_items(self, limit: int | None = None) -> AsyncGenerator[ItemT_co, None]:
+        """跨页展开提取数据项的异步迭代器.
+
+        自动处理网络翻页, 并逐个产出提取的数据项. 达到指定条目数或所有页面拉取完毕时停止.
+
+        Args:
+            limit: 最大提取的条目总数限制. 如果为 None, 则提取所有页面的所有条目.
+
+        Yields:
+            提取的数据项实体.
+        """
+        async for response in self.paginate():
+            items = self.items_extractor(response)
+            if items is None:
+                continue
+
+            for count, item in enumerate(items):
+                if limit is not None and count >= limit:
+                    return
+                yield item
+
+    async def collect_items(self, limit: int | None = None) -> list[ItemT_co]:
+        """收集跨页展开的数据项为列表.
+
+        Args:
+            limit: 最大提取的条目总数限制. 如果为 None, 则收集所有页面的所有条目.
+
+        Returns:
+            包含跨页提取出的所有数据项的列表.
+        """
+        return [item async for item in self.iter_items(limit=limit)]

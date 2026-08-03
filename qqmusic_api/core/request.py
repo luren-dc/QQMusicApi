@@ -1,18 +1,19 @@
 """请求描述符与批量请求容器. 提供对 API 请求的抽象与调度."""
 
 from abc import ABC, abstractmethod
-from collections.abc import Generator
-from dataclasses import dataclass
+from collections.abc import Callable, Generator, Iterable
+from dataclasses import dataclass, replace
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, TypeVar, cast
 
 import niquests
 from pydantic import BaseModel
-from typing_extensions import overload, override
+from typing_extensions import Self, overload, override
 
-from .. import HTTPError
 from ..models.request import Credential
 from ..utils.common import bool_to_int
+from .exceptions import HTTPError
+from .pagination import ItemPaginatedMixin, ItemT_co, PaginatedMixin
 from .versioning import Platform
 
 if TYPE_CHECKING:
@@ -279,3 +280,55 @@ class HttpRequest(BaseRequest[RequestResultT]):
             parsed_data = raw_data.text or raw_data.content
 
         return cast("RequestResultT", parsed_data)
+
+
+@dataclass(kw_only=True)
+class PaginatedCgiRequest(CgiRequest[RequestResultT], PaginatedMixin[RequestResultT]):
+    """声明了连续翻页能力的 CGI 请求描述符.
+
+    通过组合 CgiRequest 与 PaginatedMixin, 赋予其自动跨页请求调度能力.
+    """
+
+    @override
+    @property
+    def _page_params(self) -> dict[str, Any]:
+        return self.param
+
+    @override
+    def _with_page_params(self, params: dict[str, Any]) -> Self:
+        return replace(self, param=params)
+
+    def with_extractor(
+        self, items_extractor: Callable[[RequestResultT], Iterable[NewItemT] | None]
+    ) -> "ItemCgiPaginatedRequest[RequestResultT, NewItemT]":
+        """将当前分页请求转换为能够跨页提取数据项的请求.
+
+        Args:
+            items_extractor: 数据项提取函数.
+
+        Returns:
+            转换后的带数据提取能力的连续翻页请求描述符.
+        """
+        from dataclasses import fields
+
+        kwargs = {f.name: getattr(self, f.name) for f in fields(self)}
+        return ItemCgiPaginatedRequest(**kwargs, items_extractor=items_extractor)
+
+
+@dataclass(kw_only=True)
+class ItemCgiPaginatedRequest(CgiRequest[RequestResultT], ItemPaginatedMixin[RequestResultT, ItemT_co]):
+    """声明了跨页数据项提取能力的连续翻页请求描述符.
+
+    通过组合 CgiRequest 与 ItemPaginatedMixin, 同时具备网络请求、翻页调度与条目流式展开能力.
+    """
+
+    items_extractor: Callable[[RequestResultT], Iterable[ItemT_co] | None]
+
+    @property
+    @override
+    def _page_params(self) -> dict[str, Any]:
+        return self.param
+
+    @override
+    def _with_page_params(self, params: dict[str, Any]) -> Self:
+        return replace(self, param=params)
