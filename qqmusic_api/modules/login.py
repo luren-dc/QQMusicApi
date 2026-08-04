@@ -56,7 +56,7 @@ class LoginApi(ApiModule):
         data = resp.get("data", {})
         match code:
             case 0:
-                return data
+                return resp
             case 1000 | 104401 | 104400:
                 raise LoginAuthExpiredError(code=code, data=data)
             case 20261:
@@ -92,20 +92,20 @@ class LoginApi(ApiModule):
             resp = await self._build_http(
                 "GET",
                 "https://c6.y.qq.com/rsc/fcgi-bin/fcg_get_profile_homepage.fcg",
-                credential=target,
                 params={
-                    "g_tk": hash33(target.musickey, 5381),
+                    "g_tk": str(hash33(target.musickey, 5381)),
                     "format": "json",
                     "inCharset": "utf-8",
                     "outCharset": "utf-8",
-                    "notice": 0,
-                    "cid": 205360838,
-                    "needNewCode": 0,
-                    "loginUin": target.musicid,
-                    "hostUin": 0,
-                    "userid": target.musicid,
+                    "notice": "0",
+                    "cid": "205360838",
+                    "needNewCode": "0",
+                    "loginUin": str(target.musicid),
+                    "hostUin": "0",
+                    "userid": str(target.musicid),
                     "reqfrom": "1",
                 },
+                credential=target,
             )
             return resp.get("code") != 0
 
@@ -676,7 +676,7 @@ class LoginApi(ApiModule):
             headers={"Referer": "https://xui.ptlogin2.qq.com/"},
             cookies={},
             disable_parse=True,
-            kwargs={"allow_redirects": False},
+            allow_redirects=False,
         )
         p_skey = response.cookies["p_skey"]  # type: ignore
         if not p_skey:
@@ -702,7 +702,7 @@ class LoginApi(ApiModule):
             },
             cookies=response.cookies,
             disable_parse=True,
-            kwargs={"allow_redirects": False},
+            allow_redirects=False,
         )
 
         location = authorize_response.headers.get("Location", "")

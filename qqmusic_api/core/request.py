@@ -4,10 +4,22 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable, Generator, Iterable
 from dataclasses import dataclass, replace
 from functools import cached_property
-from http.cookiejar import CookieJar
-from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, TypeVar, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, Literal, TypedDict, TypeVar, cast
 
 import niquests
+from niquests.typing import (
+    AsyncBodyType,
+    AsyncHttpAuthenticationType,
+    BodyType,
+    CookiesType,
+    HeadersType,
+    HttpAuthenticationType,
+    HttpMethodType,
+    MultiPartFilesAltType,
+    MultiPartFilesType,
+    QueryParameterType,
+    TimeoutType,
+)
 from pydantic import BaseModel
 from typing_extensions import Self, overload, override
 
@@ -114,6 +126,20 @@ class BaseRequest(ABC, Generic[ResultT]):
         ...
 
 
+class CgiRequestOptions(TypedDict, total=False):
+    """CGI 请求专用的可选配置."""
+
+    comm: dict[str, Any] | None
+    override_comm: bool
+    preserve_bool: bool
+    allow_error_codes: AllowErrorCodes | None
+    parse_on_allow: bool
+    credential: "Credential | None"
+    platform: Platform | None
+    sign: bool
+    require_login: bool
+
+
 @dataclass(kw_only=True)
 class CgiRequest(BaseRequest[CgiRequestResultT]):
     """CGI 风格的请求述符, 用于封装模块/方法形式的 RPC 请求.
@@ -127,7 +153,7 @@ class CgiRequest(BaseRequest[CgiRequestResultT]):
         preserve_bool: 是否在参数中保留布尔值 (而非转换为整型等).
         allow_error_codes: 允许的错误码集合, 如果响应中包含这些错误码,
             将不会抛出异常.
-        parse_on_allow: 当响应包含允许的错误码时, 是否仍尝试解析响应数据.
+        parse_on_allow: 当响应包含允许的错误码时, 是否仍尝试解析响应数据, 优先级大于 `disable_parse`.
         credential: 可选的凭证对象, 优先于客户端的全局凭证.
         require_login: 请求是否需要凭证.
         platform: 可选的平台标识, 优先于客户端的全局平台设置.
@@ -187,15 +213,10 @@ class CgiRequest(BaseRequest[CgiRequestResultT]):
         code: int = raw_data.get("code", 0)
         data = raw_data.get("data", {})
 
-        if code == 0:
-            if self.disable_parse:
-                return cast("CgiRequestResultT", data)
-            return cast("CgiRequestResultT", _build_result(data, self.response_model))
-
         if self.allow_error_codes == "all" or (self.allow_error_codes is not None and code in self.allow_error_codes):
             if self.parse_on_allow:
                 return cast("CgiRequestResultT", _build_result(data, self.response_model))
-            return cast("CgiRequestResultT", data)
+            return cast("CgiRequestResultT", raw_data)
 
         match code:
             case 2000:
@@ -210,6 +231,16 @@ class CgiRequest(BaseRequest[CgiRequestResultT]):
         if self.disable_parse:
             return cast("CgiRequestResultT", data)
         return cast("CgiRequestResultT", _build_result(data, self.response_model))
+
+
+class HttpRequestOptions(TypedDict, total=False):
+    """HTTP 请求专用的可选配置."""
+
+    files: MultiPartFilesType | MultiPartFilesAltType | None
+    auth: HttpAuthenticationType | AsyncHttpAuthenticationType | None
+    timeout: TimeoutType | None
+    allow_redirects: bool
+    stream: bool | None
 
 
 @dataclass(kw_only=True)
@@ -233,14 +264,14 @@ class HttpRequest(BaseRequest[HttpRequestResultT]):
 
     _protocol = "HTTP"
 
+    method: HttpMethodType
     url: str
-    method: Literal["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"]
-    params: dict[str, Any] | None = None
-    headers: dict[str, str] | None = None
-    cookies: dict[str, str] | CookieJar | None = None
+    params: QueryParameterType | None = None
+    headers: HeadersType | None = None
+    cookies: CookiesType | None = None
     json: Any | None = None
-    data: Any | None = None
-    kwargs: dict[str, Any] | None = None
+    data: BodyType | AsyncBodyType | None = None
+    kwargs: HttpRequestOptions | None = None
     credential: Credential | None = None
 
     @override

@@ -1,50 +1,32 @@
 """API 模块基类."""
 
-from http.cookiejar import CookieJar
-from typing import TYPE_CHECKING, Any, Literal, TypedDict, overload
+from typing import TYPE_CHECKING, Any, Literal, overload
 
 import niquests
+from niquests.typing import (
+    AsyncBodyType,
+    BodyType,
+    CookiesType,
+    HeadersType,
+    HttpMethodType,
+    QueryParameterType,
+)
 from typing_extensions import Unpack
 
 from ..core.pagination import PagerStrategy
 from ..core.request import (
-    AllowErrorCodes,
     CgiRequest,
+    CgiRequestOptions,
     HttpRequest,
+    HttpRequestOptions,
     PaginatedCgiRequest,
     ResponseModel,
 )
 from ..core.versioning import Platform
+from ..models.request import Credential
 
 if TYPE_CHECKING:
     from ..core.client import Client
-    from ..models.request import Credential
-
-
-class CgiRequestOptions(TypedDict, total=False):
-    """CGI 请求专用的可选配置."""
-
-    comm: dict[str, Any] | None
-    override_comm: bool
-    preserve_bool: bool
-    allow_error_codes: AllowErrorCodes | None
-    parse_on_allow: bool
-    credential: "Credential | None"
-    platform: Platform | None
-    sign: bool
-    require_login: bool
-
-
-class HttpRequestOptions(TypedDict, total=False):
-    """HTTP 请求专用的可选配置."""
-
-    params: dict[str, Any] | None
-    headers: dict[str, str] | None
-    cookies: dict[str, str] | CookieJar | None
-    json: Any | None
-    data: Any | None
-    kwargs: dict[str, Any] | None
-    credential: "Credential | None"
 
 
 class ApiModule:
@@ -169,40 +151,64 @@ class ApiModule:
     @overload
     def _build_http(
         self,
-        method: Literal["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"],
+        method: HttpMethodType,
         url: str,
+        params: QueryParameterType | None = None,
+        headers: HeadersType | None = None,
+        cookies: CookiesType | None = None,
+        json: Any | None = None,
+        data: BodyType | AsyncBodyType | None = None,
+        credential: Credential | None = None,
         *,
-        disable_parse: Literal[True],
-        response_model: type[ResponseModel] | None = ...,
+        response_model: type[ResponseModel] | None = None,
+        disable_parse: Literal[True] = True,
         **options: Unpack[HttpRequestOptions],
     ) -> HttpRequest[niquests.Response]: ...
 
     @overload
     def _build_http(
         self,
-        method: Literal["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"],
+        method: HttpMethodType,
         url: str,
+        params: QueryParameterType | None = None,
+        headers: HeadersType | None = None,
+        cookies: CookiesType | None = None,
+        json: Any | None = None,
+        data: BodyType | AsyncBodyType | None = None,
+        credential: Credential | None = None,
         *,
         response_model: type[ResponseModel],
-        disable_parse: Literal[False] = False,
+        disable_parse: bool = False,
         **options: Unpack[HttpRequestOptions],
     ) -> HttpRequest[ResponseModel]: ...
 
     @overload
     def _build_http(
         self,
-        method: Literal["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"],
+        method: HttpMethodType,
         url: str,
+        params: QueryParameterType | None = None,
+        headers: HeadersType | None = None,
+        cookies: CookiesType | None = None,
+        json: Any | None = None,
+        data: BodyType | AsyncBodyType | None = None,
+        credential: Credential | None = None,
         *,
         response_model: None = None,
-        disable_parse: Literal[False] = False,
+        disable_parse: bool = False,
         **options: Unpack[HttpRequestOptions],
     ) -> HttpRequest[dict[str, Any]]: ...
 
     def _build_http(
         self,
-        method: Literal["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"],
+        method: HttpMethodType,
         url: str,
+        params: QueryParameterType | None = None,
+        headers: HeadersType | None = None,
+        cookies: CookiesType | None = None,
+        json: Any | None = None,
+        data: BodyType | AsyncBodyType | None = None,
+        credential: Credential | None = None,
         *,
         response_model: type[ResponseModel] | None = None,
         disable_parse: bool = False,
@@ -213,7 +219,13 @@ class ApiModule:
             _client=self._client,
             method=method,
             url=url,
+            params=params,
             response_model=response_model,
             disable_parse=disable_parse,
-            **options,
+            headers=headers,
+            cookies=cookies,
+            json=json,
+            data=data,
+            credential=credential,
+            kwargs=options,
         )
