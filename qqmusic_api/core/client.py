@@ -90,13 +90,13 @@ class Client:
         self._context = ApiContext(credential, platform=platform, device_path=device_path, session=self._session)
 
     @property
-    def credential(self):
+    def credential(self) -> Credential:
         """获取当前全局凭证."""
         return self._context.credential
 
     @credential.setter
-    def credential(self, value):
-        self._context.credential = value
+    def credential(self, value: Credential | None):
+        self._context.credential = value or Credential()
 
     @cached_property
     def helper(self) -> "HelperApi":

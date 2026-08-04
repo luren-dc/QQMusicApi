@@ -161,7 +161,7 @@ class ApiModule:
         credential: Credential | None = None,
         *,
         response_model: type[ResponseModel] | None = None,
-        disable_parse: Literal[True] = True,
+        disable_parse: Literal[True],
         **options: Unpack[HttpRequestOptions],
     ) -> HttpRequest[niquests.Response]: ...
 
