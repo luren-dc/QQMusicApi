@@ -28,7 +28,7 @@ class AlbumApi(ApiModule):
         else:
             param["albumMId"] = value
 
-        return self._build_request(
+        return self._build_cgi(
             module="music.musichallAlbum.AlbumInfoServer",
             method="GetAlbumDetail",
             param=param,
@@ -52,7 +52,7 @@ class AlbumApi(ApiModule):
         else:
             param["albumMid"] = value
 
-        return self._build_request(
+        return self._build_cgi(
             module="music.musichallAlbum.AlbumSongList",
             method="GetAlbumSongList",
             param=param,
@@ -73,7 +73,7 @@ class AlbumApi(ApiModule):
             num: 每页返回的专辑数量.
             page: 页码, 从 1 开始.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="newalbum.NewAlbumServer",
             method="get_new_album_info",
             param={"area": area, "num": num, "start": num * (page - 1)},
@@ -94,7 +94,7 @@ class AlbumApi(ApiModule):
             credential: 登录凭证.
         """
         ids = [album_id] if isinstance(album_id, int) else album_id
-        return self._build_request(
+        return self._build_cgi(
             module="music.musicasset.AlbumFavWrite",
             method="FavAlbum",
             param={"v_albumId": ids},
@@ -111,7 +111,7 @@ class AlbumApi(ApiModule):
             credential: 登录凭证.
         """
         ids = [album_id] if isinstance(album_id, int) else album_id
-        return self._build_request(
+        return self._build_cgi(
             module="music.musicasset.AlbumFavWrite",
             method="CancelFavAlbum",
             param={"v_albumId": ids},

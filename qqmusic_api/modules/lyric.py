@@ -47,14 +47,13 @@ class LyricApi(ApiModule):
             "needSingingAnnotations": singing_annotations,
             "type": song_type,
         }
-        params.update(self._build_query_common_params())
 
         if isinstance(value, int) or (isinstance(value, str) and value.isdecimal()):
             params["songId"] = int(value)
         else:
             params["songMid"] = value
 
-        return self._build_request(
+        return self._build_cgi(
             module="music.musichallSong.PlayLyricInfo",
             method="GetPlayLyricInfo",
             param=params,
@@ -71,7 +70,7 @@ class LyricApi(ApiModule):
         Args:
             songid: 歌曲 ID.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="music.musichallSong.PlayLyricInfo",
             method="GetSingingAnnotationsInfo",
             param={
@@ -91,7 +90,7 @@ class LyricApi(ApiModule):
         Args:
             songid: 歌曲 ID.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="music.musichallSong.PlayLyricInfo",
             method="BatchGetMultiStyleTransLyric",
             param={"songID": songid},
@@ -107,7 +106,7 @@ class LyricApi(ApiModule):
         Args:
             songid: 歌曲 ID.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="music.musichallSong.PlayLyricInfo",
             method="IsAIDictExists",
             param={"songID": songid},
@@ -123,7 +122,7 @@ class LyricApi(ApiModule):
         Args:
             songid: 歌曲 ID.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="music.musichallSong.PlayLyricInfo",
             method="GetAIDictInfo",
             param={"songID": songid},

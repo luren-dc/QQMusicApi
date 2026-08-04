@@ -56,7 +56,7 @@ class RecommendApi(ApiModule):
             next_params["v_cache"] = list(seen)
             return next_params
 
-        return self._build_request(
+        return self._build_cgi(
             "music.recommend.RecommendFeed",
             "get_recommend_feed",
             data,
@@ -80,7 +80,7 @@ class RecommendApi(ApiModule):
             "scene": 0,
             "song_ids": [],
         }
-        return self._build_request(
+        return self._build_cgi(
             "music.radioProxy.MbTrackRadioSvr",
             "get_radio_track",
             data,
@@ -100,7 +100,7 @@ class RecommendApi(ApiModule):
             "FavSongs": [],
             "EntranceSongs": [],
         }
-        return self._build_request(
+        return self._build_cgi(
             "music.recommend.TrackRelationServer",
             "GetRadarSong",
             data,
@@ -120,7 +120,7 @@ class RecommendApi(ApiModule):
             num: 返回推荐歌单数量.
         """
         data = {"From": num * (page - 1), "Size": num}
-        return self._build_request(
+        return self._build_cgi(
             "music.playlist.PlaylistSquare",
             "GetRecommendFeed",
             data,
@@ -139,7 +139,7 @@ class RecommendApi(ApiModule):
             type: 地区/语种筛选. 1=内地, 2=欧美, 3=日本, 4=韩国, 5=最新, 6=港台.
         """
         data = {"type": type}
-        return self._build_request(
+        return self._build_cgi(
             "newsong.NewSongServer",
             "get_new_song_info",
             data,

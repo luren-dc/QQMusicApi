@@ -88,8 +88,8 @@ class LoginApi(ApiModule):
             bool: 是否已过期.
         """
         target = credential or self._client.credential
-        if self._client.platform == Platform.WEB:
-            resp = await self._client.request(
+        if self._client._context.platform == Platform.WEB:
+            resp = await self._build_http(
                 "GET",
                 "https://c6.y.qq.com/rsc/fcgi-bin/fcg_get_profile_homepage.fcg",
                 credential=target,
@@ -107,9 +107,9 @@ class LoginApi(ApiModule):
                     "reqfrom": "1",
                 },
             )
-            return resp.json().get("code") != 0
+            return resp.get("code") != 0
 
-        data = await self._build_request(
+        data = await self._build_cgi(
             module="music.UserInfo.userInfoServer",
             method="GetLoginUserInfo",
             param={},
@@ -130,7 +130,7 @@ class LoginApi(ApiModule):
         Returns:
             Credential: 刷新后的新凭证对象.
         """
-        target = self._require_login(credential)
+        target = credential or self._client.credential
         match target.login_type:
             case 1:
                 param = {
@@ -168,7 +168,7 @@ class LoginApi(ApiModule):
                     "refresh_key": target.refresh_key,
                     "loginMode": 2,
                 }
-        data = await self._build_request(
+        data = await self._build_cgi(
             module="music.login.LoginServer",
             method="Login",
             param=param,
@@ -183,7 +183,7 @@ class LoginApi(ApiModule):
 
     async def logout(self, credential: Credential | None = None) -> None:
         """登出当前账号."""
-        await self._build_request(
+        await self._build_cgi(
             module="music.login.LoginServer",
             method="Logout",
             param={},
@@ -349,7 +349,7 @@ class LoginApi(ApiModule):
         else:
             param["phoneNo"] = str(phone)
 
-        resp = await self._build_request(
+        resp = await self._build_cgi(
             module="music.login.LoginServer",
             method="SendPhoneAuthCode",
             param=param,
@@ -398,7 +398,7 @@ class LoginApi(ApiModule):
         else:
             param["phoneNo"] = str(phone)
 
-        data = await self._build_request(
+        data = await self._build_cgi(
             module="music.login.LoginServer",
             method="Login",
             param=param,
@@ -411,7 +411,7 @@ class LoginApi(ApiModule):
 
     async def _get_qq_qr(self) -> QR:
         """获取 QQ 授权二维码."""
-        response = await self._request(
+        response = await self._build_http(
             "GET",
             "https://ssl.ptlogin2.qq.com/ptqrshow",
             params={
@@ -427,13 +427,14 @@ class LoginApi(ApiModule):
             },
             headers={"Referer": "https://xui.ptlogin2.qq.com/"},
             cookies={},
+            disable_parse=True,
         )
         qrsig = response.cookies["qrsig"]  # type: ignore
         return QR(response.content or b"", QRLoginType.QQ, "image/png", qrsig)
 
     async def _get_wx_qr(self) -> QR:
         """获取微信登录二维码."""
-        response = await self._request(
+        response = await self._build_http(
             "GET",
             "https://open.weixin.qq.com/connect/qrconnect",
             params={
@@ -445,6 +446,7 @@ class LoginApi(ApiModule):
                 "href": "https://y.qq.com/mediastyle/music_v17/src/css/popup_wechat.css#wechat_redirect",
             },
             cookies={},
+            disable_parse=True,
         )
         if not response.text:
             raise ApiDataError("获取二维码失败")
@@ -453,23 +455,24 @@ class LoginApi(ApiModule):
             raise ApiDataError("获取 uuid 失败")
         uuid = matches[0]
         qrcode_data = (
-            await self._request(
+            await self._build_http(
                 "GET",
                 f"https://open.weixin.qq.com/connect/qrcode/{uuid}",
                 headers={"Referer": "https://open.weixin.qq.com/connect/qrconnect"},
                 cookies={},
+                disable_parse=True,
             )
         ).content or b""
         return QR(qrcode_data, QRLoginType.WX, "image/jpeg", uuid)
 
     async def _get_mobile_qr(self) -> QR:
         """获取手机客户端登录二维码."""
-        data = await self._build_request(
+        data = await self._build_cgi(
             module="music.login.LoginServer",
             method="CreateQRCode",
-            param={"tmeAppID": "qqmusic", **self._build_query_common_params()},
+            param={"tmeAppID": "qqmusic", **self._build_version_params()},
             comm={"ct": 23, "cv": 0},
-            platform=Platform.ANDROID if self._client.platform == Platform.WEB else None,
+            platform=Platform.ANDROID if self._client._context.platform == Platform.WEB else None,
         )
 
         if data is None:
@@ -490,7 +493,7 @@ class LoginApi(ApiModule):
         """检查 QQ 二维码状态."""
         qrsig = qrcode.identifier
         try:
-            response = await self._request(
+            response = await self._build_http(
                 "GET",
                 "https://ssl.ptlogin2.qq.com/ptqrlogin",
                 params={
@@ -513,6 +516,7 @@ class LoginApi(ApiModule):
                 },
                 headers={"Referer": "https://xui.ptlogin2.qq.com/"},
                 cookies={"qrsig": qrsig},
+                disable_parse=True,
             )
         except HTTPError as exc:
             raise ApiDataError("无效 qrsig") from exc
@@ -628,7 +632,7 @@ class LoginApi(ApiModule):
         key = cookies.get("qqmusic_key", {}).get("value")
         if not uin or not key:
             raise ApiDataError("获取登录凭据失败: 缺少必要参数")
-        data = await self._build_request(
+        data = await self._build_cgi(
             module="music.login.LoginServer",
             method="Login",
             param={
@@ -646,7 +650,7 @@ class LoginApi(ApiModule):
 
     async def _authorize_qq_qr(self, uin: str, sigx: str) -> Credential:
         """完成 QQ 二维码鉴权并返回凭证."""
-        response = await self._request(
+        response = await self._build_http(
             "GET",
             "https://ssl.ptlogin2.graph.qq.com/check_sig",
             params={
@@ -670,14 +674,15 @@ class LoginApi(ApiModule):
                 "pt_3rd_aid": "100497308",
             },
             headers={"Referer": "https://xui.ptlogin2.qq.com/"},
-            allow_redirects=False,
             cookies={},
+            disable_parse=True,
+            kwargs={"allow_redirects": False},
         )
         p_skey = response.cookies["p_skey"]  # type: ignore
         if not p_skey:
             raise ApiDataError("获取 p_skey 失败")
 
-        authorize_response = await self._request(
+        authorize_response = await self._build_http(
             "POST",
             "https://graph.qq.com/oauth2.0/authorize",
             data={
@@ -696,15 +701,16 @@ class LoginApi(ApiModule):
                 "ui": str(uuid4()),
             },
             cookies=response.cookies,
-            allow_redirects=False,
+            disable_parse=True,
+            kwargs={"allow_redirects": False},
         )
 
         location = authorize_response.headers.get("Location", "")
-        code_match = re.findall(r"(?<=code=)(.+?)(?=&)", str(location))
+        code_match = re.findall(r"(?<=code=)(.+?)(?=&)", location)
         if not code_match:
             raise ApiDataError("获取 code 失败")
 
-        data = await self._build_request(
+        data = await self._build_cgi(
             module="QQConnectLogin.LoginServer",
             method="QQLogin",
             param={"code": code_match[0]},
@@ -716,7 +722,7 @@ class LoginApi(ApiModule):
 
     async def _authorize_wx_qr(self, code: str) -> Credential:
         """完成微信二维码鉴权并返回凭证."""
-        data = await self._build_request(
+        data = await self._build_cgi(
             module="music.login.LoginServer",
             method="Login",
             param={"code": code, "strAppid": "wx48db31d50e334801"},

@@ -15,7 +15,7 @@ class MvApi(ApiModule):
         Args:
             vids: 视频 VID 列表.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="video.VideoDataServer",
             method="get_video_info_batch",
             param={
@@ -54,7 +54,7 @@ class MvApi(ApiModule):
         Args:
             vids: 视频 VID 列表.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="music.stream.MvUrlProxy",
             method="GetMvUrls",
             param={
@@ -87,7 +87,7 @@ class MvApi(ApiModule):
             num: 每页返回数量.
             page: 页码, 从 1 开始.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="MvService.MvInfoProServer",
             method="GetAllocMvInfo",
             param={"area": area, "version": version, "order": order, "start": num * (page - 1), "size": num},

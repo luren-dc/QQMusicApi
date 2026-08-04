@@ -83,7 +83,7 @@ class PrivateMessageApi(ApiModule):
         elif fans_flag is not None:
             params["FansFlag"] = fans_flag
 
-        return self._build_request(
+        return self._build_cgi(
             PRIVATE_MSG_READ_MODULE,
             "GetSessionList",
             params,
@@ -106,7 +106,7 @@ class PrivateMessageApi(ApiModule):
             super_msg_flag: 超级私信标记.
             credential: 请求凭证.
         """
-        return self._build_request(
+        return self._build_cgi(
             PRIVATE_MSG_WRITE_MODULE,
             "DeleteSession",
             {"session_id": session_id, "super_msg_flag": super_msg_flag},
@@ -155,7 +155,7 @@ class PrivateMessageApi(ApiModule):
         }
         params.update({key: value for key, value in optional_params.items() if value not in (None, "")})
 
-        return self._build_request(
+        return self._build_cgi(
             PRIVATE_MSG_READ_MODULE,
             "GetMessage",
             params,
@@ -224,7 +224,7 @@ class PrivateMessageApi(ApiModule):
         }
         params.update({key: value for key, value in optional_params.items() if value not in (None, "")})
 
-        return self._build_request(
+        return self._build_cgi(
             PRIVATE_MSG_WRITE_MODULE,
             "StarSendSuperMsg" if star_send else "SendMessageAsync",
             params,
@@ -250,7 +250,7 @@ class PrivateMessageApi(ApiModule):
             super_msg_flag: 超级私信标记.
             credential: 请求凭证.
         """
-        return self._build_request(
+        return self._build_cgi(
             PRIVATE_MSG_WRITE_MODULE,
             "DeleteMessage",
             {"session_id": session_id, "msg_id": msg_id, "super_msg_flag": super_msg_flag},
@@ -274,7 +274,7 @@ class PrivateMessageApi(ApiModule):
             super_msg_flag: 超级私信标记.
             credential: 请求凭证.
         """
-        return self._build_request(
+        return self._build_cgi(
             PRIVATE_MSG_WRITE_MODULE,
             "ClearSession",
             {"session_id": session_id, "super_msg_flag": super_msg_flag},
@@ -298,7 +298,7 @@ class PrivateMessageApi(ApiModule):
             config_value: 配置值字符串.
             credential: 请求凭证.
         """
-        return self._build_request(
+        return self._build_cgi(
             PRIVATE_MSG_WRITE_MODULE,
             "SetConfig",
             {"config_type": config_type, "config_value_str": config_value},
@@ -322,7 +322,7 @@ class PrivateMessageApi(ApiModule):
             config_value: 配置值字符串.
             credential: 请求凭证.
         """
-        return self._build_request(
+        return self._build_cgi(
             PRIVATE_MSG_READ_MODULE,
             "GetConfig",
             {"config_type": config_type, "config_value_str": config_value},
@@ -344,7 +344,7 @@ class PrivateMessageApi(ApiModule):
             enc_uin: 加密 UIN.
             credential: 请求凭证.
         """
-        return self._build_request(
+        return self._build_cgi(
             "music.privateMsg.MusicianMsgCardSvr",
             "GetMusicianCard",
             {"EncUin": enc_uin},
@@ -382,7 +382,7 @@ class PrivateMessageApi(ApiModule):
         }
         if ext:
             params["ext"] = ext
-        return self._build_request(
+        return self._build_cgi(
             PRIVATE_MSG_WRITE_MODULE,
             "ActCardMsgCallBack",
             params,
@@ -416,7 +416,7 @@ class PrivateMessageApi(ApiModule):
             "UserID": user_id,
             "Ext": ext,
         }
-        return self._build_request(
+        return self._build_cgi(
             PRIVATE_MSG_READ_MODULE,
             "GetEntries",
             {key: value for key, value in params.items() if value is not None},
@@ -440,7 +440,7 @@ class PrivateMessageApi(ApiModule):
             msg_ids: 消息 ID 列表.
             credential: 请求凭证.
         """
-        return self._build_request(
+        return self._build_cgi(
             PRIVATE_MSG_READ_MODULE,
             "GetMsgDetails",
             {"SessionID": session_id, "MsgIDs": msg_ids},
@@ -464,7 +464,7 @@ class PrivateMessageApi(ApiModule):
             encrypt_uin: 加密 UIN.
             credential: 请求凭证.
         """
-        return self._build_request(
+        return self._build_cgi(
             PRIVATE_MSG_WRITE_MODULE,
             "SetAllMsgMardRead",
             {"CmdFlag": cmd_flag, "EncryptUin": encrypt_uin},
@@ -488,7 +488,7 @@ class PrivateMessageApi(ApiModule):
             close: 是否关闭提示.
             credential: 请求凭证.
         """
-        return self._build_request(
+        return self._build_cgi(
             PRIVATE_MSG_READ_MODULE,
             "GetSafetyHint",
             {"encUin": enc_uin, "close": close},
@@ -510,12 +510,11 @@ class PrivateMessageApi(ApiModule):
             target_enc_uin: 目标用户加密 UIN.
             credential: 请求凭证.
         """
-        return self._build_request(
-            "music.dazi.DzEntrySrv",
-            "GetFriendFloatingIcon",
-            {"TargetEncuin": target_enc_uin},
+        return self._build_cgi(
+            module="music.dazi.DzEntrySrv",
+            method="GetFriendFloatingIcon",
+            param={"TargetEncuin": target_enc_uin},
             credential=credential,
             require_login=True,
             platform=Platform.ANDROID,
-            response_model=None,
         )

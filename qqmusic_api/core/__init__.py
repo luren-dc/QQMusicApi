@@ -19,7 +19,7 @@ from .exceptions import (
     NetworkError,
     RatelimitedError,
 )
-from .request import Request
+from .request import BaseRequest, CgiRequest, HttpRequest, ItemPaginatedCgiRequest, PaginatedCgiRequest
 from .versioning import DEFAULT_VERSION_POLICY, Platform, VersionPolicy, VersionProfile
 
 __all__ = [
@@ -27,22 +27,26 @@ __all__ = [
     "ApiDataError",
     "ApiException",
     "BaseApiException",
+    "BaseRequest",
     "CgiApiException",
+    "CgiRequest",
     "Client",
     "CredentialExpiredError",
     "CredentialInvalidError",
     "CredentialRefreshError",
     "GlobalApiError",
     "HTTPError",
+    "HttpRequest",
+    "ItemPaginatedCgiRequest",
     "LoginAccountRestrictedError",
     "LoginAuthExpiredError",
     "LoginDeviceLimitError",
     "LoginError",
     "LoginRateLimitError",
     "NetworkError",
+    "PaginatedCgiRequest",
     "Platform",
     "RatelimitedError",
-    "Request",
     "VersionPolicy",
     "VersionProfile",
 ]

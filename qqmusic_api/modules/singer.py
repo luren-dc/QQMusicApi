@@ -135,7 +135,7 @@ class SingerApi(ApiModule):
             sex: 性别类型.
             genre: 风格类型.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="music.musichallSinger.SingerList",
             method="GetSingerList",
             param={
@@ -166,7 +166,7 @@ class SingerApi(ApiModule):
             page: 页码.
             num: 每页返回数量.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="music.musichallSinger.SingerList",
             method="GetSingerListIndex",
             param={
@@ -200,7 +200,7 @@ class SingerApi(ApiModule):
         Args:
             mid: 歌手 MID.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="music.UnifiedHomepage.UnifiedHomepageSrv",
             method="GetHomepageHeader",
             param={"SingerMid": mid},
@@ -223,7 +223,7 @@ class SingerApi(ApiModule):
             page: 页码.
             num: 返回数量.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="music.UnifiedHomepage.UnifiedHomepageSrv",
             method="GetHomepageTabDetail",
             param={
@@ -263,7 +263,7 @@ class SingerApi(ApiModule):
             pic: 是否返回头像/立绘图片 URL.
             photos: 是否返回相册大图列表.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="music.musichallSinger.SingerInfoInter",
             method="GetSingerDetail",
             param={
@@ -284,7 +284,7 @@ class SingerApi(ApiModule):
             mid: 歌手 MID.
             number: 返回相似歌手的数量.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="music.SimilarSingerSvr",
             method="GetSimilarSingerList",
             param={"singerMid": mid, "number": number},
@@ -299,7 +299,7 @@ class SingerApi(ApiModule):
             num: 返回歌曲数量.
             page: 分页页码.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="musichall.song_list_server",
             method="GetSingerSongList",
             param={"singerMid": mid, "order": 1, "number": num, "begin": (page - 1) * num},
@@ -320,7 +320,7 @@ class SingerApi(ApiModule):
             num: 返回专辑数量.
             page: 分页页码.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="music.musichallAlbum.AlbumListServer",
             method="GetAlbumList",
             param={"singerMid": mid, "order": 1, "number": num, "begin": (page - 1) * num},
@@ -341,7 +341,7 @@ class SingerApi(ApiModule):
             num: 返回数量.
             page: 分页页码.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="MvService.MvInfoProServer",
             method="GetSingerMvList",
             param={"singermid": mid, "order": 1, "count": num, "start": (page - 1) * num},

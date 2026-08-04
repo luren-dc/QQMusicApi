@@ -3,9 +3,8 @@
 from enum import IntEnum
 from typing import Any, Literal, overload
 
-from ..core import Platform
+from ..core import ItemPaginatedCgiRequest, Platform
 from ..core.pagination import MultiFieldContinuationStrategy, PageStrategy
-from ..core.request import ItemPaginatedRequest, PaginatedRequest
 from ..models.search import (
     AlbumSearch,
     GeneralSearchResponse,
@@ -52,7 +51,7 @@ class SearchApi(ApiModule):
 
     def get_hotkey(self):
         """获取热搜词列表."""
-        return self._build_request(
+        return self._build_cgi(
             "music.musicsearch.HotkeyService",
             "GetHotkeyForQQMusicMobile",
             {"search_id": get_searchID()},
@@ -64,7 +63,7 @@ class SearchApi(ApiModule):
         Args:
             keyword: 关键词.
         """
-        return self._build_request(
+        return self._build_cgi(
             "music.smartboxCgi.SmartBoxCgi",
             "GetSmartBoxResult",
             {
@@ -84,13 +83,12 @@ class SearchApi(ApiModule):
         Returns:
             dict[str, Any]: 搜索结果字典.
         """
-        resp = await self._client.request(
+        resp = await self._build_http(
             "GET",
             "https://c.y.qq.com/splcloud/fcgi-bin/smartbox_new.fcg",
             params={"key": keyword},
         )
-        resp.raise_for_status()
-        return resp.json()["data"]
+        return resp["data"]
 
     def general_search(
         self,
@@ -101,7 +99,7 @@ class SearchApi(ApiModule):
         page_start: dict[str, Any] | None = None,
         *,
         highlight: bool = True,
-    ) -> PaginatedRequest[GeneralSearchResponse]:
+    ):
         """综合搜索.
 
         Args:
@@ -124,7 +122,7 @@ class SearchApi(ApiModule):
         if page_start is not None:
             param["page_start"] = page_start
 
-        return self._build_request(
+        return self._build_cgi(
             "music.adaptor.SearchAdaptor",
             "do_search_v2",
             param,
@@ -154,7 +152,7 @@ class SearchApi(ApiModule):
         searchid: str | None = None,
         *,
         highlight: bool = True,
-    ) -> ItemPaginatedRequest[SearchByTypeResponse, SongSearch]: ...
+    ) -> ItemPaginatedCgiRequest[SearchByTypeResponse, SongSearch]: ...
 
     @overload
     def search_by_type(
@@ -167,7 +165,7 @@ class SearchApi(ApiModule):
         searchid: str | None = None,
         *,
         highlight: bool = True,
-    ) -> ItemPaginatedRequest[SearchByTypeResponse, SingerSearch]: ...
+    ) -> ItemPaginatedCgiRequest[SearchByTypeResponse, SingerSearch]: ...
 
     @overload
     def search_by_type(
@@ -180,7 +178,7 @@ class SearchApi(ApiModule):
         searchid: str | None = None,
         *,
         highlight: bool = True,
-    ) -> ItemPaginatedRequest[SearchByTypeResponse, AlbumSearch]: ...
+    ) -> ItemPaginatedCgiRequest[SearchByTypeResponse, AlbumSearch]: ...
 
     @overload
     def search_by_type(
@@ -193,7 +191,7 @@ class SearchApi(ApiModule):
         searchid: str | None = None,
         *,
         highlight: bool = True,
-    ) -> ItemPaginatedRequest[SearchByTypeResponse, SongListSearch]: ...
+    ) -> ItemPaginatedCgiRequest[SearchByTypeResponse, SongListSearch]: ...
 
     @overload
     def search_by_type(
@@ -206,7 +204,7 @@ class SearchApi(ApiModule):
         searchid: str | None = None,
         *,
         highlight: bool = True,
-    ) -> ItemPaginatedRequest[SearchByTypeResponse, MvSearch]: ...
+    ) -> ItemPaginatedCgiRequest[SearchByTypeResponse, MvSearch]: ...
 
     @overload
     def search_by_type(
@@ -219,7 +217,7 @@ class SearchApi(ApiModule):
         searchid: str | None = None,
         *,
         highlight: bool = True,
-    ) -> ItemPaginatedRequest[SearchByTypeResponse, dict[str, Any]]: ...
+    ) -> ItemPaginatedCgiRequest[SearchByTypeResponse, dict[str, Any]]: ...
 
     def search_by_type(
         self,
@@ -259,7 +257,7 @@ class SearchApi(ApiModule):
         ):
             return r.song or r.singer or r.album or r.songlist or r.mv or r.user or r.audio_alum or []
 
-        return self._build_request(
+        return self._build_cgi(
             "music.search.SearchCgiService",
             "DoSearchForQQMusicMobile",
             {

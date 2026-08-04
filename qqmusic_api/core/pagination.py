@@ -654,15 +654,19 @@ class ItemPaginatedMixin(PaginatedMixin[RequestResultT], ItemMixin[RequestResult
         Yields:
             提取的数据项实体.
         """
+        if limit is not None and limit <= 0:
+            return
+        total_yielded = 0
         async for response in self.paginate():
             items = self.items_extractor(response)
             if items is None:
                 continue
 
-            for count, item in enumerate(items):
-                if limit is not None and count >= limit:
+            for item in items:
+                if limit is not None and total_yielded >= limit:
                     return
                 yield item
+                total_yielded += 1
 
     async def collect_items(self, limit: int | None = None) -> list[ItemT_co]:
         """收集跨页展开的数据项为列表.

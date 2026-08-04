@@ -35,7 +35,7 @@ class HelperApi(ApiModule):
             files: 待上传文件信息列表, 每项需包含 "FileSha1", "FileName", "FileSize".
             credential: 请求凭证.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="music.filesys.FileSystem",
             method="InitUpload",
             param={
@@ -63,7 +63,7 @@ class HelperApi(ApiModule):
             results: 上传结果列表, 每项需包含 Storage 字典等信息.
             credential: 请求凭证.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="music.filesys.FileSystem",
             method="FinishUpload",
             param={

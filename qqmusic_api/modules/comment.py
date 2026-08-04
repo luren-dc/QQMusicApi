@@ -69,7 +69,7 @@ class CommentApi(ApiModule):
             req_data["biz_sub_type"] = 2
 
         data = {"request": req_data}
-        return self._build_request(
+        return self._build_cgi(
             "music.globalComment.CommentCountSrv",
             "GetCmCount",
             data,
@@ -107,7 +107,7 @@ class CommentApi(ApiModule):
         }
         if biz_sub_type is not None:
             params["BizSubType"] = biz_sub_type
-        return self._build_request(
+        return self._build_cgi(
             "music.globalComment.CommentRead",
             "GetHotCommentList",
             params,
@@ -147,7 +147,7 @@ class CommentApi(ApiModule):
         }
         if biz_sub_type is not None:
             params["BizSubType"] = biz_sub_type
-        return self._build_request(
+        return self._build_cgi(
             "music.globalComment.CommentRead",
             "GetNewCommentList",
             params,
@@ -187,7 +187,7 @@ class CommentApi(ApiModule):
         }
         if biz_sub_type is not None:
             params["BizSubType"] = biz_sub_type
-        return self._build_request(
+        return self._build_cgi(
             "music.globalComment.CommentRead",
             "GetRecCommentList",
             params,
@@ -222,7 +222,7 @@ class CommentApi(ApiModule):
         }
         if biz_sub_type is not None:
             params["BizSubType"] = biz_sub_type
-        return self._build_request(
+        return self._build_cgi(
             "music.globalComment.SongTsComment",
             "GetSongTsCmList",
             params,
@@ -263,7 +263,7 @@ class CommentApi(ApiModule):
         if biz_sub_type is not None:
             req_data["BizSubType"] = biz_sub_type
 
-        return self._build_request(
+        return self._build_cgi(
             "music.globalComment.CommentWriteServer",
             "AddComment",
             req_data,
@@ -286,7 +286,7 @@ class CommentApi(ApiModule):
         Returns:
             是否删除成功,评论不存在也为 True.
         """
-        data = await self._build_request(
+        data = await self._build_cgi(
             "music.globalComment.CommentWriteServer",
             "DelComment",
             {

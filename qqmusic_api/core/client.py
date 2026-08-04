@@ -14,7 +14,7 @@ from typing_extensions import Self, sentinel
 from ..models.request import Credential
 from .api_context import ApiContext
 from .exceptions import ApiDataError, NetworkError
-from .request import BaseRequest, CgiRequest, HttpRequest, RequestResultT
+from .request import BaseRequest, CgiRequest, HttpRequest, ResultT
 from .versioning import Platform
 
 if TYPE_CHECKING:
@@ -206,7 +206,7 @@ class Client:
         """关闭客户端连接."""
         await self._session.close()
 
-    async def execute(self, request: BaseRequest[RequestResultT]) -> RequestResultT:
+    async def execute(self, request: BaseRequest[ResultT]) -> ResultT:
         """执行单个请求描述符并解析响应结果.
 
         Args:
@@ -274,20 +274,20 @@ class Client:
     @overload
     async def gather(
         self,
-        requests: list[BaseRequest[RequestResultT]],
+        requests: list[BaseRequest[ResultT]],
         *,
         batch_size: int = ...,
         return_exceptions: Literal[False] = False,
-    ) -> list[RequestResultT]: ...
+    ) -> list[ResultT]: ...
 
     @overload
     async def gather(
         self,
-        requests: list[BaseRequest[RequestResultT]],
+        requests: list[BaseRequest[ResultT]],
         *,
         batch_size: int = ...,
         return_exceptions: Literal[True],
-    ) -> list[RequestResultT | Exception]: ...
+    ) -> list[ResultT | Exception]: ...
 
     @overload
     async def gather(

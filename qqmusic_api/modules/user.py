@@ -51,7 +51,7 @@ class UserApi(ApiModule):
                 若客户端凭证不可用则自动使用占位凭证.
         """
         target_credential = self._resolve_placeholder_credential(credential)
-        return self._build_request(
+        return self._build_cgi(
             module="music.UnifiedHomepage.UnifiedHomepageSrv",
             method="GetHomepageHeader",
             param={"uin": euin, "IsQueryTabDetail": 1},
@@ -65,7 +65,7 @@ class UserApi(ApiModule):
         Args:
             credential: 登录凭证.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="VipLogin.VipLoginInter",
             method="vip_login_base",
             param={},
@@ -90,7 +90,7 @@ class UserApi(ApiModule):
             num: 每页返回数量.
             credential: 登录凭证.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="music.concern.RelationList",
             method="GetFollowSingerList",
             param={"HostUin": euin, "From": (page - 1) * num, "Size": num},
@@ -122,7 +122,7 @@ class UserApi(ApiModule):
             num: 每页返回数量.
             credential: 登录凭证.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="music.concern.RelationList",
             method="GetFansList",
             param={"HostUin": euin, "From": (page - 1) * num, "Size": num},
@@ -152,7 +152,7 @@ class UserApi(ApiModule):
             num: 每页返回数量.
             credential: 登录凭证.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="music.homepage.Friendship",
             method="GetFriendList",
             param={"PageSize": num, "Page": page - 1},
@@ -183,7 +183,7 @@ class UserApi(ApiModule):
             num: 每页返回数量.
             credential: 登录凭证.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="music.concern.RelationList",
             method="GetFollowUserList",
             param={"HostUin": euin, "From": (page - 1) * num, "Size": num},
@@ -206,7 +206,7 @@ class UserApi(ApiModule):
             uin: 用户 UIN.
             credential: 登录凭证.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="music.musicasset.PlaylistBaseRead",
             method="GetPlaylistByUin",
             param={"uin": str(uin)},
@@ -230,7 +230,7 @@ class UserApi(ApiModule):
             num: 返回数量.
             credential: 登录凭证.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="music.srfDissInfo.DissInfo",
             method="CgiGetDiss",
             param={
@@ -270,7 +270,7 @@ class UserApi(ApiModule):
             num: 每页数量.
             credential: 登录凭证.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="music.musicasset.PlaylistFavRead",
             method="CgiGetPlaylistFavInfo",
             param={"uin": euin, "offset": (page - 1) * num, "size": num},
@@ -295,7 +295,7 @@ class UserApi(ApiModule):
         Returns:
             是否收藏成功 (歌单已在收藏中也返回 True).
         """
-        data = await self._build_request(
+        data = await self._build_cgi(
             module="music.musicasset.PlaylistFavWrite",
             method="FavPlaylist",
             param={"uin": (credential or self._client.credential).encrypt_uin, "v_playlistId": [songlist_id]},
@@ -314,7 +314,7 @@ class UserApi(ApiModule):
         Returns:
             是否取消成功 (歌单本就不在收藏中也返回 True).
         """
-        data = await self._build_request(
+        data = await self._build_cgi(
             module="music.musicasset.PlaylistFavWrite",
             method="CancelFavPlaylist",
             param={"uin": (credential or self._client.credential).encrypt_uin, "v_playlistId": [songlist_id]},
@@ -339,7 +339,7 @@ class UserApi(ApiModule):
             num: 每页数量.
             credential: 登录凭证.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="music.musicasset.AlbumFavRead",
             method="CgiGetAlbumFavInfo",
             param={"euin": euin, "offset": (page - 1) * num, "size": num},
@@ -370,7 +370,7 @@ class UserApi(ApiModule):
             num: 每页数量.
             credential: 登录凭证.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="music.musicasset.MVFavRead",
             method="getMyFavMV_v2",
             param={"encuin": euin, "pagesize": num, "num": page - 1},
@@ -386,7 +386,7 @@ class UserApi(ApiModule):
             euin: 加密后的 UIN.
             credential: 登录凭证.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="music.recommend.UserProfileSettingSvr",
             method="GetProfileReport",
             param={"VisitAccount": euin},
@@ -428,7 +428,7 @@ class UserApi(ApiModule):
                 next_p["StyleLastid"] = r.styles[-1].id
             return next_p
 
-        return self._build_request(
+        return self._build_cgi(
             module="music.feedback.FeedbackBlack",
             method="GetDislikeList",
             param=param,
@@ -453,7 +453,7 @@ class UserApi(ApiModule):
             是否操作成功.
         """
         keys = {1: "Songs", 2: "Singers", 3: "Styles"}
-        result = await self._build_request(
+        result = await self._build_cgi(
             module="music.feedback.FeedbackBlack",
             method="AddDislike",
             param={keys[id_type]: [{"ID": str(vid), "IdType": id_type} for vid in values]},
@@ -480,7 +480,7 @@ class UserApi(ApiModule):
             是否操作成功.
         """
         keys = {1: "Songs", 2: "Singers", 3: "Styles"}
-        result = await self._build_request(
+        result = await self._build_cgi(
             module="music.feedback.FeedbackBlack",
             method="CancelDislike",
             param={keys[id_type]: [{"ID": str(vid), "IdType": id_type} for vid in (values or [])]},
@@ -498,7 +498,7 @@ class UserApi(ApiModule):
         Returns:
             是否操作成功.
         """
-        result = await self._build_request(
+        result = await self._build_cgi(
             module="music.feedback.FeedbackBlack",
             method="CancelAllDislike",
             param={"ISOnlyGetToken": True},
@@ -507,7 +507,7 @@ class UserApi(ApiModule):
             require_login=True,
         )
         token = result.get("Token", "")
-        result = await self._build_request(
+        result = await self._build_cgi(
             module="music.feedback.FeedbackBlack",
             method="CancelAllDislike",
             param={"DelType": 3, "Token": token},

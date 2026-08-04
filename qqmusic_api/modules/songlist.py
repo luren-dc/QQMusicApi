@@ -46,7 +46,7 @@ class SonglistApi(ApiModule):
             tag: 是否返回标签信息.
             userinfo: 是否返回用户信息.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="music.srfDissInfo.DissInfo",
             method="CgiGetDiss",
             param={
@@ -79,7 +79,7 @@ class SonglistApi(ApiModule):
             dirname: 歌单名称.
             credential: 登录凭证.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="music.musicasset.PlaylistBaseWrite",
             method="AddPlaylist",
             param={"dirName": dirname},
@@ -98,7 +98,7 @@ class SonglistApi(ApiModule):
             dirid: 歌单目录 ID.
             credential: 登录凭证.
         """
-        return self._build_request(
+        return self._build_cgi(
             module="music.musicasset.PlaylistBaseWrite",
             method="DelPlaylist",
             param={"dirId": dirid},
@@ -127,7 +127,7 @@ class SonglistApi(ApiModule):
             操作成功与否 (歌曲已存在于歌单中也返回 True).
         """
         try:
-            data = await self._build_request(
+            data = await self._build_cgi(
                 module="music.musicasset.PlaylistDetailWrite",
                 method="AddSonglist",
                 param=_build_songlist_oper_param(dirid=dirid, song_info=song_info, tid=tid),
@@ -162,7 +162,7 @@ class SonglistApi(ApiModule):
         """
         songs = song_info or []
         try:
-            data = await self._build_request(
+            data = await self._build_cgi(
                 module="music.musicasset.PlaylistDetailWrite",
                 method="DelSonglist",
                 param=_build_songlist_oper_param(dirid=dirid, song_info=songs, tid=tid),

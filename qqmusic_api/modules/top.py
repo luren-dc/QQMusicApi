@@ -10,7 +10,7 @@ class TopApi(ApiModule):
 
     def get_category(self):
         """获取所有排行榜分类."""
-        return self._build_request(
+        return self._build_cgi(
             module="music.musicToplist.Toplist",
             method="GetAll",
             param={},
@@ -41,7 +41,7 @@ class TopApi(ApiModule):
         if tag:
             param["withTags"] = True
 
-        return self._build_request(
+        return self._build_cgi(
             module="music.musicToplist.Toplist",
             method="GetDetail",
             param=param,
