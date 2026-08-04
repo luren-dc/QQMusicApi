@@ -214,6 +214,13 @@ class Client:
         """
         match request:
             case CgiRequest():
+                if request.require_login:
+                    cred = request.credential or self._context.credential
+                    if not cred or not cred.musicid:
+                        from .exceptions import CredentialInvalidError
+
+                        raise CredentialInvalidError("请求需要登录, 未提供有效的登录凭证")
+
                 req_item = request._build_args()
 
                 url, payload, params, headers = await self._context.build_api_kwargs(
@@ -342,6 +349,16 @@ class Client:
             batch_responses = []
             grouped_indices: defaultdict[Any, list[tuple[int, CgiRequest[Any]]]] = defaultdict(list)
             for orig_idx, req in tasks:
+                if req.require_login:
+                    cred = req.credential or self._context.credential
+                    if not cred or not cred.musicid:
+                        from .exceptions import CredentialInvalidError
+
+                        exc = CredentialInvalidError("请求需要登录, 未提供有效的登录凭证")
+                        if return_exceptions:
+                            results[orig_idx] = exc
+                            continue
+                        raise exc
                 grouped_indices[req._group_key].append((orig_idx, req))
 
             for group in grouped_indices.values():

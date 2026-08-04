@@ -9,7 +9,7 @@ from qqmusic_api.models.private_message import PrivateMessageListResponse
 async def test_private_message_requires_login(client: Client) -> None:
     """测试私信会话列表需要登录凭证."""
     with pytest.raises(CredentialInvalidError):
-        client.private_message.get_sessions()
+        await client.private_message.get_sessions()
 
 
 def test_message_list_accepts_nullable_pat_map() -> None:
