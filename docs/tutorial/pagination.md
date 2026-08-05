@@ -2,9 +2,9 @@
 
 QQMusicApi 提供了统一的分页体系：
 
-* **`PaginatedRequest`**：具备连续翻页与批次刷新能力的请求描述符。既可直接 `await` 获取首批响应，也可通过 `.pager()`
+* **`PaginatedCgiRequest`**：具备连续翻页与批次刷新能力的 CGI 请求描述符。既可直接 `await` 获取首批响应，也可通过 `.pager()`
   手动按需步进，或使用 `.paginate()`、`.collect()` 和 `async for` 进行流式与批量遍历。
-* **`ItemPaginatedRequest`**：具备数据项提取能力的分页扩展类。除具备通用分页方法外，还通过 `.iter_items()` 与
+* **`ItemPaginatedCgiRequest`**：具备数据项提取能力的分页扩展类。除具备通用分页方法外，还通过 `.iter_items()` 与
   `.collect_items()` 实现了跨越页面边界、直接消费单一具体业务元素（如歌曲、专辑等）的功能。
 
 ## 1. 单次请求与无状态步进
@@ -149,8 +149,8 @@ asyncio.run(main())
 
 ## 6. 动态数据项提取
 
-如果你使用的某个 API 返回的请求对象是原生的 `PaginatedRequest`（即 API 层没有预设数据项提取器），你仍然可以通过
-`.with_extractor()` 动态注入一个提取逻辑。这会将请求无缝转换为具备跨页提取能力的 `ItemPaginatedRequest`。
+如果你使用的某个 API 返回的请求对象是原生的 `PaginatedCgiRequest`（即 API 层没有预设数据项提取器），你仍然可以通过
+`.with_extractor()` 动态注入一个提取逻辑。这会将请求无缝转换为具备跨页提取能力的 `ItemPaginatedCgiRequest`。
 
 这在处理一些层级较深、或者没有统一结构的响应时非常有用：
 
@@ -161,11 +161,11 @@ from qqmusic_api import Client
 
 async def main() -> None:
     async with Client() as client:
-        # 这个 API 返回原生的 PaginatedRequest
+        # 这个 API 返回原生的 PaginatedCgiRequest
         req = client.search.general_search("周杰伦")
 
         # 动态绑定 extractor
-        # 此时 item_req 类型变为 ItemPaginatedRequest
+        # 此时 item_req 类型变为 ItemPaginatedCgiRequest
         item_req = req.with_extractor(lambda r: r.song.items if r.song else [])
 
         # 现在你可以非常自然地跨页迭代数据项了！

@@ -167,7 +167,6 @@ signature_crossrefs = true
 merge_init_into_class = true
 docstring_section_style = "spacy"
 extensions = [
-  "unpack_typeddict",
   "griffe_pydantic",
   "docstring_inheritance.griffe",
   "griffe_inherited_docstrings",

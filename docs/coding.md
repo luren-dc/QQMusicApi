@@ -76,83 +76,78 @@ class Client:
 
 ### 添加新的请求方法
 
-API 方法返回 `Request` 对象，不直接发起请求。使用 `self._build_request(...)` 工厂方法构建：
+API 方法返回 `BaseRequest` 描述符对象，并不立即发起请求。对于标准 CGI 风格的 RPC 请求，使用 `self._build_cgi(...)` 工厂方法构建：
 
 ```python
 def get_detail(self, song_id: int):
     """获取歌曲详情."""
-    return self._build_request(
+    return self._build_cgi(
         module="music.songDetail",  # 接口所属模块
         method="GetDetail",  # 方法名
         param={"songid": song_id},  # 业务参数
     )
 ```
 
-对于非标准 CGI 接口（如直接 GET 请求），使用 `self._request(...)`：
+对于非标准 CGI 接口（如直接 GET 请求、获取网页或二维码），使用 `self._build_http(...)`：
 
 ```python
 async def quick_search(self, keyword: str) -> dict[str, Any]:
     """快速搜索 (直接返回解析后的 JSON 数据)."""
-    resp = await self._request(
+    resp = await self._build_http(
         "GET",
         "https://c.y.qq.com/splcloud/fcgi-bin/smartbox_new.fcg",
         params={"key": keyword},
     )
-    resp.raise_for_status()
-    return resp.json()["data"]
+    return resp["data"]
 ```
 
-### `_build_request` 参数说明
+### `_build_cgi` 参数说明
 
-| 参数               | 类型                          | 说明                                                                                                        |
-|--------------------|-------------------------------|-------------------------------------------------------------------------------------------------------------|
-| `module`           | `str`                         | 接口所属模块名                                                                                              |
-| `method`           | `str`                         | 方法名                                                                                                      |
-| `param`            | `dict`                        | 业务参数                                                                                                    |
-| `response_model`   | `type[BaseModel]` 或 `None`   | 响应模型，为 None 时返回原始 dict                                                                           |
-| `comm`             | `dict` 或 `None`              | 附加的公共参数                                                                                              |
-| `override_comm`    | `bool`                        | 为 True 时 `comm` 完全替代自动生成的参数；为 False 时合并                                                   |
-| `credential`       | `Credential` 或 `None`        | 覆盖本次请求的凭证                                                                                          |
-| `platform`         | `Platform` 或 `None`          | 覆盖本次请求的平台                                                                                          |
-| `preserve_bool`    | `bool`                        | 是否保留布尔值原样（默认转为 0/1 整型）                                                                     |
-| `sign`             | `bool`                        | 是否对请求进行签名                                                                                          |
-| `pager_strategy`   | `PagerStrategy` 或 `None`     | 分页策略，提供后返回 `PaginatedRequest`；可链式调用 `.with_extractor()` 提升为 `ItemPaginatedRequest`       |
-| `refresh_strategy` | `RefresherStrategy` 或 `None` | 换一批策略，提供后返回 `RefreshableRequest`；可链式调用 `.with_extractor()` 提升为 `ItemRefreshableRequest` |
+| 参数             | 类型                        | 说明                                                                                                        |
+|------------------|-----------------------------|-------------------------------------------------------------------------------------------------------------|
+| `module`         | `str`                       | 接口所属模块名                                                                                              |
+| `method`         | `str`                       | 方法名                                                                                                      |
+| `param`          | `dict`                      | 业务参数                                                                                                    |
+| `response_model` | `type[BaseModel]` 或 `None` | 响应模型，为 None 时返回原始 dict                                                                           |
+| `comm`           | `dict` 或 `None`            | 附加的公共参数                                                                                              |
+| `override_comm`  | `bool`                      | 为 True 时 `comm` 完全替代自动生成的参数；为 False 时合并                                                   |
+| `credential`     | `Credential` 或 `None`      | 覆盖本次请求的凭证                                                                                          |
+| `platform`       | `Platform` 或 `None`        | 覆盖本次请求的平台                                                                                          |
+| `preserve_bool`  | `bool`                      | 是否保留布尔值原样（默认转为 0/1 整型）                                                                     |
+| `sign`           | `bool`                      | 是否对请求进行签名                                                                                          |
+| `require_login`  | `bool`                      | 是否在执行时强制校验用户登录态                                                                              |
+| `pager_strategy` | `PagerStrategy` 或 `None`   | 分页策略，提供后返回 `PaginatedCgiRequest`；可链式调用 `.with_extractor()` 提升为 `ItemPaginatedCgiRequest` |
 
-### `client.request` 参数说明
+### `_build_http` 参数说明
 
-`client.request` 是底层 HTTP 请求方法，自动装配凭证 Cookies 和平台 User-Agent：
+`_build_http` 用于构建标准 HTTP 请求描述符，自动装配凭证 Cookies 和平台 User-Agent：
 
-| 参数         | 类型                   |                                                                              说明 |
-|--------------|------------------------|----------------------------------------------------------------------------------:|
-| `method`     | `str`                  |                                                   HTTP 方法，如 `"GET"`、`"POST"` |
-| `url`        | `str`                  |                                                                          请求地址 |
-| `credential` | `Credential` 或 `None` |                                            覆盖本次请求的凭证，默认使用客户端凭证 |
-| `platform`   | `Platform` 或 `None`   |                                            覆盖本次请求的平台，默认使用客户端平台 |
-| `lazy`       | `bool`                 |                                                  是否延迟发送请求（用于批量并发） |
-| `**kwargs`   |                        | 透传给底层 `niquests` 的参数（`params`、`json`、`data`、`headers`、`cookies` 等） |
+| 参数            | 类型                   |                                                                              说明 |
+|-----------------|------------------------|----------------------------------------------------------------------------------:|
+| `method`        | `str`                  |                                                   HTTP 方法，如 `"GET"`、`"POST"` |
+| `url`           | `str`                  |                                                                          请求地址 |
+| `credential`    | `Credential` 或 `None` |                                            覆盖本次请求的凭证，默认使用客户端凭证 |
+| `disable_parse` | `bool`                 |                      为 True 时不解析 JSON，直接返回原始 `niquests.Response` 对象 |
+| `**kwargs`      |                        | 透传给底层 `niquests` 的参数（`params`、`json`、`data`、`headers`、`cookies` 等） |
 
 !!! note
 
-    `client.request` 返回的是原始 `niquests.Response` 对象，需要手动解析响应。而 `_build_request` 返回的 `Request` 对象支持 `await`，会自动完成响应验证和模型解析。
+    `_build_cgi` 返回 `CgiRequest`，`_build_http` 返回 `HttpRequest`，两者均继承自 `BaseRequest`。它们都支持直接被 `await` 以触发网络请求并自动完成响应验证和模型解析。
 
 常见用法：
 
 ```python
 # GET 请求
-resp = await client.request("GET", "https://example.com/api", params={"key": "value"})
+req = self._build_http("GET", "https://example.com/api", params={"key": "value"})
 
 # POST JSON
-resp = await client.request("POST", "https://example.com/api", json={"key": "value"})
-
-# POST form data
-resp = await client.request("POST", "https://example.com/api", data={"key": "value"})
-
-# 自定义 headers
-resp = await client.request("GET", "https://example.com/api", headers={"X-Custom": "value"})
+req = self._build_http("POST", "https://example.com/api", json={"key": "value"})
 
 # 覆盖凭证
-resp = await client.request("GET", "https://example.com/api", credential=my_credential)
+req = self._build_http("GET", "https://example.com/api", credential=my_credential)
+
+# 返回原始 Response 而非解析 JSON
+req = self._build_http("GET", "https://example.com/api", disable_parse=True)
 ```
 
 ## 响应模型
