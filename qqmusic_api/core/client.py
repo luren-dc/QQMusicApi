@@ -216,7 +216,7 @@ class Client:
             case CgiRequest():
                 if request.require_login:
                     cred = request.credential or self._context.credential
-                    if not cred or not cred.musicid:
+                    if not cred or not cred.musicid or not cred.musickey:
                         from .exceptions import CredentialInvalidError
 
                         raise CredentialInvalidError("请求需要登录, 未提供有效的登录凭证")
@@ -244,7 +244,7 @@ class Client:
                         verify=self.verify,
                     )
                     await self._session.gather(resp)
-                except Exception as exc:
+                except RequestException as exc:
                     raise NetworkError(str(exc)) from exc
 
                 raw_data = self._unwrap_cgi_batch(resp, expected_count=1)[0]
@@ -254,9 +254,7 @@ class Client:
             case HttpRequest():
                 request = cast("HttpRequest", request)
                 kwargs = await self._context.prepare_http_kwargs(
-                    method=request.method,
-                    url=request.url,
-                    credential=self._context.credential,
+                    credential=request.credential,
                     **request._build_args(),
                 )
 
@@ -271,7 +269,7 @@ class Client:
                         verify=self.verify,
                     )
                     await self._session.gather(resp)
-                except Exception as exc:
+                except RequestException as exc:
                     raise NetworkError(str(exc)) from exc
 
                 return request._parse_response(resp)
@@ -323,17 +321,29 @@ class Client:
     ) -> list[Any]:
         """并发执行多个请求描述符并按输入顺序返回解析结果.
 
+        CGI 请求会按可合并条件自动分组, 同一分组内的请求按 `batch_size`
+        批量合并为一次 CGI 多参数调用 (req_0, req_1, ...), 以减少网络往返;
+        不同分组之间并发执行. HTTP 请求不参与合并, 直接并发执行.
+
         Args:
             requests: 待执行的请求描述符列表.
-            batch_size: 每个批量请求包含的最大请求数.
-            return_exceptions: 是否将单项解析异常作为结果返回.
+            batch_size: 单个 CGI 批量调用 (多参数合并) 包含的最大请求数; 仅对
+                CGI 请求生效, 不影响 HTTP 请求.
+            return_exceptions: 是否捕捉异常并作为结果返回而不抛出. 为 True 时,
+                请求构造、网络传输、响应解析等所有异常都会被写入对应位置的结果;
+                为 False 时, 任一请求的异常会以异常组形式抛出.
 
         Returns:
-            与 `requests` 顺序一致的解析结果列表.
+            与 `requests` 顺序一致的解析结果列表. 当 `return_exceptions` 为
+            True 时, 失败位置的结果为对应的异常对象.
 
         Raises:
-            ValueError: 当 `batch_size` 小于等于 0, 响应为空, 响应缺少对应
-                请求项, 或结果未能完整回填时抛出.
+            ValueError: 当 `batch_size` 小于等于 0 时抛出.
+            BaseExceptionGroup: 当 `return_exceptions` 为 False 且任一请求执行
+                期间发生异常时, 其余并发请求会被取消, 失败异常会以异常组的
+                形式抛出 (即使只有一个请求失败也会被包装成异常组; 多个请求
+                同时各自抛出异常时, 异常组可能包含多个异常).
+            ApiDataError: 当内部依赖的结果未能完整回填时抛出 (一般不应发生).
         """
         if batch_size <= 0:
             raise ValueError("batch_size 必须大于 0")
@@ -351,7 +361,7 @@ class Client:
             for orig_idx, req in tasks:
                 if req.require_login:
                     cred = req.credential or self._context.credential
-                    if not cred or not cred.musicid:
+                    if not cred or not cred.musicid or not cred.musickey:
                         from .exceptions import CredentialInvalidError
 
                         exc = CredentialInvalidError("请求需要登录, 未提供有效的登录凭证")
@@ -376,16 +386,24 @@ class Client:
                         sign=base_req.sign,
                     )
 
-                    resp = await self._session.post(
-                        url,
-                        json=payload,
-                        params=params,
-                        headers=headers,
-                        proxies=self.proxies,
-                        hooks=self.hooks,
-                        cert=self.cert,
-                        verify=self.verify,
-                    )
+                    try:
+                        resp = await self._session.post(
+                            url,
+                            json=payload,
+                            params=params,
+                            headers=headers,
+                            proxies=self.proxies,
+                            hooks=self.hooks,
+                            cert=self.cert,
+                            verify=self.verify,
+                        )
+                    except RequestException as exc:
+                        error = NetworkError(str(exc))
+                        if return_exceptions:
+                            for req_index in chunk_orig_indices:
+                                results[req_index] = error
+                            continue
+                        raise error from exc
                     batch_responses.append((chunk_orig_indices, resp))
 
             if not batch_responses:
@@ -394,7 +412,13 @@ class Client:
             try:
                 await self._session.gather(*(resp for _, resp in batch_responses))
             except RequestException as exc:
-                raise NetworkError(str(exc)) from exc
+                error = NetworkError(str(exc))
+                if return_exceptions:
+                    for batch_indices, _ in batch_responses:
+                        for req_index in batch_indices:
+                            results[req_index] = error
+                    return
+                raise error from exc
 
             for batch_indices, response in batch_responses:
                 try:
@@ -420,21 +444,26 @@ class Client:
             http_responses = []
             for orig_idx, req in tasks:
                 kwargs = await self._context.prepare_http_kwargs(
-                    method=req.method,
-                    url=req.url,
-                    credential=self._context.credential,
+                    credential=req.credential,
                     **req._build_args(),
                 )
 
-                resp = await self._session.request(
-                    req.method,
-                    req.url,
-                    **kwargs,
-                    proxies=self.proxies,
-                    hooks=self.hooks,
-                    cert=self.cert,
-                    verify=self.verify,
-                )
+                try:
+                    resp = await self._session.request(
+                        req.method,
+                        req.url,
+                        **kwargs,
+                        proxies=self.proxies,
+                        hooks=self.hooks,
+                        cert=self.cert,
+                        verify=self.verify,
+                    )
+                except RequestException as exc:
+                    error = NetworkError(str(exc))
+                    if return_exceptions:
+                        results[orig_idx] = error
+                        continue
+                    raise error from exc
                 http_responses.append((orig_idx, req, resp))
 
             if not http_responses:
@@ -443,7 +472,12 @@ class Client:
             try:
                 await self._session.gather(*(resp for _, _, resp in http_responses))
             except RequestException as exc:
-                raise NetworkError(str(exc)) from exc
+                error = NetworkError(str(exc))
+                if return_exceptions:
+                    for orig_idx, _, _ in http_responses:
+                        results[orig_idx] = error
+                    return
+                raise error from exc
 
             for orig_idx, req, resp in http_responses:
                 try:

@@ -61,6 +61,48 @@ results = await client.gather(
 
 此时失败项会以异常对象的形式出现在对应位置，成功项仍返回正常的响应模型。
 
+默认情况下 `return_exceptions=False`，任一请求执行期间发生异常时，`gather()` 会中断并抛出 `BaseExceptionGroup`
+，其余尚未完成的并发请求会被取消。即使 **只有一个**请求失败，异常也会被包装成异常组抛出（通常包含触发失败的那个异常；当多个请求在同一轮取消/竞争中各自抛出新异常时，异常组可能包含多个）。
+
+`except*` 需要 Python 3.11+；在 3.10 上可用 `exceptiongroup` 兼容包获得 `BaseExceptionGroup`。若不需要区分并发错误，也可以保留
+`return_exceptions=True`，再对结果中的异常对象逐一处理。
+
+=== "Python 3.11+"
+
+    使用 `except*` 按异常类型直接捕获:
+
+    ```python
+    try:
+        results = await client.gather([...])
+    except* NetworkError as exc_group:
+        for exc in exc_group.exceptions:
+            print(f"网络错误: {exc}")
+    except* CgiApiException as exc_group:
+        for exc in exc_group.exceptions:
+            print(f"接口错误: {exc}")
+    ```
+
+=== "Python 3.10"
+
+    Python 3.10 没有内置异常组, 从 `exceptiongroup` 兼容包导入后, 用普通 `except` 即可捕获:
+
+    ```python
+    from exceptiongroup import BaseExceptionGroup
+
+    try:
+        results = await client.gather([...])
+    except BaseExceptionGroup as exc_group:
+        for exc in exc_group.exceptions:
+            if isinstance(exc, NetworkError):
+                print(f"网络错误: {exc}")
+            elif isinstance(exc, CgiApiException):
+                print(f"接口错误: {exc}")
+    ```
+
+> 注意：默认 `return_exceptions=False` 时，一旦抛出异常组，本次 `gather` 将立即终止且 **不会返回任何结果**
+> ——已成功的请求其结果也会一并丢弃，尚未执行的请求会被取消，异常组中也拿不到它们的异常。若需要保留成功项的结果、只对失败项单独处理，请使用
+> `return_exceptions=True`。
+
 ## 全局凭证
 
 如果你的场景需要登录，可以在初始化 `Client` 时直接注入 `Credential`：
@@ -92,11 +134,11 @@ asyncio.run(main())
 
 支持的平台：
 
-| 平台 | `Platform` 值 | 说明 |
-| ------ | -------------- | ------ |
+| 平台    | `Platform` 值      | 说明                 |
+|---------|--------------------|----------------------|
 | Android | `Platform.ANDROID` | 默认，大部分接口使用 |
-| Desktop | `Platform.DESKTOP` | QQ 音乐桌面端 |
-| Web | `Platform.WEB` | QQ 音乐网页端 |
+| Desktop | `Platform.DESKTOP` | QQ 音乐桌面端        |
+| Web     | `Platform.WEB`     | QQ 音乐网页端        |
 
 !!! note
 

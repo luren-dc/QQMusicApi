@@ -131,17 +131,12 @@ class ApiContext:
 
     async def prepare_http_kwargs(
         self,
-        method: str,
-        url: str,
         credential: Credential | None = None,
-        platform: Platform | None = None,
         **kwargs: Any,
     ) -> dict[str, Any]:
         """准备标准 HTTP 请求所需要的 kwargs (注入 Cookies 和 User-Agent).
 
         Args:
-            method: HTTP 方法.
-            url: 请求 URL.
             credential: 请求凭证, 优先于上下文默认凭证.
             platform: 请求平台, 优先于上下文默认平台.
             **kwargs: 额外请求参数.
@@ -165,7 +160,7 @@ class ApiContext:
 
         headers = prepared.get("headers", {})
         if "User-Agent" not in headers:
-            headers["User-Agent"] = await self.get_user_agent(platform)
+            headers["User-Agent"] = await self.get_user_agent(Platform.WEB)
         prepared["headers"] = headers
 
         return prepared
