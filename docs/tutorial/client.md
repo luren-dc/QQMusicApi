@@ -61,10 +61,10 @@ results = await client.gather(
 
 此时失败项会以异常对象的形式出现在对应位置，成功项仍返回正常的响应模型。
 
-默认情况下 `return_exceptions=False`，任一请求执行期间发生异常时，`gather()` 会中断并抛出 `BaseExceptionGroup`
-，其余尚未完成的并发请求会被取消。即使 **只有一个**请求失败，异常也会被包装成异常组抛出（通常包含触发失败的那个异常；当多个请求在同一轮取消/竞争中各自抛出新异常时，异常组可能包含多个）。
+默认情况下 `return_exceptions=False`，任一请求执行期间发生异常时，`gather()` 会中断并抛出 `ExceptionGroup`
+（`BaseExceptionGroup` 的子类），其余尚未完成的并发请求会被取消。即使 **只有一个**请求失败，异常也会被包装成异常组抛出（通常包含触发失败的那个异常；当多个请求在同一轮取消/竞争中各自抛出新异常时，异常组可能包含多个）。
 
-`except*` 需要 Python 3.11+；在 3.10 上可用 `exceptiongroup` 兼容包获得 `BaseExceptionGroup`。若不需要区分并发错误，也可以保留
+`except*` 需要 Python 3.11+；在 3.10 上可从 `exceptiongroup` 兼容包导入 `BaseExceptionGroup`。若不需要区分并发错误，也可以保留
 `return_exceptions=True`，再对结果中的异常对象逐一处理。
 
 === "Python 3.11+"

@@ -77,8 +77,10 @@ async def _call_with_skip(coro_fn: Callable[[], Awaitable[Any]]) -> Any:
 
 
 @pytest.fixture(autouse=True)
-def handle_unavailable_api_errors(monkeypatch: pytest.MonkeyPatch):
-    """为测试 API 调用添加限流重试, 并将环境不可用异常转为跳过."""
+def handle_unavailable_api_errors(monkeypatch: pytest.MonkeyPatch, request: pytest.FixtureRequest):
+    """为 Modules 层测试 API 调用添加限流重试, 并将环境不可用异常转为跳过."""
+    if request.node.get_closest_marker("core"):
+        return
     original_execute = Client.execute
     original_gather = Client.gather
 

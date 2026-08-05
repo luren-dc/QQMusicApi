@@ -339,10 +339,12 @@ class Client:
 
         Raises:
             ValueError: 当 `batch_size` 小于等于 0 时抛出.
-            BaseExceptionGroup: 当 `return_exceptions` 为 False 且任一请求执行
+            ExceptionGroup: 当 `return_exceptions` 为 False 且任一请求执行
                 期间发生异常时, 其余并发请求会被取消, 失败异常会以异常组的
-                形式抛出 (即使只有一个请求失败也会被包装成异常组; 多个请求
-                同时各自抛出异常时, 异常组可能包含多个异常).
+                形式抛出 (anyio 将异常包装为 `ExceptionGroup`, 它是
+                `BaseExceptionGroup` 的子类; 即使只有一个请求失败也会被包装
+                成异常组; 多个请求同时各自抛出异常时, 异常组可能包含多个
+                异常).
             ApiDataError: 当内部依赖的结果未能完整回填时抛出 (一般不应发生).
         """
         if batch_size <= 0:

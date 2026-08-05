@@ -115,6 +115,9 @@ addopts = ["-rxXs"]
 pythonpath = ["."]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+markers = [
+  "core: Core 层单元测试, 使用桩数据驱动, 不发起真实网络请求",
+]
 
 [tool.ruff]
 line-length = 120
