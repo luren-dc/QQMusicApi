@@ -19,6 +19,8 @@ from qqmusic_api.core.pagination import (
 )
 from qqmusic_api.core.request import ItemPaginatedCgiRequest, PaginatedCgiRequest
 
+pytestmark = pytest.mark.core
+
 
 class DummyResponse(BaseModel):
     """测试用简单响应结构."""

@@ -26,16 +26,35 @@ class DummyModel(BaseModel):
 class DummyResponse:
     """模拟 niquests 响应对象的最小桩."""
 
-    def __init__(self, payload: Any, status_code: int = 200, *, http_error: bool = False) -> None:
-        """以预置载荷与可选状态码构造响应桩."""
+    def __init__(
+        self,
+        payload: Any,
+        status_code: int = 200,
+        *,
+        content: bytes | None = b"{}",
+        json_error: bool = False,
+        http_error: bool = False,
+    ) -> None:
+        """以预置载荷与可选状态码构造响应桩.
+
+        Args:
+            payload: 供 json() 返回的载荷.
+            status_code: HTTP 状态码.
+            content: 原始响应体, 用于触发 "响应无内容" 分支.
+            json_error: 是否让 json() 抛出解析异常.
+            http_error: 是否让 raise_for_status() 抛出 HTTP 状态异常.
+        """
         self._payload = payload
         self.status_code = status_code
-        self.content = b"{}"
+        self.content = content
         self.text = ""
+        self._json_error = json_error
         self._http_error = http_error
 
     def json(self) -> Any:
-        """返回预置的 JSON 载荷."""
+        """按预置标记返回载荷或抛出解析异常."""
+        if self._json_error:
+            raise ValueError("模拟 JSON 解析失败")
         return self._payload
 
     def raise_for_status(self) -> None:
@@ -57,6 +76,8 @@ class StubSession:
     async def post(self, url: str, **kwargs: Any) -> DummyResponse:
         """记录 CGI 调用并返回或抛出下一个预置项."""
         self.post_calls.append((url, kwargs))
+        if not self._posts:
+            raise AssertionError(f"CGI 会话桩队列耗尽, 意外网络调用: {url}")
         item = self._posts.pop(0)
         if isinstance(item, Exception):
             raise item
@@ -65,6 +86,8 @@ class StubSession:
     async def request(self, method: str, url: str, **kwargs: Any) -> DummyResponse:
         """记录 HTTP 调用并返回或抛出下一个预置项."""
         self.request_calls.append((method, url, kwargs))
+        if not self._requests:
+            raise AssertionError(f"HTTP 会话桩队列耗尽, 意外网络调用: {method} {url}")
         item = self._requests.pop(0)
         if isinstance(item, Exception):
             raise item
@@ -101,17 +124,21 @@ def _http_request(client: Client, url: str = "https://example.com", **kwargs: An
 
 
 def _attach_session(client: Client, stub: StubSession) -> None:
-    """将桩会话注入客户端以替换真实网络会话."""
+    """将桩会话注入客户端, 请求上下文与 QIMEI 管理器以替换真实网络会话."""
     cast("Any", client)._session = stub
+    cast("Any", client)._context._session = stub
+    cast("Any", client)._context._qimei_manager._session = stub
 
 
 @pytest_asyncio.fixture
 async def stub_client() -> AsyncIterator[Client]:
     """创建使用 Web 平台且不触网的最小 Client 实例."""
     test_client = Client(platform=Platform.WEB)
+    # 真实 AsyncSession 在构造时即被创建, 保存引用以便测试结束时显式关闭.
+    real_session = cast("Any", test_client)._session
     yield test_client
     await test_client.close()
-    await test_client._context._session.close()
+    await real_session.close()
 
 
 async def test_gather_returns_results_in_input_order(stub_client: Client):
@@ -262,3 +289,47 @@ async def test_execute_http_uses_request_credential(stub_client: Client):
     cookies = stub.request_calls[0][2].get("cookies", {})
     assert cookies["uin"] == "123"
     assert cookies["qm_keyst"] == "key"
+
+
+async def test_execute_cgi_http_status_error(stub_client: Client):
+    """测试 execute 遇到非 200 状态码时抛出 HTTPError."""
+    from qqmusic_api.core.exceptions import HTTPError
+
+    stub = StubSession(posts=[DummyResponse({}, status_code=500)])
+    _attach_session(stub_client, stub)
+    with pytest.raises(HTTPError, match="500"):
+        await stub_client.execute(_cgi_request(stub_client))
+
+
+async def test_execute_cgi_global_api_error(stub_client: Client):
+    """测试 execute 遇到非零全局 code 时抛出 GlobalApiError."""
+    from qqmusic_api.core.exceptions import GlobalApiError
+
+    stub = StubSession(posts=[DummyResponse({"code": -400, "req_0": {}})])
+    _attach_session(stub_client, stub)
+    with pytest.raises(GlobalApiError):
+        await stub_client.execute(_cgi_request(stub_client))
+
+
+async def test_execute_cgi_json_parse_error(stub_client: Client):
+    """测试 execute 遇到响应 JSON 解析失败时抛出 ApiDataError."""
+    stub = StubSession(posts=[DummyResponse({}, json_error=True)])
+    _attach_session(stub_client, stub)
+    with pytest.raises(ApiDataError, match="JSON"):
+        await stub_client.execute(_cgi_request(stub_client))
+
+
+async def test_execute_cgi_empty_response(stub_client: Client):
+    """测试 execute 遇到无内容响应时抛出 ApiDataError."""
+    stub = StubSession(posts=[DummyResponse({}, content=b"")])
+    _attach_session(stub_client, stub)
+    with pytest.raises(ApiDataError, match="响应无内容"):
+        await stub_client.execute(_cgi_request(stub_client))
+
+
+async def test_execute_cgi_missing_req_key(stub_client: Client):
+    """测试 execute 遇到缺少预期子响应键时抛出 ApiDataError."""
+    stub = StubSession(posts=[DummyResponse({"req_9": {}})])
+    _attach_session(stub_client, stub)
+    with pytest.raises(ApiDataError, match="CGI 响应格式异常"):
+        await stub_client.execute(_cgi_request(stub_client))

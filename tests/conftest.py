@@ -18,6 +18,7 @@ TEST_CREDENTIAL_ENV_PREFIX = "QQMUSIC_"
 TEST_DEVICE_CACHE_DIR = "qqmusic_api"
 TEST_DEVICE_FILENAME = "device.json"
 RATE_LIMIT_RETRY_DELAYS: tuple[float, ...] = (2.0, 4.0, 8.0)
+CORE_MARKER = "core"
 
 
 def _is_network_timeout_error(exc: BaseException) -> bool:
@@ -79,7 +80,7 @@ async def _call_with_skip(coro_fn: Callable[[], Awaitable[Any]]) -> Any:
 @pytest.fixture(autouse=True)
 def handle_unavailable_api_errors(monkeypatch: pytest.MonkeyPatch, request: pytest.FixtureRequest):
     """为 Modules 层测试 API 调用添加限流重试, 并将环境不可用异常转为跳过."""
-    if request.node.get_closest_marker("core"):
+    if request.node.get_closest_marker(CORE_MARKER):
         return
     original_execute = Client.execute
     original_gather = Client.gather
