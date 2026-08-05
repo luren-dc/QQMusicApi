@@ -11,12 +11,13 @@
 
 ```text
 模块方法
-  -> self._build_request(...)
-  -> Request
+  -> self._build_cgi(...) / self._build_http(...)
+  -> BaseRequest 描述符
   -> await request
   -> Client.execute(request)
-  -> Client.request_api(...)
-  -> Client._build_result(...)
+  -> ApiContext 注入环境与凭证
+  -> Session.post(...) / Session.request(...)
+  -> Request._parse_response(...)
   -> 返回原始 dict 或 Pydantic 模型
 ```
 
@@ -24,18 +25,18 @@
 
 ```text
 多个模块方法
-  -> self._build_request(...)
-  -> Request 列表
+  -> self._build_cgi(...)
+  -> BaseRequest 描述符列表
     -> Client.gather(requests)
-    -> 按协议、平台、公共参数和凭证分组
+    -> 按协议、平台、公共参数和凭证配置键自动分组
     -> 每组按 batch_size 拆分为批量请求
-    -> 依次调用 Client.request_api(..., lazy=True) 生成响应任务
-    -> 使用客户端内部的 multiplexed AsyncSession 并发执行这些任务（self._session.gather）
-    -> 按 req_n 解析每个响应项
-    -> 按输入顺序返回结果
+    -> 依次发起合并的多参 CGI 请求（req_0, req_1...）
+    -> 使用客户端内部的 Session 并发执行这些任务（self._session.gather）
+    -> 统一解包解析每个响应项
+    -> 按输入顺序返回结果列表
 ```
 
-`gather` 的分组边界由 `Request._group_key` 决定。只有协议类型、显式平台、公共参数和凭证相同的请求才会合并到同一个批量请求中。
+`gather` 的分组边界由 `BaseRequest._group_key` 决定。只有协议类型、显式平台、公共参数和凭证相同的请求才会安全地合并到同一个批量请求中。
 
 ## 编写新的 API
 
@@ -55,7 +56,7 @@ class FooApi(ApiModule):
 
     def get_something(self, id: int):
         """获取某项数据."""
-        return self._build_request(
+        return self._build_cgi(
             module="music.foo.Svc",
             method="GetSomething",
             param={"id": id},
@@ -227,12 +228,12 @@ class Singer(Response):
 
 ### 需登录的接口
 
-需要登录的接口通过 `_build_request` 的 `require_login` 参数校验凭证：
+需要登录的接口通过 `_build_cgi` 的 `require_login` 参数校验凭证：
 
 ```python
 def get_vip_info(self, *, credential: Credential | None = None):
     """获取 VIP 信息."""
-    return self._build_request(
+    return self._build_cgi(
         module="VipLogin.VipLoginInter",
         method="vip_login_base",
         param={},
@@ -242,8 +243,8 @@ def get_vip_info(self, *, credential: Credential | None = None):
     )
 ```
 
-> 若接口需要凭证对象的字段来构建请求参数，
-> 仍可显式调用 `_require_login` 获取凭证对象。
+> 若接口需要凭证对象的属性（如 `musicid` 等）来构建请求内联参数，
+> 仍可通过 `credential = credential or self._client.credential` 获取并显式验证其有效性。
 
 ## 连续翻页与批次刷新
 
@@ -259,7 +260,7 @@ from ..core.pagination import OffsetStrategy
 
 def get_detail(self, songlist_id: int, num: int = 10, page: int = 1):
     """获取歌单详情."""
-    return self._build_request(
+    return self._build_cgi(
         module="music.srfDissInfo.DissInfo",
         method="CgiGetDiss",
         param={
@@ -289,7 +290,7 @@ from ..models.base import MV
 
 def get_related_mv(self, songid: int, last_mvid: str | None = None):
     """获取歌曲相关 MV."""
-    return self._build_request(
+    return self._build_cgi(
         module="MvService.MvInfoProServer",
         method="GetSongRelatedMv",
         param={"songid": str(songid), "songtype": 1, "lastmvid": last_mvid or 0},
@@ -319,7 +320,7 @@ def get_related_mv(self, songid: int, last_mvid: str | None = None):
 ```python
 def get_sheet(self, mid: str):
     """获取曲谱."""
-    return self._build_request(
+    return self._build_cgi(
         module="music.mir.SheetMusicSvr",
         method="GetMoreSheetMusic",
         param={"songMid": mid},
@@ -335,7 +336,7 @@ def get_sheet(self, mid: str):
 
 ```python
 # 合并到自动生成的 comm 中（默认行为）
-self._build_request(
+self._build_cgi(
     ...,
     comm={"extra_key": "value"},
 )
@@ -344,7 +345,7 @@ self._build_request(
 使用 `override_comm=True` 完全替代自动生成的参数：
 
 ```python
-self._build_request(
+self._build_cgi(
     ...,
     comm={
         "g_tk": 5381,
@@ -368,7 +369,7 @@ self._build_request(
 from ..core.exceptions import ApiDataError
 
 try:
-# ...
+    ...
 except KeyError as e:
     raise ApiDataError("无法解析歌曲信息") from e
 ```
