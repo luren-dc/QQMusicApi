@@ -3,8 +3,9 @@
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
 
+from qqmusic_api.models.singer import SingerNameSpecialDisplayResponse
 from web.src.routes import ROUTES
-from web.src.routing.route_types import AuthPolicy
+from web.src.routing.route_types import PUBLIC_600, AuthPolicy
 from web.src.routing.router_factory import _resolve_route, validate_routes
 
 RESOLVED_ROUTES = tuple(_resolve_route(r) for r in ROUTES)
@@ -21,6 +22,22 @@ def test_registered_route_count_matches_contract(app: FastAPI) -> None:
     api_routes = [route for route in app.routes if isinstance(route, APIRoute) and route.include_in_schema]
 
     assert len(api_routes) == len(ROUTES)
+
+
+def test_singer_name_special_display_route(app: FastAPI) -> None:
+    """测试歌手名称图片路由的参数、响应模型和公开缓存契约."""
+    path = "/singer/{mid}/name-special-display"
+    route = next(route for route in ROUTES if route.path == path)
+    operation = app.openapi()["paths"][path]["get"]
+    mid = next(parameter for parameter in operation["parameters"] if parameter["name"] == "mid")
+
+    assert route.method == "get_name_special_display"
+    assert route.response_model is SingerNameSpecialDisplayResponse
+    assert route.auth is AuthPolicy.NONE
+    assert route.cache == PUBLIC_600
+    assert mid["in"] == "path"
+    assert mid["required"] is True
+    assert "SingerNameSpecialDisplayResponse" in str(operation["responses"]["200"])
 
 
 def _collect_schema_enums(value):
